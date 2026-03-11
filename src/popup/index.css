@@ -1,0 +1,103 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+* {
+  box-sizing: border-box;
+}
+
+/* ============ highlight.js 代码高亮主题（精简版） ============ */
+pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0;
+}
+code.hljs {
+  padding: 0;
+}
+.hljs {
+  color: #c9d1d9;
+  background: transparent;
+}
+.hljs-keyword,
+.hljs-type,
+.hljs-built_in,
+.hljs-selector-tag {
+  color: #ff7b72;
+}
+.hljs-string,
+.hljs-addition {
+  color: #a5d6ff;
+}
+.hljs-number,
+.hljs-literal,
+.hljs-symbol {
+  color: #79c0ff;
+}
+.hljs-comment,
+.hljs-deletion {
+  color: #8b949e;
+}
+.hljs-title,
+.hljs-section,
+.hljs-function {
+  color: #d2a8ff;
+}
+.hljs-variable,
+.hljs-template-variable {
+  color: #ffa657;
+}
+.hljs-attr,
+.hljs-attribute {
+  color: #79c0ff;
+}
+.hljs-meta {
+  color: #8b949e;
+}
+.hljs-params {
+  color: #c9d1d9;
+}
+.hljs-tag {
+  color: #7ee787;
+}
+
+/* ============ Markdown 渲染微调 ============ */
+.markdown-body {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.6;
+}
+
+/* 代码块里不需要 margin */
+.markdown-body pre {
+  margin: 0.5rem 0;
+}
+
+/* 嵌套列表缩进 */
+.markdown-body ul ul,
+.markdown-body ol ol,
+.markdown-body ul ol,
+.markdown-body ol ul {
+  padding-left: 1.2em;
+  margin: 0.25rem 0;
+}
+
+/* 表格行高 */
+.markdown-body table td,
+.markdown-body table th {
+  padding: 0.35rem 0.6rem;
+}
+
+/* 强调样式 */
+.markdown-body strong {
+  font-weight: 700;
+}
+
+.markdown-body em {
+  font-style: italic;
+}
+
+/* 删除线 (GFM) */
+.markdown-body del {
+  text-decoration: line-through;
+  opacity: 0.6;
+}

@@ -1,0 +1,79 @@
+{
+  "id": "get_iflow_mcp_list",
+  "name": "获取 mcp 列表",
+  "description": "获取 iflow 网站的 mcp 列表",
+  "version": "1.0.0",
+  "api": {
+    "method": "GET",
+    "path": "/api/mcp/v1/openapi/public-tool-groups/search",
+    "baseUrl": "https://platform.iflow.cn",
+    "timeout": 10000
+  },
+  "parameters": [
+    {
+      "name": "full",
+      "type": "boolean",
+      "location": "query",
+      "required": true,
+      "description": "是否获取全部",
+      "default": true
+    },
+    {
+      "name": "pageNumber",
+      "type": "number",
+      "location": "query",
+      "required": true,
+      "description": "pageNumber",
+      "default": 1
+    },
+    {
+      "name": "pageSize",
+      "type": "number",
+      "location": "query",
+      "required": true,
+      "description": "pageSize",
+      "default": 50
+    },
+    {
+      "name": "aclAuthorities",
+      "type": "string",
+      "location": "query",
+      "required": true,
+      "description": "aclAuthorities 传空字符串或者 null 都行，但必须要传"
+    },
+    {
+      "name": "sort",
+      "type": "string",
+      "location": "query",
+      "required": true,
+      "description": "sort",
+      "default": "FAVORITE_WEIGHTED_DESC",
+      "enum": ["FAVORITE_WEIGHTED_DESC", "UPDATE_TIME_DESC", "FAVORITE_DESC"]
+    },{
+      "name": "keyword",
+      "type": "string",
+      "location": "query",
+      "required": false,
+      "description": "keyword，用于搜索搜索关键词，可选"
+    }
+  ],
+  "response": {
+    "type": "json",
+    "extractors": [
+      {
+        "name": "result",
+        "path": "$.result",
+        "description": "返回数据"
+      }
+    ]
+  },
+  "meta": {
+    "category": "分类",
+    "tags": ["mcp"],
+    "riskLevel": "safe",
+    "requireConfirm": false
+  },
+  "binding": {
+    "hostPatterns": ["platform.iflow.cn"]
+  }
+}
