@@ -1,4 +1,5 @@
 import type { ResponseExtractor } from '@/types';
+import { shouldStoreData, storeData } from './data-store';
 
 /**
  * 使用简易 JSONPath 从响应数据中提取值
@@ -68,25 +69,55 @@ function applyTransform(value: unknown, transform?: ResponseExtractor['transform
 
 /**
  * 从 API 响应中提取关键信息
- * 返回提取后的 key-value 对象，用于减少传递给 LLM 的 Token 量
+ *
+ * 核心改动：不再截断大数据。当数据量超过阈值时，
+ * 完整数据存入 DataStore，返回摘要 + 指针给 LLM。
+ * 数据零丢失，LLM 可通过 query_stored_data 工具随时查询完整数据。
  */
 export function applyExtractors(
   data: unknown,
-  extractors?: ResponseExtractor[]
+  extractors?: ResponseExtractor[],
+  skillId?: string,
+  callArgs?: Record<string, unknown>
 ): Record<string, unknown> {
   if (!extractors || extractors.length === 0) {
-    // 无提取器，原样返回（截断到合理大小）
-    const str = JSON.stringify(data);
-    if (str && str.length > 8000) {
-      return { _raw_truncated: str.slice(0, 8000) + '... (truncated)' };
+    // 无提取器 — 检查是否需要存入 DataStore
+    if (shouldStoreData(data)) {
+      const { pointer, contextMessage } = storeData(
+        data,
+        skillId ?? 'unknown',
+        callArgs ?? {}
+      );
+      return {
+        _data_pointer: pointer,
+        _summary: contextMessage,
+      };
     }
+    // 数据量小，直接返回
     return { _raw: data };
   }
 
+  // 有提取器：先提取
   const result: Record<string, unknown> = {};
   for (const ext of extractors) {
     const value = getByPath(data, ext.path);
     result[ext.name] = applyTransform(value, ext.transform);
   }
+
+  // 提取后的结果如果还是很大，也存入 DataStore
+  if (shouldStoreData(result)) {
+    const { pointer, contextMessage } = storeData(
+      result,
+      skillId ?? 'unknown',
+      callArgs ?? {}
+    );
+    return {
+      _data_pointer: pointer,
+      _summary: contextMessage,
+      // 保留提取器的 key 名称，方便 LLM 理解
+      _extracted_keys: Object.keys(result),
+    };
+  }
+
   return result;
 }

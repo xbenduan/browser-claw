@@ -13,6 +13,7 @@ import { applyExtractors } from './response-extractor';
 import { Messaging } from '@/utils/messaging';
 import { MAX_AGENT_ITERATIONS } from '@/utils/constants';
 import { BUILTIN_SKILL_IDS, isBuiltinSkill } from '@/utils/builtin-skills';
+import { queryStoredData, clearStore, storeData } from './data-store';
 
 interface ToolCallRaw {
   id: string;
@@ -42,11 +43,33 @@ ${skillList}
 5. 每次操作完成后，汇总结果向用户报告
 6. 当用户想要了解当前页面内容时，优先使用"读取网页内容"功能
 
+## 大数据处理规则（重要）
+当 API 返回大量数据时，系统会自动将完整数据存入 DataStore 并给你一个 **数据指针（pointer）**。
+你会看到类似这样的 tool result：
+\`\`\`
+[STORED DATA — pointer: "ref_xxx_1_abc"]
+Size: 45.2K chars | Type: object
+Main data: "items" (200 records)
+Fields: id, name, email, status, created_at
+Sample (first 2):
+  {"id": 1, "name": "Alice", ...}
+  {"id": 2, "name": "Bob", ...}
+[Use query_stored_data with pointer="ref_xxx_1_abc" to retrieve, filter, slice, or project fields from this data]
+\`\`\`
+
+此时你应该：
+1. **先根据摘要信息理解数据结构**（有多少条记录、有哪些字段、有无分页）
+2. **用 query_stored_data 工具按需查询**，而不是一次取出所有数据
+3. 利用 filter（过滤）、fields（投影）、offset/limit（分页）缩小返回范围
+4. 如果用户需要整理/统计所有数据，可以分批查询（每批 limit=50）然后合并结果
+
+**注意：数据指针中的完整数据没有任何丢失，只是不直接放入对话上下文以节省 token。你随时可以通过 query_stored_data 访问全部原始数据。**
+
 ## 确认规则（最高优先级）
 1. **每次调用接口前，系统会自动向用户展示接口名称、URL、所有参数，等待用户确认后才执行**
 2. 你不需要自己向用户请求确认，系统会自动处理确认流程
 3. 如果用户拒绝了某次调用，你应该询问用户原因，并根据反馈调整参数或更换方案
-4. **注意：内置工具（如读取网页内容）属于安全操作，无需用户确认即可执行**
+4. **注意：内置工具（如读取网页内容、查询存储数据）属于安全操作，无需用户确认即可执行**
 
 ## 安全规则
 1. 对于修改类操作，在展示确认信息时需额外说明操作的影响范围
@@ -102,6 +125,10 @@ export class AgentEngine {
     userMessage: string,
     conversationHistory: ChatMessage[]
   ): AsyncGenerator<AgentEvent> {
+    // 每次新的用户消息处理开始时清空旧的 DataStore
+    // （避免跨轮次的指针冲突）
+    clearStore();
+
     const tools = skillsToOpenAITools(this.skills);
     const systemPrompt = buildSystemPrompt(this.hostname, this.skills);
 
@@ -231,6 +258,9 @@ export class AgentEngine {
 
           yield { type: 'tool_call_result', toolCall: tcDisplay, result: result.data };
 
+          // ★ 将 tool result 写入 messages
+          // 如果数据被存入 DataStore，这里只包含摘要 + 指针（很小）
+          // 如果数据不大，这里是完整原始数据
           messages.push({
             role: 'tool',
             tool_call_id: toolCall.id,
@@ -315,7 +345,15 @@ export class AgentEngine {
         return { success: false, error: response.error || `HTTP ${response.status}` };
       }
 
-      const extracted = applyExtractors(response.data, skill.response.extractors);
+      // ★ applyExtractors 内部会自动判断数据大小
+      //   大数据 → 存入 DataStore，返回 { _data_pointer, _summary }
+      //   小数据 → 直接返回 { _raw: data }
+      const extracted = applyExtractors(
+        response.data,
+        skill.response.extractors,
+        skill.id,
+        args
+      );
       return { success: true, data: extracted };
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : String(error);
@@ -356,6 +394,53 @@ export class AgentEngine {
           const errMsg = error instanceof Error ? error.message : String(error);
           return { success: false, error: errMsg };
         }
+      }
+
+      case BUILTIN_SKILL_IDS.QUERY_STORED_DATA: {
+        // ★ 新增：查询 DataStore 中的数据
+        const pointer = args.pointer as string;
+        if (!pointer) {
+          return { success: false, error: 'Missing required parameter: pointer' };
+        }
+
+        const queryResult = queryStoredData(pointer, {
+          path: args.path as string | undefined,
+          offset: typeof args.offset === 'number' ? args.offset : undefined,
+          limit: typeof args.limit === 'number' ? args.limit : undefined,
+          filter: args.filter as Record<string, unknown> | undefined,
+          fields: Array.isArray(args.fields) ? args.fields as string[] : undefined,
+        });
+
+        if (!queryResult.success) {
+          return { success: false, error: queryResult.error };
+        }
+
+        // 查询结果本身如果还是很大，也需要存入 DataStore
+        const resultStr = JSON.stringify(queryResult.data);
+        if (resultStr && resultStr.length > 8000) {
+          // 查询结果超大（比如 limit 设太大），存入新指针
+          const { pointer: newPointer, contextMessage } = storeData(
+            queryResult.data,
+            `query_result_of_${pointer}`,
+            args
+          );
+          return {
+            success: true,
+            data: {
+              _data_pointer: newPointer,
+              _summary: contextMessage,
+              _query_meta: queryResult.meta,
+            },
+          };
+        }
+
+        return {
+          success: true,
+          data: {
+            result: queryResult.data,
+            meta: queryResult.meta,
+          },
+        };
       }
 
       default:
