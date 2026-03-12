@@ -1,6 +1,6 @@
 ---
 name: daisyui
-description: 单用户需要使用 tailwindcss 编写样式时，优先使用该 skill 然后在考虑 tailwindcss
+description: 当需要使用 daisyui 写组件时应该使用该 skill 当需要使用 tailwindcss 编写样式时，优先使用该 skill 然后在考虑 tailwindcss
 ---
 
 # daisyUI 5
