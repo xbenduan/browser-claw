@@ -10,6 +10,7 @@ import {
   Lock,
   Globe,
   AlertTriangle,
+  Square,
 } from 'lucide-react';
 import type { ChatMessage } from '@/types';
 import { useChatSession } from '@/hooks/useChatSession';
@@ -37,6 +38,7 @@ export default function SidePanelApp() {
     pendingConfirmation,
     sendMessage,
     handleConfirm,
+    stopProcessing,
     clearMessages,
     createNewSession,
     switchSession,
@@ -61,6 +63,12 @@ export default function SidePanelApp() {
     const trimmed = input.trim();
     if (!trimmed) return;
     setInput('');
+
+    // 重置 textarea 高度
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
+
     sendMessage(trimmed);
   };
 
@@ -96,6 +104,11 @@ export default function SidePanelApp() {
 
   const isConfigured = !!config.apiKey;
   const userSkillCount = skills.filter((s) => !isBuiltinSkill(s.id)).length;
+
+  // 找到当前 pendingConfirmation 对应的 skill definition（用于参数提示）
+  const pendingSkillDef = pendingConfirmation
+    ? skills.find((s) => s.id === pendingConfirmation.skillId)
+    : undefined;
 
   const formatTime = (ts: number) => {
     const d = new Date(ts);
@@ -340,8 +353,8 @@ export default function SidePanelApp() {
           <div className="max-w-[90%]">
             <ConfirmationCard
               data={pendingConfirmation}
-              onConfirm={() => handleConfirm(true)}
-              onReject={() => handleConfirm(false)}
+              skillDefinition={pendingSkillDef}
+              onResult={handleConfirm}
             />
           </div>
         )}
@@ -358,11 +371,11 @@ export default function SidePanelApp() {
 
       {/* Input Area */}
       <div className="p-4 border-t border-slate-200 bg-white/80 backdrop-blur-md shrink-0">
-        <div className="flex items-end gap-2 w-full bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/50 transition-all">
+        <div className="flex items-end gap-2 w-full bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/50">
           <textarea
             ref={inputRef}
             className="flex-1 w-full bg-transparent border-none outline-none text-sm text-slate-800 placeholder-slate-400 resize-none py-1"
-            placeholder={isConfigured ? '输入指令...（如"总结这个页面"）' : '等待配置...'}
+            placeholder={!isConfigured ? '等待配置...' : '输入指令...（如"总结这个页面"）'}
             rows={1}
             style={{ minHeight: '28px', maxHeight: '120px' }}
             value={input}
@@ -379,13 +392,23 @@ export default function SidePanelApp() {
             }}
             disabled={!isConfigured || isProcessing}
           />
-          <button
-            className="shrink-0 p-1.5 rounded-lg bg-cyan-200 text-cyan-600 hover:bg-cyan-500 hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-cyan-50 disabled:hover:text-cyan-600"
-            onClick={handleSend}
-            disabled={!input.trim() || !isConfigured || isProcessing}
-          >
-            <Send className="w-4 h-4" />
-          </button>
+          {isProcessing ? (
+            <button
+              className="shrink-0 p-1.5 rounded-lg transition-all bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700"
+              onClick={stopProcessing}
+              title="暂停执行"
+            >
+              <Square className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              className="shrink-0 p-1.5 rounded-lg transition-all bg-cyan-200 text-cyan-600 hover:bg-cyan-500 hover:text-white disabled:opacity-30 disabled:hover:bg-cyan-50 disabled:hover:text-cyan-600"
+              onClick={handleSend}
+              disabled={!input.trim() || !isConfigured || isProcessing}
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>

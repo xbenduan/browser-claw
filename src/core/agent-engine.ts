@@ -5,6 +5,7 @@ import type {
   ChatMessage,
   SkillDefinition,
   ConfirmationRequest,
+  ConfirmationResult,
   ToolCallDisplay,
 } from '@/types';
 import { skillsToOpenAITools } from './skill-converter';
@@ -69,7 +70,8 @@ Sample (first 2):
 1. **每次调用接口前，系统会自动向用户展示接口名称、URL、所有参数，等待用户确认后才执行**
 2. 你不需要自己向用户请求确认，系统会自动处理确认流程
 3. 如果用户拒绝了某次调用，你应该询问用户原因，并根据反馈调整参数或更换方案
-4. **注意：内置工具（如读取网页内容、查询存储数据）属于安全操作，无需用户确认即可执行**
+4. **用户可以在确认前通过聊天或手动编辑修改参数，系统会使用修改后的参数执行调用**
+5. **注意：内置工具（如读取网页内容、查询存储数据）属于安全操作，无需用户确认即可执行**
 
 ## 安全规则
 1. 对于修改类操作，在展示确认信息时需额外说明操作的影响范围
@@ -91,9 +93,10 @@ export class AgentEngine {
   private config: AgentConfig;
   private skills: SkillDefinition[];
   private hostname: string;
+  private abortController: AbortController | null = null;
 
   private confirmationHandler:
-    | ((request: ConfirmationRequest) => Promise<boolean>)
+    | ((request: ConfirmationRequest) => Promise<ConfirmationResult>)
     | null = null;
 
   constructor(
@@ -113,9 +116,18 @@ export class AgentEngine {
   }
 
   setConfirmationHandler(
-    handler: (request: ConfirmationRequest) => Promise<boolean>
+    handler: (request: ConfirmationRequest) => Promise<ConfirmationResult>
   ) {
     this.confirmationHandler = handler;
+  }
+
+  /**
+   * 中止当前正在运行的 agent 流程
+   */
+  abort() {
+    if (this.abortController) {
+      this.abortController.abort();
+    }
   }
 
   /**
@@ -168,7 +180,18 @@ export class AgentEngine {
     messages: OpenAI.ChatCompletionMessageParam[],
     tools: OpenAI.ChatCompletionTool[]
   ): AsyncGenerator<AgentEvent> {
+    // 每次 agentLoop 创建新的 AbortController
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
+
     for (let i = 0; i < MAX_AGENT_ITERATIONS; i++) {
+      // 检查是否已被中止
+      if (signal.aborted) {
+        yield { type: 'error', error: '已暂停执行' };
+        yield { type: 'done' };
+        return;
+      }
+
       yield { type: 'llm_call_start' };
 
       try {
@@ -186,6 +209,13 @@ export class AgentEngine {
         const toolCalls: ToolCallRaw[] = [];
 
         for await (const chunk of stream) {
+          // 在流式读取中检查中止
+          if (signal.aborted) {
+            yield { type: 'error', error: '已暂停执行' };
+            yield { type: 'done' };
+            return;
+          }
+
           const delta = chunk.choices[0]?.delta;
           if (!delta) continue;
 
@@ -236,6 +266,13 @@ export class AgentEngine {
         }
 
         for (const toolCall of toolCalls) {
+          // 检查中止
+          if (signal.aborted) {
+            yield { type: 'error', error: '已暂停执行' };
+            yield { type: 'done' };
+            return;
+          }
+
           const result = await this.executeToolCall(toolCall);
 
           const skill = this.skills.find((s) => s.id === toolCall.function.name);
@@ -243,7 +280,7 @@ export class AgentEngine {
             id: toolCall.id,
             skillName: skill?.name ?? toolCall.function.name,
             skillId: toolCall.function.name,
-            arguments: this.safeParseArgs(toolCall.function.arguments),
+            arguments: result.executedArgs ?? this.safeParseArgs(toolCall.function.arguments),
             status: result.success ? 'success' : 'error',
             result: result.data,
             error: result.error,
@@ -256,21 +293,30 @@ export class AgentEngine {
           yield { type: 'tool_call_result', toolCall: tcDisplay, result: result.data };
 
           // ★ 将 tool result 写入 messages
-          // 如果数据被存入 DataStore，这里只包含摘要 + 指针（很小）
-          // 如果数据不大，这里是完整原始数据
+          // 如果用户修改了参数，也需要把修改信息带入上下文
+          const toolResultContent: Record<string, unknown> = result.success
+            ? (result.data as Record<string, unknown>)
+            : { error: result.error ?? 'User declined this API call' };
+
+          if (result.parameterModified) {
+            toolResultContent._note = 'User modified parameters before execution';
+            toolResultContent._modifiedParameters = result.executedArgs;
+          }
+
           messages.push({
             role: 'tool',
             tool_call_id: toolCall.id,
-            content: JSON.stringify(
-              result.success
-                ? result.data
-                : { error: result.error ?? 'User declined this API call' }
-            ),
+            content: JSON.stringify(toolResultContent),
           });
         }
       } catch (error: unknown) {
         const errMsg = error instanceof Error ? error.message : String(error);
-        yield { type: 'error', error: errMsg };
+        // 如果是 abort 导致的错误，给出更友好的提示
+        if (signal.aborted) {
+          yield { type: 'error', error: '已暂停执行' };
+        } else {
+          yield { type: 'error', error: errMsg };
+        }
         yield { type: 'done' };
         return;
       }
@@ -287,13 +333,20 @@ export class AgentEngine {
    */
   private async executeToolCall(
     toolCall: ToolCallRaw
-  ): Promise<{ success: boolean; data?: unknown; error?: string; rejected?: boolean }> {
+  ): Promise<{
+    success: boolean;
+    data?: unknown;
+    error?: string;
+    rejected?: boolean;
+    parameterModified?: boolean;
+    executedArgs?: Record<string, unknown>;
+  }> {
     const skill = this.skills.find((s) => s.id === toolCall.function.name);
     if (!skill) {
       return { success: false, error: `Skill "${toolCall.function.name}" not found` };
     }
 
-    const args = this.safeParseArgs(toolCall.function.arguments);
+    let args = this.safeParseArgs(toolCall.function.arguments);
 
     // ★ 内置 Skill 特殊处理 — 无需用户确认，直接执行
     if (isBuiltinSkill(toolCall.function.name)) {
@@ -301,57 +354,94 @@ export class AgentEngine {
     }
 
     // ★ 用户自定义 Skill — 走 HTTP 请求流程
-    const request = buildHttpRequest(skill, args);
-
-    // 强制用户确认
+    // 强制用户确认（支持参数修改）
     if (this.confirmationHandler) {
       const confirmPayload: ConfirmationRequest = {
         skillId: skill.id,
         skillName: skill.name,
         skillDescription: skill.description,
-        method: request.method,
-        url: request.url,
+        method: skill.api.method,
+        url: buildHttpRequest(skill, args).url,
         parameters: args,
         riskLevel: skill.meta.riskLevel || 'safe',
-        headers: request.headers,
-        body: request.body,
+        headers: skill.api.headers,
+        body: buildHttpRequest(skill, args).body,
       };
 
-      const confirmed = await this.confirmationHandler(confirmPayload);
-      if (!confirmed) {
+      const result = await this.confirmationHandler(confirmPayload);
+
+      if (!result.confirmed) {
         return {
           success: false,
           rejected: true,
           error: 'User declined this API call. Ask user for guidance on how to proceed.',
         };
       }
+
+      // ★ 如果用户修改了参数，使用修改后的参数
+      let parameterModified = false;
+      if (result.modifiedParameters) {
+        args = result.modifiedParameters;
+        parameterModified = true;
+      }
+
+      // 用（可能被修改过的）参数构建请求
+      const request = buildHttpRequest(skill, args);
+
+      try {
+        const connected = await Messaging.ensureConnected();
+        if (!connected) {
+          return { success: false, error: 'Content Script not connected. Please make sure the active tab is a regular web page.' };
+        }
+
+        const response = await Messaging.executeAPI({
+          ...request,
+          requestId: toolCall.id,
+        });
+
+        if (!response.success) {
+          return { success: false, error: response.error || `HTTP ${response.status}` };
+        }
+
+        const extracted = applyExtractors(
+          response.data,
+          skill.response.extractors,
+          skill.id,
+          args
+        );
+        return {
+          success: true,
+          data: extracted,
+          parameterModified,
+          executedArgs: args,
+        };
+      } catch (error: unknown) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        return { success: false, error: errMsg };
+      }
     }
 
+    // 无确认处理器时直接执行（兜底）
+    const request = buildHttpRequest(skill, args);
     try {
       const connected = await Messaging.ensureConnected();
       if (!connected) {
-        return { success: false, error: 'Content Script not connected. Please make sure the active tab is a regular web page.' };
+        return { success: false, error: 'Content Script not connected.' };
       }
-
       const response = await Messaging.executeAPI({
         ...request,
         requestId: toolCall.id,
       });
-
       if (!response.success) {
         return { success: false, error: response.error || `HTTP ${response.status}` };
       }
-
-      // ★ applyExtractors 内部会自动判断数据大小
-      //   大数据 → 存入 DataStore，返回 { _data_pointer, _summary }
-      //   小数据 → 直接返回 { _raw: data }
       const extracted = applyExtractors(
         response.data,
         skill.response.extractors,
         skill.id,
         args
       );
-      return { success: true, data: extracted };
+      return { success: true, data: extracted, executedArgs: args };
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : String(error);
       return { success: false, error: errMsg };
@@ -394,7 +484,7 @@ export class AgentEngine {
       }
 
       case BUILTIN_SKILL_IDS.QUERY_STORED_DATA: {
-        // ★ 新增：查询 DataStore 中的数据
+        // ★ 查询 DataStore 中的数据
         const pointer = args.pointer as string;
         if (!pointer) {
           return { success: false, error: 'Missing required parameter: pointer' };
@@ -415,7 +505,6 @@ export class AgentEngine {
         // 查询结果本身如果还是很大，也需要存入 DataStore
         const resultStr = JSON.stringify(queryResult.data);
         if (resultStr && resultStr.length > 8000) {
-          // 查询结果超大（比如 limit 设太大），存入新指针
           const { pointer: newPointer, contextMessage } = storeData(
             queryResult.data,
             `query_result_of_${pointer}`,

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import type { ChatMessage, AgentConfig, SkillDefinition, ConfirmationRequest } from '@/types';
+import type { ChatMessage, AgentConfig, SkillDefinition, ConfirmationRequest, ConfirmationResult } from '@/types';
 import { AgentEngine } from '@/core/agent-engine';
 
 export function useChat(
@@ -10,16 +10,35 @@ export function useChat(
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
-  const confirmResolverRef = useRef<((confirmed: boolean) => void) | null>(null);
+  const confirmResolverRef = useRef<((result: ConfirmationResult) => void) | null>(null);
   const [pendingConfirmation, setPendingConfirmation] = useState<ConfirmationRequest | null>(null);
+  const engineRef = useRef<AgentEngine | null>(null);
 
   const addMessage = useCallback((msg: ChatMessage) => {
     setMessages((prev) => [...prev, msg]);
   }, []);
 
-  const handleConfirm = useCallback((confirmed: boolean) => {
+  /**
+   * 处理确认结果。
+   * 接受 ConfirmationResult 对象，支持传递修改后的参数。
+   */
+  const handleConfirm = useCallback((result: ConfirmationResult) => {
     if (confirmResolverRef.current) {
-      confirmResolverRef.current(confirmed);
+      confirmResolverRef.current(result);
+      confirmResolverRef.current = null;
+    }
+    setPendingConfirmation(null);
+  }, []);
+
+  /**
+   * 暂停/中止当前 agent 执行流程
+   */
+  const stopProcessing = useCallback(() => {
+    if (engineRef.current) {
+      engineRef.current.abort();
+    }
+    if (confirmResolverRef.current) {
+      confirmResolverRef.current({ confirmed: false });
       confirmResolverRef.current = null;
     }
     setPendingConfirmation(null);
@@ -44,10 +63,11 @@ export function useChat(
 
       // 创建 Agent 引擎
       const engine = new AgentEngine(config, skills, hostname);
+      engineRef.current = engine;
 
-      // 设置确认处理
+      // 设置确认处理（支持修改后的参数）
       engine.setConfirmationHandler(async (request: ConfirmationRequest) => {
-        return new Promise<boolean>((resolve) => {
+        return new Promise<ConfirmationResult>((resolve) => {
           confirmResolverRef.current = resolve;
           setPendingConfirmation(request);
         });
@@ -142,6 +162,7 @@ export function useChat(
       } finally {
         setIsProcessing(false);
         setStreamingContent('');
+        engineRef.current = null;
       }
     },
     [config, skills, hostname, messages, isProcessing]
@@ -159,6 +180,7 @@ export function useChat(
     pendingConfirmation,
     sendMessage,
     handleConfirm,
+    stopProcessing,
     clearMessages,
     addMessage,
   };

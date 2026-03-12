@@ -24,6 +24,16 @@ export interface ConfirmationRequest {
   varyingField?: string;
 }
 
+/**
+ * 确认操作的结果。
+ * - confirmed: 用户是否确认执行
+ * - modifiedParameters: 如果用户修改了参数，这里是修改后的参数对象
+ */
+export interface ConfirmationResult {
+  confirmed: boolean;
+  modifiedParameters?: Record<string, unknown>;
+}
+
 export interface ConfirmationCardData {
   title: string;
   description: string;
