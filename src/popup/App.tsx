@@ -106,21 +106,21 @@ export default function App() {
   const renderConnectionStatus = () => {
     if (connectionChecking) {
       return (
-        <button className="btn btn-xs w-full gap-1 btn-ghost text-base-content/50" disabled>
+        <div className="flex items-center gap-2 text-slate-500 text-xs px-2 py-1 rounded-lg bg-slate-100 border border-slate-200">
           <Loader2 className="w-3 h-3 animate-spin" />
-          <span className="text-[10px] truncate">检测中...</span>
-        </button>
+          <span className="truncate">检测中...</span>
+        </div>
       );
     }
 
     if (!injectable) {
       return (
         <div
-          className="btn btn-xs w-full gap-1 btn-ghost text-base-content/40 cursor-default"
-          title="当前页面不支持注入 Content Script（如 chrome:// 内部页面）"
+          className="flex items-center gap-2 text-slate-400 text-xs px-2 py-1 rounded-lg bg-slate-100 cursor-not-allowed border border-slate-200"
+          title="当前页面不支持注入 Content Script"
         >
           <Ban className="w-3 h-3" />
-          <span className="text-[10px] truncate">不可用页面</span>
+          <span className="truncate">不可用</span>
         </div>
       );
     }
@@ -128,24 +128,24 @@ export default function App() {
     if (connected) {
       return (
         <button
-          className="btn btn-xs w-full gap-1 btn-ghost text-success"
+          className="flex items-center gap-2 text-cyan-700 text-xs px-2 py-1 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors w-full border border-cyan-100"
           onClick={reconnect}
           title={`已连接: ${hostname || '未知'}`}
         >
           <CheckCircle2 className="w-3 h-3" />
-          <span className="text-[10px] truncate">{hostname || '已连接'}</span>
+          <span className="truncate">{hostname || '已连接'}</span>
         </button>
       );
     }
 
     return (
       <button
-        className="btn btn-xs w-full gap-1 btn-ghost text-warning"
+        className="flex items-center gap-2 text-amber-700 text-xs px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors w-full border border-amber-100"
         onClick={reconnect}
         title="点击重新连接 Content Script"
       >
         <AlertCircle className="w-3 h-3" />
-        <span className="text-[10px] truncate">未连接 · 点击重试</span>
+        <span className="truncate">未连接</span>
       </button>
     );
   };
@@ -155,7 +155,7 @@ export default function App() {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center h-full">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-600" />
         </div>
       );
     }
@@ -206,38 +206,64 @@ export default function App() {
   };
 
   return (
-    <div>
-      <div className="bg-base-200 flex">
-        {/* ─── Sidebar ───────────────────────── */}
-        <div className="flex flex-col justify-between">
-          <ul className="menu w-35">
-            {tabs.map((item) => (
-              <li key={item.id}>
-                <a
-                  onClick={() => setActiveTab(item.id)}
-                  className={activeTab === item.id ? 'menu-active' : ''}
-                  href="#"
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                  {item.badge !== undefined && (
-                    <span className="badge badge-xs badge-primary ml-auto">
-                      {item.badge}
-                    </span>
-                  )}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          {/* ─── Connection Status ───────────── */}
-          <div className="px-3 pb-3 w-35">
-            {renderConnectionStatus()}
-          </div>
+    <div className="w-[800px] h-[600px] flex p-4 gap-4 overflow-hidden font-sans text-slate-700">
+      {/* ─── Sidebar ───────────────────────── */}
+      <div className="w-48 glass-panel rounded-2xl flex flex-col p-4 gap-6 z-10">
+        {/* Header */}
+        <div className="flex items-center gap-3 px-2">
+          <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-600">
+            BrowserClaw
+          </span>
         </div>
 
-        {/* ─── Main Content ──────────────────── */}
-        <div className="w-120 bg-base-100 h-100 overflow-auto">
+        {/* Navigation */}
+        <nav className="flex-1 space-y-2">
+          {tabs.map((item) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden ${
+                  isActive
+                    ? 'bg-cyan-50 text-cyan-700 shadow-sm border border-cyan-100'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-white/60 border border-transparent'
+                }`}
+              >
+
+                <item.icon
+                  className={`w-5 h-5 transition-transform duration-300 ${
+                    isActive ? 'scale-110 text-cyan-600' : 'group-hover:scale-110 text-slate-400 group-hover:text-slate-600'
+                  }`}
+                />
+                <span className="font-medium">{item.label}</span>
+                {item.badge && (
+                  <span className={`ml-auto text-[10px] px-1.5 py-0.5 rounded-full ${
+                    item.badge === '!' 
+                      ? 'bg-red-50 text-red-600 border border-red-100' 
+                      : 'bg-cyan-50 text-cyan-600 border border-cyan-100'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Connection Status */}
+        <div className="pt-4 border-t border-slate-200/50">
+          {renderConnectionStatus()}
+        </div>
+      </div>
+
+      {/* ─── Main Content ──────────────────── */}
+      <div className="flex-1 glass-panel rounded-2xl overflow-hidden relative flex flex-col">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+        <div className="flex-1 overflow-auto relative z-10">
           {renderContent()}
         </div>
       </div>

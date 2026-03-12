@@ -1,6 +1,6 @@
 import React from 'react';
+import { AlertTriangle, ShieldAlert, X, Check } from 'lucide-react';
 import type { ConfirmationRequest } from '@/types';
-import { RISK_LEVEL_COLORS, RISK_LEVEL_LABELS, METHOD_COLORS } from '@/utils/constants';
 
 interface ConfirmationCardProps {
   data: ConfirmationRequest;
@@ -13,58 +13,93 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
   onConfirm,
   onReject,
 }) => {
-  const riskColor = RISK_LEVEL_COLORS[data.riskLevel] ?? 'badge-outline';
-  const riskLabel = RISK_LEVEL_LABELS[data.riskLevel] ?? data.riskLevel;
-  const methodColor = METHOD_COLORS[data.method] ?? '';
+  const isHighRisk = data.riskLevel === 'dangerous';
+  const isMediumRisk = data.riskLevel === 'moderate';
+
+  let borderColor = 'border-slate-200';
+  let iconColor = 'text-cyan-600';
+  let bgColor = 'bg-white/80';
+
+  if (isHighRisk) {
+    borderColor = 'border-red-200';
+    iconColor = 'text-red-600';
+    bgColor = 'bg-red-50';
+  } else if (isMediumRisk) {
+    borderColor = 'border-amber-200';
+    iconColor = 'text-amber-600';
+    bgColor = 'bg-amber-50';
+  }
 
   return (
-    <div className="card bg-base-200 shadow-sm my-2 border border-base-300">
-      <div className="card-body p-4">
-        <h3 className="card-title text-sm gap-1">
-          <span>⚠️</span>
-          <span>即将调用「{data.skillName}」</span>
-        </h3>
-        <p className="text-xs opacity-70">{data.skillDescription}</p>
-
-        <div className="bg-base-300 rounded-lg p-3 text-xs font-mono space-y-1">
-          <div>
-            <span className={`font-bold ${methodColor}`}>{data.method}</span>{' '}
-            <span className="break-all">{data.url}</span>
-          </div>
-          {Object.keys(data.parameters).length > 0 && (
-            <div className="mt-2 space-y-0.5">
-              <div className="font-semibold opacity-70">参数:</div>
-              {Object.entries(data.parameters).map(([key, val]) => (
-                <div key={key} className="pl-2">
-                  <span className="text-primary">{key}</span> ={' '}
-                  <span className="text-accent">{JSON.stringify(val)}</span>
-                </div>
-              ))}
-            </div>
-          )}
+    <div className={`glass-card p-4 my-3 border ${borderColor} ${bgColor} shadow-sm backdrop-blur-md`}>
+      <div className="flex items-start gap-3">
+        <div className={`p-2 rounded-lg bg-white border border-slate-200 ${iconColor}`}>
+          {isHighRisk ? <ShieldAlert className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
         </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
+            请求调用工具
+            <span className="px-1.5 py-0.5 rounded text-xs bg-slate-100 text-slate-600 font-mono border border-slate-200">
+              {data.skillName}
+            </span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">{data.skillDescription}</p>
+        </div>
+      </div>
 
-        <div className="flex items-center gap-2 mt-1">
-          <span className={`badge badge-sm ${riskColor}`}>{riskLabel}</span>
+      <div className="mt-3 bg-slate-50 rounded-lg p-3 border border-slate-200 font-mono text-xs overflow-x-auto">
+        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-200">
+          <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-bold uppercase border border-blue-100">
+            {data.method}
+          </span>
+          <span className="text-slate-500 truncate" title={data.url}>
+            {data.url}
+          </span>
+        </div>
+        
+        {Object.keys(data.parameters).length > 0 && (
+          <div className="space-y-1.5">
+            <div className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">
+              Parameters
+            </div>
+            {Object.entries(data.parameters).map(([key, val]) => (
+              <div key={key} className="flex gap-2">
+                <span className="text-cyan-600 shrink-0">{key}:</span>
+                <span className="text-amber-600 break-all">{JSON.stringify(val)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between mt-4">
+        <div className="flex gap-2">
+          {isHighRisk && (
+            <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs border border-red-200 flex items-center gap-1">
+              <ShieldAlert className="w-3 h-3" /> 高风险
+            </span>
+          )}
           {data.isBatch && (
-            <span className="badge badge-sm badge-info">
-              批量 {data.batchCount} 条
+            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs border border-blue-200">
+              批量处理: {data.batchCount}
             </span>
           )}
         </div>
 
-        <div className="card-actions justify-end mt-2">
+        <div className="flex gap-2">
           <button
-            className="btn btn-sm btn-error btn-outline"
+            className="glass-button-danger text-xs px-3 py-1.5 h-8"
             onClick={onReject}
           >
-            ❌ 拒绝
+            <X className="w-3.5 h-3.5" />
+            拒绝
           </button>
           <button
-            className="btn btn-sm btn-success"
+            className="glass-button-primary text-xs px-3 py-1.5 h-8"
             onClick={onConfirm}
           >
-            ✅ 确认执行
+            <Check className="w-3.5 h-3.5" />
+            确认执行
           </button>
         </div>
       </div>

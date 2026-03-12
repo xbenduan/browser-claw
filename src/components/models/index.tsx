@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Zap, Eye, EyeOff } from 'lucide-react';
+import { Save, Zap, Eye, EyeOff, CheckCircle2, AlertCircle, Server, Key, Box } from 'lucide-react';
 import type { AgentConfig } from '@/types';
 
 interface ModelsProps {
@@ -26,6 +26,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
   const handleChange = (field: keyof AgentConfig, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setSaved(false);
+    setTestResult(null);
   };
 
   const handleSave = async () => {
@@ -43,19 +44,18 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
     setTesting(true);
     setTestResult(null);
     try {
-      // 先保存再测试
       await onSave(form);
       const result = await onTestConnection();
       setTestResult({
         success: result.success,
         message: result.success
-          ? `✅ 连接成功！发现 ${result.models?.length ?? 0} 个模型`
-          : `❌ 连接失败: ${result.error}`,
+          ? `连接成功！发现 ${result.models?.length ?? 0} 个模型`
+          : `连接失败: ${result.error}`,
       });
     } catch (err) {
       setTestResult({
         success: false,
-        message: `❌ ${err instanceof Error ? err.message : String(err)}`,
+        message: `${err instanceof Error ? err.message : String(err)}`,
       });
     } finally {
       setTesting(false);
@@ -63,133 +63,125 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <h2 className="font-semibold text-sm flex items-center gap-2">
-        🧠 模型配置
-      </h2>
-
-      {/* Base URL */}
-      <div className="form-control">
-        <label className="label py-1">
-          <span className="label-text text-xs">Base URL</span>
-        </label>
-        <input
-          type="text"
-          className="input input-sm w-full"
-          placeholder="https://api.openai.com/v1"
-          value={form.baseURL}
-          onChange={(e) => handleChange('baseURL', e.target.value)}
-        />
-        <label className="label py-0.5">
-          <span className="label-text-alt text-xs opacity-50">
-            支持 OpenAI 兼容的任何 API（如 Ollama, vLLM 等）
-          </span>
-        </label>
-      </div>
-
-      {/* API Key */}
-      <div className="form-control">
-        <label className="label py-1">
-          <span className="label-text text-xs">API Key</span>
-        </label>
-        <div className="join w-full">
-          <input
-            type={showKey ? 'text' : 'password'}
-            className="input input-sm join-item flex-1"
-            placeholder="sk-..."
-            value={form.apiKey}
-            onChange={(e) => handleChange('apiKey', e.target.value)}
-          />
-          <button
-            className="btn btn-sm join-item btn-ghost"
-            onClick={() => setShowKey(!showKey)}
-          >
-            {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-          </button>
+    <div className="p-6 space-y-6 font-sans text-slate-700">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="p-2 rounded-lg bg-cyan-50 text-cyan-600">
+          <Server className="w-5 h-5" />
+        </div>
+        <div>
+          <h2 className="font-semibold text-lg text-slate-800">模型配置</h2>
+          <p className="text-xs text-slate-500">配置 AI 模型连接信息 (OpenAI 兼容)</p>
         </div>
       </div>
 
-      {/* Model */}
-      <div className="form-control">
-        <label className="label py-1">
-          <span className="label-text text-xs">Model</span>
-        </label>
-        <input
-          type="text"
-          className="input input-sm w-full"
-          placeholder="gpt-4o"
-          value={form.model}
-          onChange={(e) => handleChange('model', e.target.value)}
-        />
-      </div>
+      <div className="glass-panel p-6 rounded-2xl space-y-5">
+        {/* Base URL */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+            <Server className="w-3.5 h-3.5 text-cyan-600" />
+            Base URL
+          </label>
+          <input
+            type="text"
+            className="glass-input w-full px-4 py-2.5 text-sm"
+            placeholder="https://api.openai.com/v1"
+            value={form.baseURL}
+            onChange={(e) => handleChange('baseURL', e.target.value)}
+          />
+          <p className="text-[10px] text-slate-400 pl-1">
+            支持 OpenAI 兼容的任何 API（如 Ollama, vLLM 等）
+          </p>
+        </div>
 
-      {/* Temperature */}
-      <div className="form-control">
-        <label className="label py-1">
-          <span className="label-text text-xs">Temperature</span>
-          <span className="label-text-alt text-xs">{form.temperature}</span>
-        </label>
-        <input
-          type="range"
-          className="range range-xs range-primary"
-          min={0}
-          max={2}
-          step={0.1}
-          value={form.temperature}
-          onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
-        />
-      </div>
+        {/* API Key */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+            <Key className="w-3.5 h-3.5 text-amber-600" />
+            API Key
+          </label>
+          <div className="relative group">
+            <input
+              type={showKey ? 'text' : 'password'}
+              className="glass-input w-full px-4 py-2.5 text-sm pr-10"
+              placeholder="sk-..."
+              value={form.apiKey}
+              onChange={(e) => handleChange('apiKey', e.target.value)}
+            />
+            <button
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-slate-100"
+              onClick={() => setShowKey(!showKey)}
+            >
+              {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
 
-      {/* Max Tokens */}
-      <div className="form-control">
-        <label className="label py-1">
-          <span className="label-text text-xs">Max Tokens</span>
-          <span className="label-text-alt text-xs">{form.maxTokens}</span>
-        </label>
-        <input
-          type="range"
-          className="range range-xs range-primary"
-          min={256}
-          max={16384}
-          step={256}
-          value={form.maxTokens}
-          onChange={(e) => handleChange('maxTokens', parseInt(e.target.value))}
-        />
+        {/* Model Name */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+            <Box className="w-3.5 h-3.5 text-purple-600" />
+            Model Name
+          </label>
+          <input
+            type="text"
+            className="glass-input w-full px-4 py-2.5 text-sm"
+            placeholder="gpt-4o"
+            value={form.model}
+            onChange={(e) => handleChange('model', e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Test Result */}
       {testResult && (
-        <div
-          className={`alert text-xs py-2 ${
-            testResult.success ? 'alert-success' : 'alert-error'
-          }`}
-        >
-          {testResult.message}
+        <div className={`p-3 rounded-xl border flex items-start gap-3 text-sm animate-in fade-in slide-in-from-top-2 ${
+          testResult.success 
+            ? 'bg-green-50 border-green-200 text-green-700' 
+            : 'bg-red-50 border-red-200 text-red-700'
+        }`}>
+          {testResult.success ? (
+            <CheckCircle2 className="w-5 h-5 shrink-0 text-green-600" />
+          ) : (
+            <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
+          )}
+          <span className="leading-relaxed">{testResult.message}</span>
         </div>
       )}
 
-      {/* Saved indicator */}
-      {saved && (
-        <div className="alert alert-success text-xs py-1">✅ 配置已保存</div>
-      )}
-
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex gap-3 pt-2">
         <button
-          className="btn btn-sm btn-primary flex-1"
+          className={`flex-1 glass-button-primary justify-center ${
+            saved ? 'bg-green-50 text-green-700 border-green-200' : ''
+          }`}
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || testing}
         >
-          <Save className="w-3.5 h-3.5" />
-          {saving ? '保存中...' : '保存配置'}
+          {saving ? (
+            '保存中...'
+          ) : saved ? (
+            <>
+              <CheckCircle2 className="w-4 h-4" /> 已保存
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" /> 保存配置
+            </>
+          )}
         </button>
+
         <button
-          className="btn btn-sm btn-outline flex-1"
+          className="flex-1 glass-button text-slate-600 hover:text-slate-900 justify-center"
           onClick={handleTest}
-          disabled={testing || !form.apiKey}
+          disabled={saving || testing}
         >
-          <Zap className="w-3.5 h-3.5" />
-          {testing ? '测试中...' : '测试连接'}
+          {testing ? (
+            '测试中...'
+          ) : (
+            <>
+              <Zap className="w-4 h-4 text-yellow-600" /> 测试连接
+            </>
+          )}
         </button>
       </div>
     </div>

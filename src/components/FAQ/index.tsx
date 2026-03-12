@@ -10,6 +10,8 @@ import {
   FileJson,
   Layers,
   ExternalLink,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { APP_NAME, APP_VERSION } from '@/utils/constants';
 
@@ -66,31 +68,37 @@ const QUICK_START_STEPS = [
     icon: Zap,
     title: '1. 配置模型',
     desc: '在「模型」面板填入 API Base URL 和 Key',
+    color: 'text-yellow-500',
   },
   {
     icon: FileJson,
     title: '2. 导入 Skills',
     desc: '在「能力」面板添加或导入 Skill 配置',
+    color: 'text-blue-500',
   },
   {
     icon: Layers,
     title: '3. 创建频道',
     desc: '在「频道」面板按网站分组 Skills（可选）',
+    color: 'text-purple-500',
   },
   {
     icon: Globe,
     title: '4. 打开目标网站',
     desc: '导航到你想操作的网站页面',
+    color: 'text-green-500',
   },
   {
     icon: MessageSquare,
     title: '5. 开始对话',
     desc: '在「会话」面板用自然语言描述你的需求',
+    color: 'text-cyan-500',
   },
   {
     icon: Shield,
     title: '6. 确认执行',
     desc: '审核 AI 生成的 API 调用，确认后执行',
+    color: 'text-red-500',
   },
 ];
 
@@ -98,95 +106,111 @@ const FAQ: React.FC = () => {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   return (
-    <div className="p-4 h-full overflow-y-auto">
+    <div className="p-6 h-full overflow-y-auto custom-scrollbar font-sans text-slate-700">
       {/* App Info Header */}
-      <div className="text-center mb-6">
-        <div className="text-3xl mb-2">🦀</div>
-        <h1 className="text-lg font-bold">{APP_NAME}</h1>
-        <p className="text-xs text-base-content/50 mt-0.5">
-          Chrome Extension AI Agent · v{APP_VERSION}
-        </p>
-        <p className="text-xs text-base-content/40 mt-1">
-          用自然语言驱动浏览器 API 操作
+      <div className="text-center mb-8 animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-cyan-100 to-blue-100 border border-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-100">
+          <div className="text-3xl">🦀</div>
+        </div>
+        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-600">
+          {APP_NAME}
+        </h1>
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] text-slate-500">
+            v{APP_VERSION}
+          </span>
+          <span className="px-2 py-0.5 rounded-full bg-cyan-50 border border-cyan-200 text-[10px] text-cyan-600">
+            AI Agent
+          </span>
+        </div>
+        <p className="text-xs text-slate-500 mt-2 max-w-[240px] mx-auto leading-relaxed">
+          用自然语言驱动浏览器 API 操作，让 Web 自动化触手可及
         </p>
       </div>
 
       {/* Quick Start */}
-      <div className="mb-6">
-        <h2 className="text-sm font-bold mb-3 flex items-center gap-1.5">
-          <BookOpen className="w-4 h-4" />
+      <div className="mb-8">
+        <h2 className="text-sm font-bold mb-4 flex items-center gap-2 text-slate-800">
+          <div className="p-1 rounded bg-cyan-50">
+            <BookOpen className="w-4 h-4 text-cyan-600" />
+          </div>
           快速开始
         </h2>
-        <div className="grid grid-cols-2 gap-2">
-          {QUICK_START_STEPS.map((step) => (
+        <div className="grid grid-cols-2 gap-3">
+          {QUICK_START_STEPS.map((step, idx) => (
             <div
               key={step.title}
-              className="card bg-base-200 p-2.5 flex flex-row items-start gap-2"
+              className="glass-card p-3 flex flex-col gap-2 hover:-translate-y-0.5 transition-transform duration-300"
+              style={{ animationDelay: `${idx * 50}ms` }}
             >
-              <step.icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-semibold">{step.title}</p>
-                <p className="text-[10px] text-base-content/60 mt-0.5">
-                  {step.desc}
-                </p>
+              <div className="flex items-center gap-2">
+                <step.icon className={`w-4 h-4 ${step.color}`} />
+                <p className="text-xs font-semibold text-slate-800">{step.title}</p>
               </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                {step.desc}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
       {/* FAQ */}
-      <div className="mb-6">
-        <h2 className="text-sm font-bold mb-3 flex items-center gap-1.5">
-          <HelpCircle className="w-4 h-4" />
+      <div className="mb-8">
+        <h2 className="text-sm font-bold mb-4 flex items-center gap-2 text-slate-800">
+          <div className="p-1 rounded bg-purple-50">
+            <HelpCircle className="w-4 h-4 text-purple-600" />
+          </div>
           常见问题
         </h2>
-        <div className="space-y-1">
+        <div className="space-y-2">
           {FAQ_LIST.map((item, idx) => (
-            <div key={idx} className="collapse collapse-arrow bg-base-200">
-              <input
-                type="radio"
-                name="faq-accordion"
-                checked={expandedIdx === idx}
-                onChange={() =>
-                  setExpandedIdx(expandedIdx === idx ? null : idx)
-                }
-              />
-              <div
-                className="collapse-title text-xs font-medium py-2 min-h-0"
-                onClick={() =>
-                  setExpandedIdx(expandedIdx === idx ? null : idx)
-                }
+            <div 
+              key={idx} 
+              className={`glass-panel rounded-xl overflow-hidden transition-all duration-300 ${
+                expandedIdx === idx ? 'bg-white border-cyan-200 shadow-sm' : 'bg-white/60 hover:bg-white/80 border-slate-200'
+              }`}
+            >
+              <button
+                className="w-full text-left px-4 py-3 flex items-center justify-between gap-3"
+                onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
               >
-                {item.question}
-              </div>
-              <div className="collapse-content">
-                <p className="text-xs text-base-content/70 whitespace-pre-line leading-relaxed">
+                <span className={`text-xs font-medium ${expandedIdx === idx ? 'text-cyan-700' : 'text-slate-700'}`}>
+                  {item.question}
+                </span>
+                {expandedIdx === idx ? (
+                  <ChevronUp className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
+                ) : (
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                )}
+              </button>
+              
+              {expandedIdx === idx && (
+                <div className="px-4 pb-4 pt-0 text-xs text-slate-500 leading-relaxed whitespace-pre-line animate-in slide-in-from-top-2 border-t border-slate-100 mt-1 pt-3">
                   {item.answer}
-                </p>
-              </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
       </div>
 
       {/* Links & Version */}
-      <div className="border-t border-base-300 pt-4 text-center">
-        <div className="flex justify-center gap-4 mb-3">
+      <div className="border-t border-slate-200 pt-6 text-center">
+        <div className="flex justify-center gap-4 mb-4">
           <a
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-ghost btn-xs gap-1"
+            className="glass-button text-xs py-1.5 px-4 text-slate-500 hover:text-slate-800"
           >
-            <Github className="w-3 h-3" />
+            <Github className="w-3.5 h-3.5" />
             GitHub
-            <ExternalLink className="w-2.5 h-2.5" />
+            <ExternalLink className="w-3 h-3 ml-1 opacity-50" />
           </a>
         </div>
-        <p className="text-[10px] text-base-content/30">
-          {APP_NAME} v{APP_VERSION} · Built with React + OpenAI + Chrome
-          Extensions API
+        <p className="text-[10px] text-slate-400">
+          {APP_NAME} v{APP_VERSION} · Built with React + OpenAI + Chrome Extensions API
         </p>
       </div>
     </div>

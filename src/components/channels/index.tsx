@@ -14,6 +14,7 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Hash,
 } from 'lucide-react';
 import type { Channel, IMPlatform, IMPlatformInfo, IMPlatformField } from '@/types';
 
@@ -208,7 +209,6 @@ const Channels: React.FC<ChannelsProps> = ({
     const platform = getPlatformInfo(selectedPlatform);
     const name = channelName.trim() || platform.name;
 
-    // Validate required fields
     for (const field of platform.fields) {
       if (field.required && !formValues[field.key]?.trim()) {
         setError(`${field.label} 不能为空`);
@@ -286,56 +286,64 @@ const Channels: React.FC<ChannelsProps> = ({
   };
 
   return (
-    <div className="p-4 h-full flex flex-col">
+    <div className="p-6 h-full flex flex-col font-sans text-slate-700">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-bold">IM 频道</h2>
-          <p className="text-xs text-base-content/50 mt-0.5">
-            连接飞书、钉钉等 IM 平台，通过聊天消息触发 Agent 任务
-          </p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
+            <Hash className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg text-slate-800">IM 频道</h2>
+            <p className="text-xs text-slate-500">
+              连接飞书、钉钉等 IM 平台
+            </p>
+          </div>
         </div>
         <button
-          className="btn btn-primary btn-xs"
+          className="glass-button-primary text-xs px-3 py-1.5 h-8"
           onClick={() => { resetForm(); setShowAddForm(true); }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           添加频道
         </button>
       </div>
 
       {/* ─── Add / Edit Form ─── */}
       {showAddForm && (
-        <div className="card bg-base-200 mb-4">
-          <div className="card-body p-4 gap-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm">
-                {editingId ? '编辑频道' : '新建 IM 频道'}
-              </h3>
-              <button className="btn btn-ghost btn-xs" onClick={resetForm}>
-                <X className="w-3 h-3" />
-              </button>
+        <div className="glass-panel p-4 mb-6 rounded-xl animate-in fade-in slide-in-from-top-4 border-l-4 border-l-cyan-500">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200">
+            <h3 className="font-semibold text-sm text-slate-800">
+              {editingId ? '编辑频道' : '新建 IM 频道'}
+            </h3>
+            <button className="p-1 rounded hover:bg-slate-100 text-slate-500" onClick={resetForm}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-2 rounded bg-red-50 border border-red-200 text-red-600 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              {error}
             </div>
+          )}
 
-            {error && <div className="text-error text-xs">{error}</div>}
-
+          <div className="space-y-4">
             {/* Platform Selection */}
             {!selectedPlatform && !editingId && (
               <div>
-                <label className="label py-0.5">
-                  <span className="label-text text-xs">选择 IM 平台</span>
-                </label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="text-xs text-slate-500 mb-2 block">选择 IM 平台</label>
+                <div className="grid grid-cols-3 gap-3">
                   {PLATFORMS.map((p) => (
                     <button
                       key={p.id}
-                      className="btn btn-ghost btn-xs flex flex-col items-center gap-1 h-auto py-2 border border-base-300"
+                      className="glass-button flex-col items-center gap-2 h-auto py-3 hover:border-cyan-200 hover:bg-cyan-50"
                       onClick={() => {
                         setSelectedPlatform(p.id);
                         setChannelName(p.name);
                       }}
                     >
-                      <span className="text-lg">{p.icon}</span>
+                      <span className="text-xl filter drop-shadow-lg">{p.icon}</span>
                       <span className="text-xs">{p.name}</span>
                     </button>
                   ))}
@@ -346,12 +354,12 @@ const Channels: React.FC<ChannelsProps> = ({
             {/* Config Form */}
             {selectedPlatform && (
               <>
-                <div className="flex items-center gap-2 text-xs text-base-content/60">
+                <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-200">
                   <span className="text-lg">{getPlatformInfo(selectedPlatform).icon}</span>
                   <span>{getPlatformInfo(selectedPlatform).description}</span>
                   {!editingId && (
                     <button
-                      className="btn btn-ghost btn-xs ml-auto"
+                      className="text-cyan-600 hover:text-cyan-500 ml-auto hover:underline"
                       onClick={() => setSelectedPlatform(null)}
                     >
                       更换平台
@@ -360,13 +368,11 @@ const Channels: React.FC<ChannelsProps> = ({
                 </div>
 
                 {/* Channel Name */}
-                <div className="form-control">
-                  <label className="label py-0.5">
-                    <span className="label-text text-xs">频道名称</span>
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">频道名称</label>
                   <input
                     type="text"
-                    className="input input-sm"
+                    className="glass-input w-full px-3 py-1.5 text-xs"
                     placeholder={getPlatformInfo(selectedPlatform).name}
                     value={channelName}
                     onChange={(e) => setChannelName(e.target.value)}
@@ -374,13 +380,11 @@ const Channels: React.FC<ChannelsProps> = ({
                 </div>
 
                 {/* Description */}
-                <div className="form-control">
-                  <label className="label py-0.5">
-                    <span className="label-text text-xs">描述（可选）</span>
-                  </label>
+                <div className="space-y-1">
+                  <label className="text-xs text-slate-500">描述（可选）</label>
                   <input
                     type="text"
-                    className="input input-sm"
+                    className="glass-input w-full px-3 py-1.5 text-xs"
                     placeholder="例：前端团队群"
                     value={channelDesc}
                     onChange={(e) => setChannelDesc(e.target.value)}
@@ -389,16 +393,14 @@ const Channels: React.FC<ChannelsProps> = ({
 
                 {/* Platform-specific fields */}
                 {getPlatformInfo(selectedPlatform).fields.map((field: IMPlatformField) => (
-                  <div key={field.key} className="form-control">
-                    <label className="label py-0.5">
-                      <span className="label-text text-xs">
-                        {field.label}
-                        {field.required && <span className="text-error"> *</span>}
-                      </span>
+                  <div key={field.key} className="space-y-1">
+                    <label className="text-xs text-slate-500 flex items-center gap-1">
+                      {field.label}
+                      {field.required && <span className="text-red-500">*</span>}
                     </label>
                     <input
                       type={field.type === 'password' ? 'password' : 'text'}
-                      className="input input-sm font-mono text-xs"
+                      className="glass-input w-full px-3 py-1.5 text-xs font-mono"
                       placeholder={field.placeholder}
                       value={formValues[field.key] || ''}
                       onChange={(e) =>
@@ -406,26 +408,24 @@ const Channels: React.FC<ChannelsProps> = ({
                       }
                     />
                     {field.helpText && (
-                      <label className="label py-0">
-                        <span className="label-text-alt text-[10px] text-base-content/40">
-                          {field.helpText}
-                        </span>
-                      </label>
+                      <p className="text-[10px] text-slate-400">
+                        {field.helpText}
+                      </p>
                     )}
                   </div>
                 ))}
 
                 {/* Actions */}
-                <div className="flex justify-end gap-2 mt-2">
-                  <button className="btn btn-ghost btn-sm" onClick={resetForm}>
+                <div className="flex justify-end gap-3 mt-4 pt-2 border-t border-slate-200">
+                  <button className="glass-button text-xs text-slate-500 hover:text-slate-800" onClick={resetForm}>
                     取消
                   </button>
                   <button
-                    className="btn btn-primary btn-sm"
+                    className="glass-button-primary text-xs px-4"
                     onClick={handleSave}
                     disabled={saving}
                   >
-                    {saving && <span className="loading loading-spinner loading-xs" />}
+                    {saving && <Loader2 className="w-3 h-3 animate-spin" />}
                     <Save className="w-3 h-3" />
                     {editingId ? '保存' : '创建'}
                   </button>
@@ -437,12 +437,16 @@ const Channels: React.FC<ChannelsProps> = ({
       )}
 
       {/* ─── Channel List ─── */}
-      <div className="flex-1 overflow-y-auto space-y-2">
+      <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
         {channels.length === 0 && !showAddForm && (
-          <div className="text-center py-12 text-base-content/40">
-            <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">暂无 IM 频道</p>
-            <p className="text-xs mt-1">添加频道后，可通过聊天工具远程触发 Agent 任务</p>
+          <div className="text-center py-12 px-4">
+            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
+              <MessageCircle className="w-8 h-8 text-slate-400" />
+            </div>
+            <p className="text-sm text-slate-500 mb-1">暂无 IM 频道</p>
+            <p className="text-xs text-slate-400">
+              添加频道后，可通过聊天工具远程触发 Agent 任务
+            </p>
           </div>
         )}
 
@@ -453,133 +457,135 @@ const Channels: React.FC<ChannelsProps> = ({
           return (
             <div
               key={channel.id}
-              className={`card border transition-colors ${
+              className={`glass-card transition-all duration-300 border ${
                 channel.enabled
-                  ? 'bg-base-200 border-base-300'
-                  : 'bg-base-200/50 border-base-300/50 opacity-60'
+                  ? 'bg-white border-slate-200'
+                  : 'bg-slate-50 border-slate-200 opacity-60 grayscale'
               }`}
             >
-              <div className="card-body p-3">
+              <div className="p-3">
                 {/* Header */}
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{platformInfo?.icon || '🔧'}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl filter drop-shadow-md">{platformInfo?.icon || '🔧'}</span>
+                  
                   <button
-                    className="flex-1 text-left flex items-center gap-1"
+                    className="flex-1 text-left flex items-center gap-2 group"
                     onClick={() => setExpandedId(isExpanded ? null : channel.id)}
                   >
+                    <span className="font-semibold text-sm text-slate-800 group-hover:text-cyan-600 transition-colors">{channel.name}</span>
                     {isExpanded ? (
-                      <ChevronDown className="w-3 h-3" />
+                      <ChevronDown className="w-3 h-3 text-slate-400" />
                     ) : (
-                      <ChevronRight className="w-3 h-3" />
+                      <ChevronRight className="w-3 h-3 text-slate-400" />
                     )}
-                    <span className="font-semibold text-sm">{channel.name}</span>
                   </button>
 
                   <span
-                    className={`badge badge-xs ${channel.enabled ? 'badge-success' : 'badge-outline'}`}
+                    className={`px-1.5 py-0.5 rounded text-[10px] border ${
+                      channel.enabled 
+                        ? 'bg-green-50 text-green-600 border-green-200' 
+                        : 'bg-slate-100 text-slate-500 border-slate-200'
+                    }`}
                   >
                     {channel.enabled ? '已启用' : '已停用'}
                   </span>
 
-                  <button
-                    className="btn btn-ghost btn-xs"
-                    onClick={() => onToggle(channel.id)}
-                    title={channel.enabled ? '停用' : '启用'}
-                  >
-                    {channel.enabled ? (
-                      <Power className="w-3 h-3 text-success" />
-                    ) : (
-                      <PowerOff className="w-3 h-3" />
-                    )}
-                  </button>
+                  <div className="flex items-center gap-1 border-l border-slate-200 pl-2 ml-1">
+                    <button
+                      className={`p-1.5 rounded-lg hover:bg-slate-100 transition-colors ${
+                        channel.enabled ? 'text-green-600' : 'text-slate-400'
+                      }`}
+                      onClick={() => onToggle(channel.id)}
+                      title={channel.enabled ? '停用' : '启用'}
+                    >
+                      {channel.enabled ? (
+                        <Power className="w-3.5 h-3.5" />
+                      ) : (
+                        <PowerOff className="w-3.5 h-3.5" />
+                      )}
+                    </button>
 
-                  <button
-                    className="btn btn-ghost btn-xs"
-                    onClick={() => startEdit(channel)}
-                    title="编辑"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                  </button>
+                    <button
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-slate-100 transition-colors"
+                      onClick={() => startEdit(channel)}
+                      title="编辑"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
 
-                  <button
-                    className="btn btn-ghost btn-xs text-error"
-                    onClick={() => onRemove(channel.id)}
-                    title="删除"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
+                    <button
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-100 transition-colors"
+                      onClick={() => onRemove(channel.id)}
+                      title="删除"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 {channel.description && (
-                  <p className="text-xs text-base-content/50 ml-7">
+                  <p className="text-xs text-slate-500 ml-9 mt-1 truncate">
                     {channel.description}
                   </p>
                 )}
 
                 {/* Expanded Details */}
                 {isExpanded && (
-                  <div className="mt-2 ml-7 space-y-2.5 text-xs">
-                    <div>
-                      <span className="text-base-content/50">平台：</span>
-                      <span>{platformInfo?.name || channel.platform}</span>
+                  <div className="mt-3 ml-9 space-y-3 pt-3 border-t border-slate-200 animate-in slide-in-from-top-2">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200">
+                        <span className="text-slate-500 block mb-0.5">平台</span>
+                        <span className="text-slate-700">{platformInfo?.name || channel.platform}</span>
+                      </div>
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200">
+                        <span className="text-slate-500 block mb-0.5">创建时间</span>
+                        <span className="text-slate-700">{new Date(channel.createdAt).toLocaleDateString()}</span>
+                      </div>
                     </div>
 
                     {channel.botWebhookUrl && (
-                      <div>
-                        <span className="text-base-content/50">Webhook：</span>
-                        <code className="text-[10px] bg-base-300 px-1 py-0.5 rounded break-all">
-                          {channel.botWebhookUrl.slice(0, 50)}
-                          {channel.botWebhookUrl.length > 50 ? '...' : ''}
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200">
+                        <span className="text-slate-500 text-xs block mb-1">Webhook URL</span>
+                        <code className="text-[10px] text-slate-600 break-all font-mono block bg-white p-1.5 rounded border border-slate-100">
+                          {channel.botWebhookUrl}
                         </code>
-                      </div>
-                    )}
-
-                    {channel.secret && (
-                      <div>
-                        <span className="text-base-content/50">密钥：</span>
-                        <span className="text-base-content/30">••••••••</span>
                       </div>
                     )}
 
                     {/* Test Button */}
                     {channel.botWebhookUrl && (
-                      <button
-                        className="btn btn-outline btn-xs gap-1"
-                        onClick={() => handleTestWebhook(channel)}
-                        disabled={testingId === channel.id}
-                      >
-                        {testingId === channel.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <Send className="w-3 h-3" />
+                      <div className="flex items-center gap-3 pt-1">
+                        <button
+                          className="glass-button text-xs py-1.5 px-3"
+                          onClick={() => handleTestWebhook(channel)}
+                          disabled={testingId === channel.id}
+                        >
+                          {testingId === channel.id ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Send className="w-3 h-3 text-cyan-600" />
+                          )}
+                          发送测试消息
+                        </button>
+                        
+                        {testResult && testResult.id === channel.id && (
+                          <div
+                            className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded border ${
+                              testResult.success 
+                                ? 'bg-green-50 text-green-600 border-green-200' 
+                                : 'bg-red-50 text-red-600 border-red-200'
+                            }`}
+                          >
+                            {testResult.success ? (
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            ) : (
+                              <AlertCircle className="w-3.5 h-3.5" />
+                            )}
+                            {testResult.msg}
+                          </div>
                         )}
-                        发送测试消息
-                      </button>
-                    )}
-
-                    {testResult && testResult.id === channel.id && (
-                      <div
-                        className={`flex items-center gap-1 text-xs ${
-                          testResult.success ? 'text-success' : 'text-error'
-                        }`}
-                      >
-                        {testResult.success ? (
-                          <CheckCircle2 className="w-3 h-3" />
-                        ) : (
-                          <AlertCircle className="w-3 h-3" />
-                        )}
-                        {testResult.msg}
                       </div>
                     )}
-
-                    <p className="text-[10px] text-base-content/30 pt-1">
-                      创建于 {new Date(channel.createdAt).toLocaleDateString()}
-                      {channel.lastMessageAt && (
-                        <>
-                          {' · '}最后消息 {new Date(channel.lastMessageAt).toLocaleDateString()}
-                        </>
-                      )}
-                    </p>
                   </div>
                 )}
               </div>
