@@ -40,15 +40,12 @@ const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = 'hidden';
     } else {
       setIsVisible(false);
-      timerId = setTimeout(() => {
-        setIsMounted(false);
-        document.body.style.overflow = '';
-      }, 300);
+      setIsMounted(false);
+      document.body.style.overflow = '';
     }
 
     return () => {
       cancelAnimationFrame(rafId);
-      clearTimeout(timerId);
     };
   }, [isOpen]);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Zap, Eye, EyeOff, CheckCircle2, AlertCircle, Server, Key, Box } from 'lucide-react';
+import { Save, Zap, Eye, EyeOff, CheckCircle2, AlertCircle, Server, Key, Box, Thermometer, Maximize2 } from 'lucide-react';
 import type { AgentConfig } from '@/types';
 
 interface ModelsProps {
@@ -129,6 +129,51 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
             value={form.model}
             onChange={(e) => handleChange('model', e.target.value)}
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Temperature */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+              <Thermometer className="w-3.5 h-3.5 text-red-500" />
+              Temperature
+            </label>
+            <div className="glass-input w-full px-4 py-3 flex items-center gap-3">
+              <input
+                type="range"
+                min="0"
+                max="2"
+                step="0.1"
+                className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-cyan-600"
+                value={form.temperature ?? 0.7}
+                onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
+              />
+              <span className="text-xs font-mono text-slate-500 w-8 text-right font-medium">
+                {form.temperature ?? 0.7}
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400">
+              数值越高回复越随机，数值越低回复越严谨
+            </p>
+          </div>
+
+          {/* Max Tokens */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+              <Maximize2 className="w-3.5 h-3.5 text-blue-500" />
+              Max Tokens
+            </label>
+            <input
+              type="number"
+              className="glass-input w-full px-4 py-2.5 text-sm"
+              placeholder="4096"
+              value={form.maxTokens ?? 4096}
+              onChange={(e) => handleChange('maxTokens', parseInt(e.target.value))}
+            />
+            <p className="text-[10px] text-slate-400">
+              单次回复的最大 Token 数量限制
+            </p>
+          </div>
         </div>
       </div>
 
