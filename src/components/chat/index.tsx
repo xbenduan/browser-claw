@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 import {
   PlusCircle,
   Trash2,
@@ -8,10 +8,10 @@ import {
   ExternalLink,
   Lock,
   AlertTriangle,
-} from 'lucide-react';
-import type { AgentConfig, SkillDefinition, SessionListItem } from '@/types';
-import { useSessions } from '@/hooks/useSessions';
-import Modal from '@/components/shared/Modal';
+} from "lucide-react";
+import type { AgentConfig, SkillDefinition, SessionListItem } from "@/types";
+import { useSessions } from "@/hooks/useSessions";
+import Modal from "@/components/shared/Modal";
 
 interface ChatProps {
   config: AgentConfig;
@@ -31,14 +31,14 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
       if (!hostname) return false;
       return sessionHostname === hostname;
     },
-    [hostname]
+    [hostname],
   );
 
   const openSidePanelAndClose = useCallback(async () => {
     try {
-      await chrome.runtime.sendMessage({ type: 'OPEN_SIDE_PANEL' });
+      await chrome.runtime.sendMessage({ type: "OPEN_SIDE_PANEL" });
     } catch (e) {
-      console.error('Failed to open side panel:', e);
+      console.error("Failed to open side panel:", e);
     }
     window.close();
   }, []);
@@ -54,7 +54,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
       await openSession(sessionId);
       await openSidePanelAndClose();
     },
-    [openSession, openSidePanelAndClose]
+    [openSession, openSidePanelAndClose],
   );
 
   const handleDeleteSession = useCallback(
@@ -62,7 +62,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
       e.stopPropagation();
       setDeleteSessionId(sessionId);
     },
-    []
+    [],
   );
 
   const formatTime = (ts: number) => {
@@ -73,36 +73,43 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
       d.getMonth() === now.getMonth() &&
       d.getDate() === now.getDate();
     if (isToday) {
-      return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      return d.toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     }
-    return d.toLocaleDateString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+    return d.toLocaleDateString("zh-CN", {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
       </div>
     );
   }
 
-  const currentHostSessions = sessionList.filter((s) => isCurrentHost(s.hostname));
-  const otherHostSessions = sessionList.filter((s) => !isCurrentHost(s.hostname));
+  const currentHostSessions = sessionList.filter((s) =>
+    isCurrentHost(s.hostname),
+  );
+  const otherHostSessions = sessionList.filter(
+    (s) => !isCurrentHost(s.hostname),
+  );
 
   return (
     <div className="flex flex-col h-full font-sans text-slate-700">
       {/* Header */}
-      <div className="sticky top-0 z-10 px-4 py-3 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between">
+      <div className="sticky top-0 z-10 px-4 py-3 border-b border-slate-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-cyan-600" />
+          <Clock className="w-4 h-4 text-violet-600" />
           <span className="font-semibold text-sm">历史会话</span>
           {sessionList.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-cyan-50 text-cyan-700 text-[10px] border border-cyan-200">
+            <span className="px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 text-[10px] border border-violet-200/60">
               {sessionList.length}
             </span>
           )}
@@ -148,7 +155,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
           <>
             {currentHostSessions.length > 0 && (
               <div className="space-y-3">
-                <div className="px-1 text-[10px] font-medium text-cyan-600/80 uppercase tracking-wider flex items-center gap-2">
+                <div className="px-1 text-[10px] font-medium text-violet-600/80 uppercase tracking-wider flex items-center gap-2">
                   当前站点 · {hostname}
                 </div>
                 <div className="space-y-2">
@@ -260,29 +267,33 @@ const SessionItem: React.FC<SessionItemProps> = ({
 }) => {
   return (
     <div
-      className={`glass-card p-3 flex items-center gap-3 transition-all duration-300 group ${
+      className={`glass-card p-3 flex items-center gap-3 transition-all duration-200 group cursor-pointer ${
         canEnter
-          ? 'hover:bg-white cursor-pointer hover:border-cyan-200 hover:shadow-cyan-100'
-          : 'opacity-50 cursor-not-allowed bg-slate-100'
+          ? "hover:bg-white/90 hover:border-violet-200 hover:shadow-violet-100"
+          : "opacity-50 cursor-not-allowed bg-slate-100"
       }`}
       onClick={canEnter ? onClick : undefined}
       title={
         canEnter
-          ? '点击在侧边栏中打开'
+          ? "点击在侧边栏中打开"
           : `此会话来自 ${item.hostname}，需在该网站打开`
       }
     >
-      <div className={`shrink-0 p-2 rounded-lg ${canEnter ? 'bg-cyan-50 text-cyan-600' : 'bg-white text-slate-400 border border-slate-100'}`}>
+      <div
+        className={`shrink-0 p-2 rounded-lg ${canEnter ? "bg-violet-50 text-violet-600" : "bg-white text-slate-400 border border-slate-100"}`}
+      >
         {canEnter ? (
           <MessageSquare className="w-4 h-4" />
         ) : (
           <Lock className="w-4 h-4" />
         )}
       </div>
-      
+
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-slate-800 truncate">{item.title}</span>
+          <span className="text-sm font-medium text-slate-800 truncate">
+            {item.title}
+          </span>
           {item.hostname && (
             <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-50 border border-slate-200 text-slate-500 truncate max-w-30">
               {item.hostname}
@@ -290,7 +301,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
           )}
         </div>
         <div className="text-xs text-slate-500 truncate">
-          {item.preview || '空会话'}
+          {item.preview || "空会话"}
         </div>
         <div className="flex items-center gap-2 mt-2">
           <span className="text-[10px] text-slate-500 bg-white px-1.5 rounded border border-slate-200">
@@ -301,7 +312,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
           </span>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-1 shrink-0">
         <button
           className="p-1.5 rounded-lg text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all"
@@ -311,7 +322,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
           <Trash2 className="w-3.5 h-3.5" />
         </button>
         {canEnter && (
-          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-600 transition-colors opacity-0 group-hover:opacity-100" />
+          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-violet-600 transition-colors opacity-0 group-hover:opacity-100" />
         )}
       </div>
     </div>
