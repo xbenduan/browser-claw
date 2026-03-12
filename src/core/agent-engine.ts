@@ -13,7 +13,7 @@ import { applyExtractors } from './response-extractor';
 import { Messaging } from '@/utils/messaging';
 import { MAX_AGENT_ITERATIONS } from '@/utils/constants';
 import { BUILTIN_SKILL_IDS, isBuiltinSkill } from '@/utils/builtin-skills';
-import { queryStoredData, clearStore, storeData } from './data-store';
+import { queryStoredData, storeData } from './data-store';
 
 interface ToolCallRaw {
   id: string;
@@ -125,9 +125,6 @@ export class AgentEngine {
     userMessage: string,
     conversationHistory: ChatMessage[]
   ): AsyncGenerator<AgentEvent> {
-    // 每次新的用户消息处理开始时清空旧的 DataStore
-    // （避免跨轮次的指针冲突）
-    clearStore();
 
     const tools = skillsToOpenAITools(this.skills);
     const systemPrompt = buildSystemPrompt(this.hostname, this.skills);

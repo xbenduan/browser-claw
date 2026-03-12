@@ -21,6 +21,8 @@ export interface StoredData {
   sizeChars: number;
   /** 存储时间戳 */
   timestamp: number;
+  /** 最后访问时间戳（LRU 淘汰用） */
+  lastAccess: number;
   /** 数据结构摘要（传给 LLM 的部分） */
   summary: DataSummary;
 }
@@ -67,6 +69,10 @@ export interface QueryOptions {
 // ============ 阈值配置 ============
 /** 超过此字符数的 tool result 存入 DataStore，给 LLM 摘要 + 指针 */
 export const STORE_THRESHOLD = 3000;
+/** 数据存储过期时间（毫秒）：30 分钟 */
+const DATA_TTL_MS = 30 * 60 * 1000;
+/** 最大存储条目数 */
+const MAX_ENTRIES = 50;
 
 // ============ 全局单例 ============
 const store = new Map<string, StoredData>();
@@ -93,13 +99,19 @@ export function storeData(
 
   const summary = buildSummary(data, rawStr.length);
 
+  const now = Date.now();
+
+  // 存储前先淘汰过期数据，并检查容量上限
+  evict();
+
   const stored: StoredData = {
     id,
     skillId,
     callArgs: JSON.stringify(callArgs).slice(0, 200),
     raw: data,
     sizeChars: rawStr.length,
-    timestamp: Date.now(),
+    timestamp: now,
+    lastAccess: now,
     summary,
   };
 
@@ -120,11 +132,15 @@ export function queryStoredData(
 ): { success: boolean; data?: unknown; error?: string; meta?: Record<string, unknown> } {
   const stored = store.get(pointerId);
   if (!stored) {
+    // 可能已过期淘汰，给出更友好的提示
     return {
       success: false,
-      error: `Data pointer "${pointerId}" not found. Available pointers: ${[...store.keys()].join(', ') || 'none'}`,
+      error: `Data pointer "${pointerId}" not found (may have expired). Available pointers: ${[...store.keys()].join(', ') || 'none'}. Please re-fetch the data if needed.`,
     };
   }
+
+  // 刷新访问时间（LRU）
+  stored.lastAccess = Date.now();
 
   let result: unknown = stored.raw;
 
@@ -213,11 +229,35 @@ export function listStoredData(): Array<{
 }
 
 /**
- * 清空所有存储（会话结束时调用）
+ * 清空所有存储（仅在会话彻底结束时调用，如页面关闭）
  */
 export function clearStore(): void {
   store.clear();
   counter = 0;
+}
+
+/**
+ * 淘汰过期数据 + LRU 容量控制
+ * 在每次 storeData 时自动调用
+ */
+function evict(): void {
+  const now = Date.now();
+
+  // 1. 移除过期条目（超过 TTL）
+  for (const [id, entry] of store) {
+    if (now - entry.lastAccess > DATA_TTL_MS) {
+      store.delete(id);
+    }
+  }
+
+  // 2. 如果仍超出容量上限，按 lastAccess 升序淘汰最久未访问的
+  if (store.size >= MAX_ENTRIES) {
+    const sorted = [...store.entries()].sort((a, b) => a[1].lastAccess - b[1].lastAccess);
+    const toRemove = store.size - MAX_ENTRIES + 1; // 留出 1 个位置给即将存入的
+    for (let i = 0; i < toRemove; i++) {
+      store.delete(sorted[i][0]);
+    }
+  }
 }
 
 // ============ 内部辅助函数 ============
