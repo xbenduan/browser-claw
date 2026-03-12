@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  --neon-accent: #06b6d4; /* cyan-500 */
-  --neon-secondary: #7c3aed; /* violet-600 */
+  --glass-border: rgba(0, 0, 0, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+  --neon-accent: #0891b2; /* cyan-600 - darker for better contrast */
+  --neon-secondary: #6d28d9; /* violet-700 - darker for better contrast */
 }
 
 body {
@@ -18,20 +18,19 @@ body {
 
 /* Glassmorphism Utilities */
 .glass-panel {
-  @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl shadow-slate-200/50;
-  /* box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); */
+  @apply bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-xl shadow-slate-300/50;
 }
 
 .glass-card {
-  @apply bg-white/60 backdrop-blur-md border border-white/50 rounded-xl transition-all duration-300 shadow-sm shadow-slate-200/50;
+  @apply bg-white/70 backdrop-blur-md border border-slate-200/50 rounded-xl transition-all duration-300 shadow-sm shadow-slate-300/50;
 }
 
 .glass-card:hover {
-  @apply bg-white/80 border-white/60 shadow-cyan-500/10 shadow-lg transform -translate-y-0.5;
+  @apply bg-white/80 border-slate-300/60 shadow-cyan-500/20 shadow-lg transform -translate-y-0.5;
 }
 
 .glass-input {
-  @apply bg-white/80 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all shadow-sm;
+  @apply bg-white/90 border border-slate-300 rounded-lg text-slate-800 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 transition-all shadow-sm;
 }
 
 /* Shared Button Styles */
@@ -39,7 +38,7 @@ body {
 .glass-button-primary,
 .glass-button-danger {
   @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2 shadow-sm;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(4px);
 }
 
@@ -51,38 +50,38 @@ body {
 
 /* Default Glass Button */
 .glass-button {
-  @apply text-slate-600 bg-white/80 hover:text-slate-900;
+  @apply text-slate-700 bg-white/90 hover:text-slate-900;
 }
 
 .glass-button:hover:not(:disabled) {
-  @apply bg-white border-slate-200 shadow-md;
+  @apply bg-white border-slate-300 shadow-md;
   transform: translateY(-1px);
 }
 
 /* Primary Glass Button */
 .glass-button-primary {
-  @apply text-cyan-700 bg-cyan-50/80 border-cyan-200/50;
+  @apply text-cyan-800 bg-cyan-100/90 border-cyan-300/60;
 }
 
 .glass-button-primary:hover:not(:disabled) {
-  @apply bg-cyan-100/80 border-cyan-300/50 shadow-cyan-500/20 shadow-md;
+  @apply bg-cyan-200/90 border-cyan-400/60 shadow-cyan-500/30 shadow-md;
   transform: translateY(-1px);
 }
 
 /* Danger Glass Button */
 .glass-button-danger {
-  @apply text-red-700 bg-red-50/80 border-red-200/50;
+  @apply text-red-800 bg-red-100/90 border-red-300/60;
 }
 
 .glass-button-danger:hover:not(:disabled) {
-  @apply bg-red-100/80 border-red-300/50 shadow-red-500/20 shadow-md;
+  @apply bg-red-200/90 border-red-400/60 shadow-red-500/30 shadow-md;
   transform: translateY(-1px);
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -90,7 +89,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300/50 rounded-full hover:bg-slate-400/80 transition-colors;
+  @apply bg-slate-400/60 rounded-full hover:bg-slate-500/80 transition-colors;
 }
 
 /* Highlight.js overrides for light theme */
@@ -98,7 +97,7 @@ pre code.hljs {
   display: block;
   overflow-x: auto;
   padding: 1rem;
-  @apply rounded-lg bg-slate-50 border border-slate-200 shadow-inner;
+  @apply rounded-lg bg-slate-100 border border-slate-300 shadow-inner;
 }
 
 .hljs {
@@ -108,19 +107,19 @@ pre code.hljs {
 
 /* Markdown Overrides */
 .markdown-body {
-  @apply text-slate-600;
+  @apply text-slate-700;
 }
 
 .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
-  @apply text-slate-800 border-b border-slate-200 pb-2 mt-6 mb-4;
+  @apply text-slate-800 border-b border-slate-300 pb-2 mt-6 mb-4;
 }
 
 .markdown-body a {
-  @apply text-cyan-600 hover:text-cyan-500 no-underline hover:underline transition-colors;
+  @apply text-cyan-700 hover:text-cyan-600 no-underline hover:underline transition-colors;
 }
 
 .markdown-body code {
-  @apply bg-slate-100 px-1.5 py-0.5 rounded text-cyan-700 border border-slate-200 text-sm;
+  @apply bg-slate-200 px-1.5 py-0.5 rounded text-cyan-800 border border-slate-300 text-sm;
 }
 
 .markdown-body pre code {
@@ -128,7 +127,7 @@ pre code.hljs {
 }
 
 .markdown-body blockquote {
-  @apply border-l-4 border-cyan-500/50 bg-slate-50 py-2 px-4 rounded-r-lg text-slate-500 italic;
+  @apply border-l-4 border-cyan-600/60 bg-slate-100 py-2 px-4 rounded-r-lg text-slate-600 italic;
 }
 
 .markdown-body ul {
@@ -140,33 +139,33 @@ pre code.hljs {
 }
 
 .markdown-body table {
-  @apply min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden my-4;
+  @apply min-w-full divide-y divide-slate-300 border border-slate-300 rounded-lg overflow-hidden my-4;
   border-spacing: 0;
   border-collapse: separate;
 }
 
 .markdown-body thead {
-  @apply bg-slate-50;
+  @apply bg-slate-100;
 }
 
 .markdown-body th {
-  @apply px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50/50;
+  @apply px-4 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider border-b border-slate-300 bg-slate-100/80;
 }
 
 .markdown-body tbody {
-  @apply bg-white divide-y divide-slate-100;
+  @apply bg-white divide-y divide-slate-200;
 }
 
 .markdown-body td {
-  @apply px-4 py-3 text-sm text-slate-600 whitespace-nowrap;
+  @apply px-4 py-3 text-sm text-slate-700 whitespace-nowrap;
 }
 
 .markdown-body tr:hover td {
-  @apply bg-cyan-50/50 transition-colors;
+  @apply bg-cyan-50 transition-colors;
 }
 
 .markdown-body tr:nth-child(even) td {
-  @apply bg-slate-50/50;
+  @apply bg-slate-50/80;
 }
 
 /* Animations */
@@ -181,9 +180,9 @@ pre code.hljs {
 }
 
 @keyframes glow {
-  0% { box-shadow: 0 0 5px rgba(6, 182, 212, 0.2); }
-  50% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
-  100% { box-shadow: 0 0 5px rgba(6, 182, 212, 0.2); }
+  0% { box-shadow: 0 0 5px rgba(8, 145, 178, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(8, 145, 178, 0.5); }
+  100% { box-shadow: 0 0 5px rgba(8, 145, 178, 0.3); }
 }
 
 .animate-glow {
