@@ -76,11 +76,11 @@ const ToolCallCard: React.FC<ToolCallCardProps> = ({ toolCall }) => {
       </div>
 
       {toolCall.confirmation && (
-        <div className="mt-2 bg-slate-950/30 rounded-lg p-2 border border-white/5 font-mono text-[10px] flex items-center gap-2 overflow-hidden">
-          <span className={`font-bold ${METHOD_COLORS[toolCall.confirmation.method] ?? 'text-slate-400'}`}>
+        <div className="mt-2 bg-slate-950/30 rounded-lg p-2 border border-white/5 font-mono text-[10px] flex items-center gap-2 overflow-x-auto custom-scrollbar">
+          <span className={`font-bold shrink-0 ${METHOD_COLORS[toolCall.confirmation.method] ?? 'text-slate-400'}`}>
             {toolCall.confirmation.method}
           </span>
-          <span className="text-slate-500 truncate flex-1" title={toolCall.confirmation.url}>
+          <span className="text-slate-500 whitespace-nowrap" title={toolCall.confirmation.url}>
             {toolCall.confirmation.url}
           </span>
         </div>

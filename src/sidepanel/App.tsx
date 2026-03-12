@@ -337,11 +337,13 @@ export default function SidePanelApp() {
         )}
 
         {pendingConfirmation && (
-          <ConfirmationCard
-            data={pendingConfirmation}
-            onConfirm={() => handleConfirm(true)}
-            onReject={() => handleConfirm(false)}
-          />
+          <div className="max-w-[90%]">
+            <ConfirmationCard
+              data={pendingConfirmation}
+              onConfirm={() => handleConfirm(true)}
+              onReject={() => handleConfirm(false)}
+            />
+          </div>
         )}
 
         {isProcessing && !streamingContent && !pendingConfirmation && (
@@ -455,7 +457,9 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
   return (
     <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1`}>
       {message.toolCalls?.map((tc) => (
-        <ToolCallCard key={tc.id} toolCall={tc} />
+        <div key={tc.id} className="max-w-[90%]">
+          <ToolCallCard toolCall={tc} />
+        </div>
       ))}
 
       {message.content && (

@@ -47,25 +47,25 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
         </div>
       </div>
 
-      <div className="mt-3 bg-slate-50 rounded-lg p-3 border border-slate-200 font-mono text-xs overflow-x-auto">
-        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-200">
-          <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-bold uppercase border border-blue-100">
+      <div className="mt-3 bg-slate-50 rounded-lg p-3 border border-slate-200 font-mono text-xs overflow-x-auto custom-scrollbar">
+        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-200 w-max min-w-full">
+          <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-bold uppercase border border-blue-100 shrink-0">
             {data.method}
           </span>
-          <span className="text-slate-500 truncate" title={data.url}>
+          <span className="text-slate-500 whitespace-nowrap" title={data.url}>
             {data.url}
           </span>
         </div>
         
         {Object.keys(data.parameters).length > 0 && (
           <div className="space-y-1.5">
-            <div className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">
+            <div className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold sticky left-0">
               Parameters
             </div>
             {Object.entries(data.parameters).map(([key, val]) => (
-              <div key={key} className="flex gap-2">
+              <div key={key} className="flex gap-2 w-max min-w-full">
                 <span className="text-cyan-600 shrink-0">{key}:</span>
-                <span className="text-amber-600 break-all">{JSON.stringify(val)}</span>
+                <span className="text-amber-600 whitespace-nowrap">{JSON.stringify(val)}</span>
               </div>
             ))}
           </div>
