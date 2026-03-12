@@ -98,7 +98,7 @@ const ToolCallCard: React.FC<ToolCallCardProps> = ({ toolCall }) => {
           
           {isExpanded && (
             <div className="mt-1 relative group">
-              <pre className="bg-slate-950/50 rounded-lg p-3 border border-white/5 overflow-auto max-h-60 text-xs text-slate-300 font-mono custom-scrollbar">
+              <pre className="bg-slate-900/50 rounded-lg p-3 border border-white/5 overflow-auto max-h-60 text-xs text-slate-100 font-mono custom-scrollbar">
                 {JSON.stringify(toolCall.result, null, 2)}
               </pre>
             </div>

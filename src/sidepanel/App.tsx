@@ -306,12 +306,12 @@ export default function SidePanelApp() {
 
         {messages.length === 0 && isConfigured && (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-100 to-blue-100 border border-white flex items-center justify-center shadow-lg shadow-cyan-100 animate-float">
+            <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-cyan-100 to-blue-100 border border-white flex items-center justify-center shadow-lg shadow-cyan-100 animate-float">
               <MessageSquare className="w-10 h-10 text-cyan-600" />
             </div>
             <div className="space-y-2">
               <p className="text-lg font-medium text-slate-800">有什么我可以帮你的吗？</p>
-              <p className="text-sm text-slate-500 max-w-[240px] mx-auto leading-relaxed">
+              <p className="text-sm text-slate-500 max-w-60 mx-auto leading-relaxed">
                 我可以帮你阅读当前页面内容、执行操作，或者回答任何问题。
               </p>
             </div>
