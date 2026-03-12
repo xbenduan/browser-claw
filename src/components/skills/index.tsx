@@ -405,14 +405,14 @@ const Skills: React.FC<SkillsProps> = ({
                     <Lightbulb className="w-8 h-8 text-yellow-500 opacity-80" />
                   </div>
                   <p className="text-sm font-medium text-slate-800">还没有任何 Skill</p>
-                  <p className="text-xs text-slate-500 mt-1 max-w-[200px] mx-auto">
+                  <p className="text-xs text-slate-500 mt-1 max-w-50 mx-auto">
                     Skill 定义了 AI 可以调用的 API，让浏览器变得更强大
                   </p>
                 </div>
 
                 <div className="flex flex-col gap-3 items-center">
                   <button
-                    className="glass-button-primary w-full max-w-[200px] justify-center"
+                    className="glass-button-primary w-full max-w-50 justify-center"
                     onClick={handleAddExampleSkills}
                   >
                     <BookOpen className="w-4 h-4" />
@@ -423,7 +423,7 @@ const Skills: React.FC<SkillsProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 w-full max-w-[200px] mx-auto">
+                <div className="flex items-center gap-2 w-full max-w-50 mx-auto">
                    <div className="h-px bg-slate-200 flex-1" />
                    <span className="text-[10px] text-slate-400">或</span>
                    <div className="h-px bg-slate-200 flex-1" />
@@ -465,7 +465,7 @@ const Skills: React.FC<SkillsProps> = ({
                   }`}
                 >
                   <Globe className="w-3 h-3" />
-                  <span className="font-mono truncate max-w-[180px]">{group.pattern}</span>
+                  <span className="font-mono truncate max-w-45">{group.pattern}</span>
                   <span className="px-1.5 py-0.5 rounded bg-slate-100 text-[10px] ml-auto">
                     {group.skills.length}
                   </span>

@@ -26,8 +26,7 @@ const Modal: React.FC<ModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let rafId: number;
-    let timerId: ReturnType<typeof setTimeout>;
+    let rafId: number; 
 
     if (isOpen) {
       setIsMounted(true);

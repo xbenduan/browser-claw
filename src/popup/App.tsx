@@ -206,12 +206,12 @@ export default function App() {
   };
 
   return (
-    <div className="w-[800px] h-[600px] flex p-4 gap-4 overflow-hidden font-sans text-slate-700">
+    <div className="w-200 h-150 flex p-4 gap-4 overflow-hidden font-sans text-slate-700">
       {/* ─── Sidebar ───────────────────────── */}
       <div className="w-48 glass-panel rounded-2xl flex flex-col p-4 gap-6 z-10">
         {/* Header */}
         <div className="flex items-center gap-3 px-2">
-          <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-600">
+          <span className="font-bold text-lg bg-clip-text text-transparent bg-linear-to-r from-cyan-600 to-blue-600">
             BrowserClaw
           </span>
         </div>

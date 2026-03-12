@@ -380,7 +380,7 @@ export default function SidePanelApp() {
             disabled={!isConfigured || isProcessing}
           />
           <button
-            className="shrink-0 p-1.5 rounded-lg bg-cyan-50 text-cyan-600 hover:bg-cyan-500 hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-cyan-50 disabled:hover:text-cyan-600"
+            className="shrink-0 p-1.5 rounded-lg bg-cyan-200 text-cyan-600 hover:bg-cyan-500 hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-cyan-50 disabled:hover:text-cyan-600"
             onClick={handleSend}
             disabled={!input.trim() || !isConfigured || isProcessing}
           >

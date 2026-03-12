@@ -67,7 +67,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className 
       table(props) {
         const { children, ...rest } = props;
         return (
-          <div className="overflow-x-auto my-2 rounded-lg border border-base-300">
+          <div className="overflow-x-auto rounded-lg">
             <table className="table table-sm table-zebra" {...rest}>
               {children}
             </table>

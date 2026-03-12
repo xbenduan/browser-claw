@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "daisyui";
 
 :root {
   --glass-border: rgba(0, 0, 0, 0.08);
@@ -138,6 +137,36 @@ pre code.hljs {
 
 .markdown-body ol {
   @apply list-decimal list-outside ml-5 space-y-1;
+}
+
+.markdown-body table {
+  @apply min-w-full divide-y divide-slate-200 border border-slate-200 rounded-lg overflow-hidden my-4;
+  border-spacing: 0;
+  border-collapse: separate;
+}
+
+.markdown-body thead {
+  @apply bg-slate-50;
+}
+
+.markdown-body th {
+  @apply px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200 bg-slate-50/50;
+}
+
+.markdown-body tbody {
+  @apply bg-white divide-y divide-slate-100;
+}
+
+.markdown-body td {
+  @apply px-4 py-3 text-sm text-slate-600 whitespace-nowrap;
+}
+
+.markdown-body tr:hover td {
+  @apply bg-cyan-50/50 transition-colors;
+}
+
+.markdown-body tr:nth-child(even) td {
+  @apply bg-slate-50/50;
 }
 
 /* Animations */

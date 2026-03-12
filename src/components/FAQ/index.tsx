@@ -109,10 +109,10 @@ const FAQ: React.FC = () => {
     <div className="p-6 h-full overflow-y-auto custom-scrollbar font-sans text-slate-700">
       {/* App Info Header */}
       <div className="text-center mb-8 animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-cyan-100 to-blue-100 border border-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-100">
+        <div className="w-16 h-16 rounded-3xl bg-linear-to-br from-cyan-100 to-blue-100 border border-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-100">
           <div className="text-3xl">🦀</div>
         </div>
-        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-600">
+        <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-cyan-600 to-blue-600">
           {APP_NAME}
         </h1>
         <div className="flex items-center justify-center gap-2 mt-2">
@@ -123,7 +123,7 @@ const FAQ: React.FC = () => {
             AI Agent
           </span>
         </div>
-        <p className="text-xs text-slate-500 mt-2 max-w-[240px] mx-auto leading-relaxed">
+        <p className="text-xs text-slate-500 mt-2 max-w-60 mx-auto leading-relaxed">
           用自然语言驱动浏览器 API 操作，让 Web 自动化触手可及
         </p>
       </div>
@@ -186,7 +186,7 @@ const FAQ: React.FC = () => {
               </button>
               
               {expandedIdx === idx && (
-                <div className="px-4 pb-4 pt-0 text-xs text-slate-500 leading-relaxed whitespace-pre-line animate-in slide-in-from-top-2 border-t border-slate-100 mt-1 pt-3">
+                <div className="px-4 pb-4 text-xs text-slate-500 leading-relaxed whitespace-pre-line animate-in slide-in-from-top-2 border-t border-slate-100 mt-1">
                   {item.answer}
                 </div>
               )}

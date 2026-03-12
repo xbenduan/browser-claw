@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { ToolCallDisplay } from '@/types';
-import { ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, PlayCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, PlayCircle, ToolCase } from 'lucide-react';
 
 interface ToolCallCardProps {
   toolCall: ToolCallDisplay;
@@ -60,12 +60,12 @@ const ToolCallCard: React.FC<ToolCallCardProps> = ({ toolCall }) => {
 
   return (
     <div className="glass-card p-3 my-2 border border-white/5 shadow-sm">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-slate-800/50 flex items-center justify-center border border-white/5">
-            <span className="text-xs">📡</span>
+          <div className="w-4 h-4 flex items-center justify-center">
+            <ToolCase />
           </div>
-          <span className="font-medium text-sm text-slate-200">
+          <span className="font-medium text-sm text-slate-600">
             {toolCall.skillName}
           </span>
         </div>

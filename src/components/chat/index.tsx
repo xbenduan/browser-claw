@@ -284,7 +284,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
         <div className="flex items-center gap-2 mb-1">
           <span className="text-sm font-medium text-slate-800 truncate">{item.title}</span>
           {item.hostname && (
-            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-50 border border-slate-200 text-slate-500 truncate max-w-[120px]">
+            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-50 border border-slate-200 text-slate-500 truncate max-w-30">
               {item.hostname}
             </span>
           )}
