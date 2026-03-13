@@ -1,26 +1,25 @@
-import { useState } from "react";
 import {
-  Sparkles,
-  Brain,
-  Wifi,
-  Info,
-  Clock,
   AlertCircle,
-  CheckCircle2,
-  Loader2,
   Ban,
+  Brain,
+  CheckCircle2,
+  Clock,
+  Info,
+  Loader2,
+  Sparkles,
+  Wifi,
 } from "lucide-react";
-import Skills from "@/components/skills";
-import Chat from "@/components/chat";
-import Models from "@/components/models";
+import { useState } from "react";
 import Channels from "@/components/channels";
+import Chat from "@/components/chat";
 import FAQ from "@/components/FAQ";
+import Models from "@/components/models";
 import LanguageSwitch from "@/components/shared/LanguageSwitch";
-
-import { useSkills } from "@/hooks/useSkills";
-import { useModel } from "@/hooks/useModel";
+import Skills from "@/components/skills";
 import { useChannels } from "@/hooks/useChannels";
 import { useContentScript } from "@/hooks/useContentScript";
+import { useModel } from "@/hooks/useModel";
+import { useSkills } from "@/hooks/useSkills";
 import { useI18n } from "@/i18n";
 
 const TAB_IDS = {

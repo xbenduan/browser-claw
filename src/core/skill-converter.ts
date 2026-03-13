@@ -1,5 +1,5 @@
-import type { SkillDefinition } from "@/types";
 import type OpenAI from "openai";
+import type { SkillDefinition } from "@/types";
 
 /**
  * Skill 定义 → OpenAI Tool 格式转换

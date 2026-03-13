@@ -17,9 +17,9 @@ export class SessionDB {
 
   /** 打开 / 初始化数据库（单例） */
   private static openDB(): Promise<IDBDatabase> {
-    if (this.dbPromise) return this.dbPromise;
+    if (SessionDB.dbPromise) return SessionDB.dbPromise;
 
-    this.dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
+    SessionDB.dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onupgradeneeded = () => {
@@ -33,17 +33,17 @@ export class SessionDB {
 
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => {
-        this.dbPromise = null;
+        SessionDB.dbPromise = null;
         reject(request.error);
       };
     });
 
-    return this.dbPromise;
+    return SessionDB.dbPromise;
   }
 
   /** 获取 object store 的事务辅助 */
   private static async getStore(mode: IDBTransactionMode = "readonly") {
-    const db = await this.openDB();
+    const db = await SessionDB.openDB();
     const tx = db.transaction(STORE_NAME, mode);
     return tx.objectStore(STORE_NAME);
   }
@@ -60,32 +60,32 @@ export class SessionDB {
 
   /** 获取所有会话 */
   static async getAll(): Promise<ChatSession[]> {
-    const store = await this.getStore();
-    return this.promisify(store.getAll());
+    const store = await SessionDB.getStore();
+    return SessionDB.promisify(store.getAll());
   }
 
   /** 获取单个会话 */
   static async get(sessionId: string): Promise<ChatSession | undefined> {
-    const store = await this.getStore();
-    const result = await this.promisify(store.get(sessionId));
+    const store = await SessionDB.getStore();
+    const result = await SessionDB.promisify(store.get(sessionId));
     return result ?? undefined;
   }
 
   /** 保存（新增或更新）会话 */
   static async save(session: ChatSession): Promise<void> {
-    const store = await this.getStore("readwrite");
-    await this.promisify(store.put(session));
+    const store = await SessionDB.getStore("readwrite");
+    await SessionDB.promisify(store.put(session));
   }
 
   /** 删除会话 */
   static async delete(sessionId: string): Promise<void> {
-    const store = await this.getStore("readwrite");
-    await this.promisify(store.delete(sessionId));
+    const store = await SessionDB.getStore("readwrite");
+    await SessionDB.promisify(store.delete(sessionId));
   }
 
   /** 获取会话列表（轻量摘要，按 updatedAt 倒序） */
   static async getSessionList(): Promise<SessionListItem[]> {
-    const sessions = await this.getAll();
+    const sessions = await SessionDB.getAll();
     return sessions
       .map((s) => ({
         id: s.id,
@@ -101,14 +101,14 @@ export class SessionDB {
 
   /** 按 hostname 查询会话 */
   static async getByHostname(hostname: string): Promise<ChatSession[]> {
-    const store = await this.getStore();
+    const store = await SessionDB.getStore();
     const index = store.index("hostname");
-    return this.promisify(index.getAll(hostname));
+    return SessionDB.promisify(index.getAll(hostname));
   }
 
   /** 清空所有会话 */
   static async clear(): Promise<void> {
-    const store = await this.getStore("readwrite");
-    await this.promisify(store.clear());
+    const store = await SessionDB.getStore("readwrite");
+    await SessionDB.promisify(store.clear());
   }
 }

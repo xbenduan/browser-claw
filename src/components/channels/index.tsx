@@ -1,28 +1,29 @@
-import React, { useMemo, useState } from "react";
 import {
-  Plus,
-  Trash2,
-  Edit2,
-  Save,
-  X,
-  Power,
-  PowerOff,
-  MessageCircle,
+  AlertCircle,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
-  Send,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
+  Edit2,
   Hash,
+  Loader2,
+  MessageCircle,
+  Plus,
+  Power,
+  PowerOff,
+  Save,
+  Send,
+  Trash2,
+  X,
 } from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
+import { useI18n } from "@/i18n";
 import type {
   Channel,
   IMPlatform,
-  IMPlatformInfo,
   IMPlatformField,
+  IMPlatformInfo,
 } from "@/types";
-import { useI18n } from "@/i18n";
 
 // ============ 平台预设 ============
 

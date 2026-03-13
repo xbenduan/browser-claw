@@ -1,31 +1,32 @@
-import React, { useState, useRef, useMemo } from "react";
 import {
-  Plus,
-  Upload,
-  Download,
-  Search,
-  Trash2,
-  Eye,
-  Play,
-  Globe,
-  BookOpen,
-  FileCode,
-  Lightbulb,
-  Check,
   AlertTriangle,
+  BookOpen,
+  Check,
+  Download,
+  Eye,
+  FileCode,
+  Globe,
+  Lightbulb,
+  Loader2,
+  Play,
+  Plus,
+  Search,
   ShieldAlert,
   ShieldCheck,
-  Loader2,
+  Trash2,
+  Upload,
 } from "lucide-react";
+import type React from "react";
+import { useMemo, useRef, useState } from "react";
+import Modal from "@/components/shared/Modal";
+import { useI18n } from "@/i18n";
 import type { SkillDefinition } from "@/types";
-import { Messaging } from "@/utils/messaging";
 import {
   EXAMPLE_SKILLS,
   getExampleSkillJSON,
   getSkillTemplateJSON,
 } from "@/utils/example-skills";
-import Modal from "@/components/shared/Modal";
-import { useI18n } from "@/i18n";
+import { Messaging } from "@/utils/messaging";
 
 interface SkillsProps {
   skills: SkillDefinition[];

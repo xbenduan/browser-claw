@@ -1,30 +1,31 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  Send,
-  Trash2,
-  Loader2,
-  PlusCircle,
-  Clock,
-  MessageSquare,
-  ChevronLeft,
-  Lock,
-  Globe,
   AlertTriangle,
+  ChevronLeft,
+  Clock,
+  Globe,
+  Loader2,
+  Lock,
+  MessageSquare,
+  PlusCircle,
+  Send,
   Square,
+  Trash2,
 } from "lucide-react";
-import type { ChatMessage } from "@/types";
-import { useChatSession } from "@/hooks/useChatSession";
-import { useSessions } from "@/hooks/useSessions";
-import { useSkills } from "@/hooks/useSkills";
-import { useModel } from "@/hooks/useModel";
-import { useContentScript } from "@/hooks/useContentScript";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ConfirmationCard from "@/components/shared/ConfirmationCard";
-import ToolCallCard from "@/components/shared/ToolCallCard";
-import { isBuiltinSkill } from "@/utils/builtin-skills";
+import LanguageSwitch from "@/components/shared/LanguageSwitch";
 import MarkdownRenderer from "@/components/shared/MarkdownRenderer";
 import Modal from "@/components/shared/Modal";
-import LanguageSwitch from "@/components/shared/LanguageSwitch";
+import ToolCallCard from "@/components/shared/ToolCallCard";
+import { useChatSession } from "@/hooks/useChatSession";
+import { useContentScript } from "@/hooks/useContentScript";
+import { useModel } from "@/hooks/useModel";
+import { useSessions } from "@/hooks/useSessions";
+import { useSkills } from "@/hooks/useSkills";
 import { useI18n } from "@/i18n";
+import type { ChatMessage } from "@/types";
+import { isBuiltinSkill } from "@/utils/builtin-skills";
 
 export default function SidePanelApp() {
   const { t, locale } = useI18n();

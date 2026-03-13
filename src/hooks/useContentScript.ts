@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { Messaging } from "@/utils/messaging";
+import { useCallback, useEffect, useState } from "react";
 import type { PageInfo } from "@/types";
+import { Messaging } from "@/utils/messaging";
 
 export function useContentScript() {
   const [connected, setConnected] = useState(false);

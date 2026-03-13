@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { AgentConfig } from "@/types";
 import { DEFAULT_MODEL_CONFIG } from "@/types";
 import { Storage } from "@/utils/storage";
@@ -32,7 +32,7 @@ export function useModel() {
         dangerouslyAllowBrowser: true,
       });
       const modelList = await client.models.list();
-      const models = [];
+      const models: string[] = [];
       for await (const model of modelList) {
         models.push(model.id);
       }

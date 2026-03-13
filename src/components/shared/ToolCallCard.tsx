@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import type { ToolCallDisplay } from "@/types";
 import {
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
-  CheckCircle2,
-  XCircle,
   Clock,
   PlayCircle,
   ToolCase,
+  XCircle,
 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 import { useI18n } from "@/i18n";
+import type { ToolCallDisplay } from "@/types";
 
 interface ToolCallCardProps {
   toolCall: ToolCallDisplay;

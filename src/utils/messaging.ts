@@ -1,10 +1,10 @@
-import { MessageType } from "@/types";
 import type {
-  ExecuteAPIPayload,
   APIResponse,
-  PageInfo,
+  ExecuteAPIPayload,
   PageContentResult,
+  PageInfo,
 } from "@/types";
+import { MessageType } from "@/types";
 
 /**
  * Chrome Extension 消息通信封装
@@ -18,7 +18,7 @@ export class Messaging {
     payload: unknown,
     tabId?: number,
   ): Promise<T> {
-    const id = tabId ?? (await this.getActiveTabId());
+    const id = tabId ?? (await Messaging.getActiveTabId());
     if (!id) throw new Error("No active tab found");
 
     return new Promise((resolve, reject) => {
@@ -52,7 +52,7 @@ export class Messaging {
     payload: ExecuteAPIPayload,
     tabId?: number,
   ): Promise<APIResponse> {
-    return this.sendToContentScript<APIResponse>(
+    return Messaging.sendToContentScript<APIResponse>(
       MessageType.EXECUTE_API,
       payload,
       tabId,
@@ -63,7 +63,7 @@ export class Messaging {
    * 取消请求
    */
   static async cancelRequest(requestId: string, tabId?: number): Promise<void> {
-    await this.sendToContentScript(
+    await Messaging.sendToContentScript(
       MessageType.CANCEL_REQUEST,
       { requestId },
       tabId,
@@ -74,7 +74,7 @@ export class Messaging {
    * 获取页面信息
    */
   static async getPageInfo(tabId?: number): Promise<PageInfo> {
-    return this.sendToContentScript<PageInfo>(
+    return Messaging.sendToContentScript<PageInfo>(
       MessageType.GET_PAGE_INFO,
       {},
       tabId,
@@ -92,7 +92,7 @@ export class Messaging {
     },
     tabId?: number,
   ): Promise<PageContentResult> {
-    return this.sendToContentScript<PageContentResult>(
+    return Messaging.sendToContentScript<PageContentResult>(
       MessageType.READ_PAGE_CONTENT,
       options || {},
       tabId,
@@ -104,7 +104,7 @@ export class Messaging {
    */
   static async ping(tabId?: number): Promise<boolean> {
     try {
-      const response = await this.sendToContentScript<{ type: string }>(
+      const response = await Messaging.sendToContentScript<{ type: string }>(
         MessageType.PING,
         {},
         tabId,
@@ -120,7 +120,7 @@ export class Messaging {
    */
   static async isInjectableTab(tabId?: number): Promise<boolean> {
     try {
-      const id = tabId ?? (await this.getActiveTabId());
+      const id = tabId ?? (await Messaging.getActiveTabId());
       if (!id) return false;
       const tab = await chrome.tabs.get(id);
       const url = tab.url || "";
@@ -144,12 +144,12 @@ export class Messaging {
    * 确保 Content Script 已连接
    */
   static async ensureConnected(tabId?: number): Promise<boolean> {
-    const id = tabId ?? (await this.getActiveTabId());
+    const id = tabId ?? (await Messaging.getActiveTabId());
     if (!id) return false;
 
-    if (!(await this.isInjectableTab(id))) return false;
+    if (!(await Messaging.isInjectableTab(id))) return false;
 
-    if (await this.ping(id)) return true;
+    if (await Messaging.ping(id)) return true;
 
     try {
       const manifest = chrome.runtime.getManifest();
@@ -165,7 +165,7 @@ export class Messaging {
     }
 
     await new Promise((r) => setTimeout(r, 300));
-    return this.ping(id);
+    return Messaging.ping(id);
   }
 
   /**

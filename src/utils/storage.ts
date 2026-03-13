@@ -1,5 +1,4 @@
-import type { StorageSchema } from "@/types";
-import type { ChatSession, SessionListItem } from "@/types";
+import type { ChatSession, SessionListItem, StorageSchema } from "@/types";
 import { DEFAULT_MODEL_CONFIG, DEFAULT_PREFERENCES } from "@/types";
 import { SessionDB } from "./session-db";
 
@@ -35,15 +34,15 @@ export class Storage {
   // ---- 快捷方法（非会话数据，仍走 chrome.storage） ----
 
   static async getSkills() {
-    return (await this.get("skills")) ?? [];
+    return (await Storage.get("skills")) ?? [];
   }
 
   static async setSkills(skills: StorageSchema["skills"]) {
-    return this.set("skills", skills);
+    return Storage.set("skills", skills);
   }
 
   static async getModelConfig() {
-    const stored = await this.get("modelConfig");
+    const stored = await Storage.get("modelConfig");
     if (!stored) return DEFAULT_MODEL_CONFIG;
     // 存储中 apiKey 为空时，用 .env 默认值补全，方便调试
     return {
@@ -56,31 +55,31 @@ export class Storage {
   }
 
   static async setModelConfig(config: StorageSchema["modelConfig"]) {
-    return this.set("modelConfig", config);
+    return Storage.set("modelConfig", config);
   }
 
   static async getChannels() {
-    return (await this.get("channels")) ?? [];
+    return (await Storage.get("channels")) ?? [];
   }
 
   static async setChannels(channels: StorageSchema["channels"]) {
-    return this.set("channels", channels);
+    return Storage.set("channels", channels);
   }
 
   static async getChatHistory() {
-    return (await this.get("chatHistory")) ?? {};
+    return (await Storage.get("chatHistory")) ?? {};
   }
 
   static async setChatHistory(history: StorageSchema["chatHistory"]) {
-    return this.set("chatHistory", history);
+    return Storage.set("chatHistory", history);
   }
 
   static async getPreferences() {
-    return (await this.get("preferences")) ?? DEFAULT_PREFERENCES;
+    return (await Storage.get("preferences")) ?? DEFAULT_PREFERENCES;
   }
 
   static async setPreferences(prefs: StorageSchema["preferences"]) {
-    return this.set("preferences", prefs);
+    return Storage.set("preferences", prefs);
   }
 
   // ---- 会话管理方法（代理到 IndexedDB） ----
@@ -118,11 +117,11 @@ export class Storage {
   }
 
   static async getActiveSessionId(): Promise<string> {
-    return (await this.get("activeSessionId")) ?? "";
+    return (await Storage.get("activeSessionId")) ?? "";
   }
 
   static async setActiveSessionId(id: string): Promise<void> {
-    return this.set("activeSessionId", id);
+    return Storage.set("activeSessionId", id);
   }
 
   static createNewSession(hostname: string, title = "新会话"): ChatSession {

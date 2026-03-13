@@ -1,23 +1,24 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   AlertTriangle,
-  ShieldAlert,
-  X,
   Check,
-  Pencil,
-  RotateCcw,
-  MessageSquarePlus,
-  Send,
   ChevronDown,
   ChevronRight,
+  MessageSquarePlus,
+  Pencil,
+  RotateCcw,
+  Send,
+  ShieldAlert,
+  X,
 } from "lucide-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useI18n } from "@/i18n";
 import type {
   ConfirmationRequest,
   ConfirmationResult,
   SkillDefinition,
 } from "@/types";
 import { parseChatModification } from "@/utils/param-modifier";
-import { useI18n } from "@/i18n";
 
 interface ConfirmationCardProps {
   data: ConfirmationRequest;
@@ -54,13 +55,19 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<
-    Array<{ role: "user" | "system"; text: string }>
+    Array<{ id: string; role: "user" | "system"; text: string }>
   >([]);
   const [isParamsModified, setIsParamsModified] = useState(false);
   const [showParams, setShowParams] = useState(true);
 
   const chatInputRef = useRef<HTMLInputElement>(null);
   const chatListRef = useRef<HTMLDivElement>(null);
+  const messageIdRef = useRef(0);
+
+  const nextMessageId = useCallback(() => {
+    messageIdRef.current += 1;
+    return `msg_${messageIdRef.current}`;
+  }, []);
 
   // 检测参数是否被修改
   useEffect(() => {
@@ -70,12 +77,14 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
   }, [editedParams, data.parameters]);
 
   // 聊天消息滚动到底部
+  const chatMessageCount = chatMessages.length;
   useEffect(() => {
+    if (chatMessageCount === 0) return;
     chatListRef.current?.scrollTo({
       top: chatListRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [chatMessages]);
+  }, [chatMessageCount]);
 
   // ─── 风格 ───
   let borderColor = "border-slate-200";
@@ -128,12 +137,13 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
     setEditMode("chat");
     setChatMessages([
       {
+        id: nextMessageId(),
         role: "system",
         text: t("confirmation.chatGuide"),
       },
     ]);
     setTimeout(() => chatInputRef.current?.focus(), 100);
-  }, [t]);
+  }, [nextMessageId, t]);
 
   // ─── 回到查看模式 ───
   const handleBackToView = useCallback(() => {
@@ -154,7 +164,10 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
     const trimmed = chatInput.trim();
     if (!trimmed) return;
 
-    setChatMessages((prev) => [...prev, { role: "user", text: trimmed }]);
+    setChatMessages((prev) => [
+      ...prev,
+      { id: nextMessageId(), role: "user", text: trimmed },
+    ]);
     setChatInput("");
 
     const result = parseChatModification(
@@ -169,9 +182,10 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
       setChatMessages((prev) => [
         ...prev,
         {
+          id: nextMessageId(),
           role: "system",
           text: t("confirmation.chatModified", {
-            changes: result.changes!.join(", "),
+            changes: result.changes?.join(", ") ?? "",
           }),
         },
       ]);
@@ -179,12 +193,13 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
       setChatMessages((prev) => [
         ...prev,
         {
+          id: nextMessageId(),
           role: "system",
           text: result.error || t("confirmation.chatFailed"),
         },
       ]);
     }
-  }, [chatInput, editedParams, skillDefinition, t]);
+  }, [chatInput, editedParams, nextMessageId, skillDefinition, t]);
 
   // ─── 确认 / 拒绝 ───
   const handleConfirm = useCallback(() => {
@@ -247,6 +262,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
           {/* Parameters Header with toggle and mode switch */}
           <div className="flex items-center justify-between mb-2">
             <button
+              type="button"
               className="flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-slate-400 hover:text-slate-600 transition-colors"
               onClick={() => setShowParams(!showParams)}
             >
@@ -262,6 +278,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
               <div className="flex items-center gap-1">
                 {isParamsModified && (
                   <button
+                    type="button"
                     className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-amber-600 transition-colors"
                     onClick={handleResetParams}
                     title={t("confirmation.resetParams")}
@@ -273,6 +290,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                 {editMode === "view" && (
                   <>
                     <button
+                      type="button"
                       className="p-1 rounded hover:bg-violet-50 text-slate-400 hover:text-violet-600 transition-colors duration-150 cursor-pointer"
                       onClick={handleEnterEditMode}
                       title={t("confirmation.manualEdit")}
@@ -280,6 +298,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                       <Pencil className="w-3 h-3" />
                     </button>
                     <button
+                      type="button"
                       className="p-1 rounded hover:bg-violet-50 text-slate-400 hover:text-violet-600 transition-colors duration-150 cursor-pointer"
                       onClick={handleEnterChatMode}
                       title={t("confirmation.chatEdit")}
@@ -291,6 +310,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
 
                 {editMode !== "view" && (
                   <button
+                    type="button"
                     className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
                     onClick={handleBackToView}
                   >
@@ -366,9 +386,9 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                     ref={chatListRef}
                     className="bg-slate-50 border border-slate-200 rounded-lg p-2 max-h-40 overflow-y-auto custom-scrollbar space-y-1.5"
                   >
-                    {chatMessages.map((msg, idx) => (
+                    {chatMessages.map((msg) => (
                       <div
-                        key={idx}
+                        key={msg.id}
                         className={`text-xs px-2 py-1 rounded-lg max-w-[90%] ${
                           msg.role === "user"
                             ? "bg-cyan-50 text-cyan-800 border border-cyan-100 ml-auto"
@@ -397,6 +417,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                       }}
                     />
                     <button
+                      type="button"
                       className="p-1.5 rounded-lg bg-cyan-50 text-cyan-600 hover:bg-cyan-100 border border-cyan-100 transition-colors disabled:opacity-30"
                       onClick={handleChatSend}
                       disabled={!chatInput.trim()}
@@ -433,6 +454,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
 
         <div className="flex gap-2">
           <button
+            type="button"
             className="glass-button-danger text-xs px-3 py-1.5 h-8"
             onClick={handleReject}
           >
@@ -440,6 +462,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
             {t("confirmation.reject")}
           </button>
           <button
+            type="button"
             className={`text-xs px-3 py-1.5 h-8 ${
               isParamsModified
                 ? "glass-button-primary ring-1 ring-amber-300"

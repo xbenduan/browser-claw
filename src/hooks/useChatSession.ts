@@ -1,15 +1,15 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AgentEngine } from "@/core/agent-engine";
+import { useI18n } from "@/i18n";
 import type {
-  ChatMessage,
   AgentConfig,
-  SkillDefinition,
+  ChatMessage,
+  ChatSession,
   ConfirmationRequest,
   ConfirmationResult,
-  ChatSession,
+  SkillDefinition,
 } from "@/types";
-import { AgentEngine } from "@/core/agent-engine";
 import { Storage } from "@/utils/storage";
-import { useI18n } from "@/i18n";
 
 /**
  * 带会话持久化的聊天 hook — 用于 Side Panel

@@ -1,12 +1,12 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
+import { AgentEngine } from "@/core/agent-engine";
 import type {
-  ChatMessage,
   AgentConfig,
-  SkillDefinition,
+  ChatMessage,
   ConfirmationRequest,
   ConfirmationResult,
+  SkillDefinition,
 } from "@/types";
-import { AgentEngine } from "@/core/agent-engine";
 
 export function useChat(
   config: AgentConfig,

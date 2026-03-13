@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
 import {
-  Save,
-  Zap,
+  AlertCircle,
+  Box,
+  CheckCircle2,
   Eye,
   EyeOff,
-  CheckCircle2,
-  AlertCircle,
-  Server,
   Key,
-  Box,
-  Thermometer,
   Maximize2,
+  Save,
+  Server,
+  Thermometer,
+  Zap,
 } from "lucide-react";
-import type { AgentConfig } from "@/types";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
+import type { AgentConfig } from "@/types";
 
 interface ModelsProps {
   config: AgentConfig;

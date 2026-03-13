@@ -1,9 +1,9 @@
 // ============ 存储结构 ============
 
-import type { SkillDefinition } from "./skill";
-import type { Channel } from "./channel";
 import type { AgentConfig } from "./agent";
+import type { Channel } from "./channel";
 import type { ChatSession } from "./session";
+import type { SkillDefinition } from "./skill";
 
 export interface StorageSchema {
   skills: SkillDefinition[];

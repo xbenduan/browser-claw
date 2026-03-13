@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useI18n } from "@/i18n";
 import type { ChatSession, SessionListItem } from "@/types";
 import { Storage } from "@/utils/storage";
-import { useI18n } from "@/i18n";
 
 export function useSessions() {
   const [sessionList, setSessionList] = useState<SessionListItem[]>([]);

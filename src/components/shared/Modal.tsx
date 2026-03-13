@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useI18n } from "@/i18n";
 

@@ -1,20 +1,21 @@
-import React, { useState } from "react";
 import {
-  HelpCircle,
   BookOpen,
-  Github,
-  Zap,
-  Shield,
-  Globe,
-  MessageSquare,
-  FileJson,
-  Layers,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
+  ExternalLink,
+  FileJson,
+  Github,
+  Globe,
+  HelpCircle,
+  Layers,
+  MessageSquare,
+  Shield,
+  Zap,
 } from "lucide-react";
-import { APP_NAME, APP_VERSION } from "@/utils/constants";
+import type React from "react";
+import { useState } from "react";
 import { useI18n } from "@/i18n";
+import { APP_NAME, APP_VERSION } from "@/utils/constants";
 
 const QUICK_START_ICONS = [Zap, FileJson, Layers, Globe, MessageSquare, Shield];
 const QUICK_START_COLORS = [
@@ -105,6 +106,7 @@ const FAQ: React.FC = () => {
               }`}
             >
               <button
+                type="button"
                 className="w-full text-left px-4 py-3 flex items-center justify-between gap-3"
                 onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
               >

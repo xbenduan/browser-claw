@@ -1,4 +1,4 @@
-import type { SkillDefinition, ExecuteAPIPayload } from "@/types";
+import type { ExecuteAPIPayload, SkillDefinition } from "@/types";
 
 /**
  * 根据 Skill 定义和 AI 生成的参数，组装 HTTP 请求
