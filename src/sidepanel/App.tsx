@@ -52,12 +52,51 @@ export default function SidePanelApp() {
   const [input, setInput] = useState('');
   const [showHistory, setShowHistory] = useState(false);
   const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
+  const [typedStreamingContent, setTypedStreamingContent] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimerRef = useRef<number | null>(null);
+  const typingTargetRef = useRef('');
+  const typingLengthRef = useRef(0);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent, pendingConfirmation]);
+
+  useEffect(() => {
+    typingTargetRef.current = streamingContent;
+    if (!streamingContent) {
+      typingLengthRef.current = 0;
+      setTypedStreamingContent('');
+    }
+  }, [streamingContent]);
+
+  useEffect(() => {
+    if (typingTimerRef.current !== null) return;
+    typingTimerRef.current = window.setInterval(() => {
+      const target = typingTargetRef.current;
+      if (!target) {
+        if (typingLengthRef.current !== 0) {
+          typingLengthRef.current = 0;
+          setTypedStreamingContent('');
+        }
+        return;
+      }
+      if (typingLengthRef.current < target.length) {
+        const remaining = target.length - typingLengthRef.current;
+        const step = Math.max(1, Math.ceil(remaining / 8));
+        typingLengthRef.current = Math.min(typingLengthRef.current + step, target.length);
+        setTypedStreamingContent(target.slice(0, typingLengthRef.current));
+      }
+    }, 14);
+
+    return () => {
+      if (typingTimerRef.current !== null) {
+        window.clearInterval(typingTimerRef.current);
+        typingTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const handleSend = () => {
     const trimmed = input.trim();
@@ -343,8 +382,7 @@ export default function SidePanelApp() {
         {streamingContent && (
           <div className="flex justify-start">
             <div className="max-w-[90%] glass-panel rounded-2xl rounded-tl-none p-4 text-sm text-slate-700">
-              <MarkdownRenderer content={streamingContent} />
-              <span className="inline-block w-1.5 h-4 bg-cyan-400 animate-pulse ml-1 align-middle" />
+              <MarkdownRenderer content={typedStreamingContent} isStreaming />
             </div>
           </div>
         )}
@@ -374,8 +412,8 @@ export default function SidePanelApp() {
         <div className="flex items-end gap-2 w-full bg-white border border-slate-200/80 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/50">
           <textarea
             ref={inputRef}
-            className="flex-1 w-full bg-transparent border-none outline-none text-sm text-slate-800 placeholder-slate-400 resize-none py-1"
-            placeholder={!isConfigured ? '等待配置...' : '输入指令...（如"总结这个页面"）'}
+            className="flex-1 w-full bg-transparent border-none outline-none text-sm text-slate-800 placeholder:text-slate-400/80 placeholder:italic resize-none py-1"
+            placeholder={!isConfigured ? '等待配置...' : '输入指令… 例如：总结当前页面、提取要点'}
             rows={1}
             style={{ minHeight: '28px', maxHeight: '120px' }}
             value={input}

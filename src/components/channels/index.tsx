@@ -492,7 +492,7 @@ const Channels: React.FC<ChannelsProps> = ({
       )}
 
       {/* ─── Channel List ─── */}
-      <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar px-2 py-2">
         {channels.length === 0 && !showAddForm && (
           <div className="text-center py-12 px-4">
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
