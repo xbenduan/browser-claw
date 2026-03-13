@@ -92,24 +92,29 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
   }
 
   // ─── 手动编辑 JSON ───
-  const handleJsonChange = useCallback((value: string) => {
-    setJsonText(value);
-    try {
-      const parsed = JSON.parse(value);
-      if (
-        typeof parsed !== "object" ||
-        parsed === null ||
-        Array.isArray(parsed)
-      ) {
-        setJsonError(t("confirmation.jsonObjectRequired"));
-        return;
+  const handleJsonChange = useCallback(
+    (value: string) => {
+      setJsonText(value);
+      try {
+        const parsed = JSON.parse(value);
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          Array.isArray(parsed)
+        ) {
+          setJsonError(t("confirmation.jsonObjectRequired"));
+          return;
+        }
+        setJsonError(null);
+        setEditedParams(parsed);
+      } catch (e) {
+        setJsonError(
+          t("confirmation.jsonError", { error: (e as Error).message }),
+        );
       }
-      setJsonError(null);
-      setEditedParams(parsed);
-    } catch (e) {
-      setJsonError(t("confirmation.jsonError", { error: (e as Error).message }));
-    }
-  }, [t]);
+    },
+    [t],
+  );
 
   // ─── 进入编辑模式 ───
   const handleEnterEditMode = useCallback(() => {
@@ -175,8 +180,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
         ...prev,
         {
           role: "system",
-          text:
-            result.error || t("confirmation.chatFailed"),
+          text: result.error || t("confirmation.chatFailed"),
         },
       ]);
     }
@@ -319,7 +323,8 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                           {JSON.stringify(val)}
                           {isChanged && (
                             <span className="ml-1.5 text-[9px] text-amber-500 font-normal">
-                              ({t("confirmation.original")}: {JSON.stringify(originalVal)})
+                              ({t("confirmation.original")}:{" "}
+                              {JSON.stringify(originalVal)})
                             </span>
                           )}
                         </span>
@@ -444,7 +449,9 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
             disabled={editMode === "edit" && !!jsonError}
           >
             <Check className="w-3.5 h-3.5" />
-            {isParamsModified ? t("confirmation.confirmModified") : t("confirmation.confirm")}
+            {isParamsModified
+              ? t("confirmation.confirmModified")
+              : t("confirmation.confirm")}
           </button>
         </div>
       </div>

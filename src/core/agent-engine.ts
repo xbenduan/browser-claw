@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI from "openai";
 import type {
   AgentConfig,
   AgentEvent,
@@ -7,14 +7,14 @@ import type {
   ConfirmationRequest,
   ConfirmationResult,
   ToolCallDisplay,
-} from '@/types';
-import { skillsToOpenAITools } from './skill-converter';
-import { buildHttpRequest } from './request-builder';
-import { applyExtractors } from './response-extractor';
-import { Messaging } from '@/utils/messaging';
-import { MAX_AGENT_ITERATIONS } from '@/utils/constants';
-import { BUILTIN_SKILL_IDS, isBuiltinSkill } from '@/utils/builtin-skills';
-import { queryStoredData, storeData } from './data-store';
+} from "@/types";
+import { skillsToOpenAITools } from "./skill-converter";
+import { buildHttpRequest } from "./request-builder";
+import { applyExtractors } from "./response-extractor";
+import { Messaging } from "@/utils/messaging";
+import { MAX_AGENT_ITERATIONS } from "@/utils/constants";
+import { BUILTIN_SKILL_IDS, isBuiltinSkill } from "@/utils/builtin-skills";
+import { queryStoredData, storeData } from "./data-store";
 
 interface ToolCallRaw {
   id: string;
@@ -27,8 +27,13 @@ interface ToolCallRaw {
 /**
  * 构建 System Prompt
  */
-function buildSystemPrompt(hostname: string, skills: SkillDefinition[]): string {
-  const skillList = skills.map((s) => `- **${s.name}** (${s.id}): ${s.description}`).join('\n');
+function buildSystemPrompt(
+  hostname: string,
+  skills: SkillDefinition[],
+): string {
+  const skillList = skills
+    .map((s) => `- **${s.name}** (${s.id}): ${s.description}`)
+    .join("\n");
 
   return `你是一个智能 API 助手（Browser Claw），运行在 ${hostname} 的浏览器环境中。
 
@@ -102,7 +107,7 @@ export class AgentEngine {
   constructor(
     config: AgentConfig,
     skills: SkillDefinition[],
-    hostname: string
+    hostname: string,
   ) {
     this.config = config;
     this.skills = skills;
@@ -116,7 +121,7 @@ export class AgentEngine {
   }
 
   setConfirmationHandler(
-    handler: (request: ConfirmationRequest) => Promise<ConfirmationResult>
+    handler: (request: ConfirmationRequest) => Promise<ConfirmationResult>,
   ) {
     this.confirmationHandler = handler;
   }
@@ -135,50 +140,53 @@ export class AgentEngine {
    */
   async *processUserMessage(
     userMessage: string,
-    conversationHistory: ChatMessage[]
+    conversationHistory: ChatMessage[],
   ): AsyncGenerator<AgentEvent> {
-
     const tools = skillsToOpenAITools(this.skills);
     const systemPrompt = buildSystemPrompt(this.hostname, this.skills);
 
     const messages: OpenAI.ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
+      { role: "system", content: systemPrompt },
     ];
 
     const recentHistory = conversationHistory.slice(-20);
     for (const msg of recentHistory) {
-      if (msg.role === 'tool') {
+      if (msg.role === "tool") {
         messages.push({
-          role: 'tool',
-          tool_call_id: msg.toolCallId ?? '',
+          role: "tool",
+          tool_call_id: msg.toolCallId ?? "",
           content: msg.content,
         });
-      } else if (msg.role === 'assistant' && msg.toolCalls && msg.toolCalls.length > 0) {
+      } else if (
+        msg.role === "assistant" &&
+        msg.toolCalls &&
+        msg.toolCalls.length > 0
+      ) {
         messages.push({
-          role: 'assistant',
+          role: "assistant",
           content: msg.content || null,
           tool_calls: msg.toolCalls.map((tc) => ({
             id: tc.id,
-            type: 'function' as const,
+            type: "function" as const,
             function: {
               name: tc.skillId,
               arguments: JSON.stringify(tc.arguments),
             },
           })),
         });
-      } else if (msg.role === 'user' || msg.role === 'assistant') {
+      } else if (msg.role === "user" || msg.role === "assistant") {
         messages.push({ role: msg.role, content: msg.content });
       }
     }
 
-    messages.push({ role: 'user', content: userMessage });
+    messages.push({ role: "user", content: userMessage });
 
     yield* this.agentLoop(messages, tools);
   }
 
   private async *agentLoop(
     messages: OpenAI.ChatCompletionMessageParam[],
-    tools: OpenAI.ChatCompletionTool[]
+    tools: OpenAI.ChatCompletionTool[],
   ): AsyncGenerator<AgentEvent> {
     // 每次 agentLoop 创建新的 AbortController
     this.abortController = new AbortController();
@@ -187,32 +195,32 @@ export class AgentEngine {
     for (let i = 0; i < MAX_AGENT_ITERATIONS; i++) {
       // 检查是否已被中止
       if (signal.aborted) {
-        yield { type: 'error', error: '已暂停执行' };
-        yield { type: 'done' };
+        yield { type: "error", error: "已暂停执行" };
+        yield { type: "done" };
         return;
       }
 
-      yield { type: 'llm_call_start' };
+      yield { type: "llm_call_start" };
 
       try {
         const stream = await this.openai.chat.completions.create({
           model: this.config.model,
           messages,
           tools: tools.length > 0 ? tools : undefined,
-          tool_choice: tools.length > 0 ? 'auto' : undefined,
+          tool_choice: tools.length > 0 ? "auto" : undefined,
           temperature: this.config.temperature,
           max_tokens: this.config.maxTokens,
           stream: true,
         });
 
-        let content = '';
+        let content = "";
         const toolCalls: ToolCallRaw[] = [];
 
         for await (const chunk of stream) {
           // 在流式读取中检查中止
           if (signal.aborted) {
-            yield { type: 'error', error: '已暂停执行' };
-            yield { type: 'done' };
+            yield { type: "error", error: "已暂停执行" };
+            yield { type: "done" };
             return;
           }
 
@@ -221,7 +229,7 @@ export class AgentEngine {
 
           if (delta.content) {
             content += delta.content;
-            yield { type: 'llm_streaming', content: delta.content };
+            yield { type: "llm_streaming", content: delta.content };
           }
 
           if (delta.tool_calls) {
@@ -229,31 +237,33 @@ export class AgentEngine {
               if (tc.index !== undefined) {
                 if (!toolCalls[tc.index]) {
                   toolCalls[tc.index] = {
-                    id: tc.id || '',
-                    function: { name: '', arguments: '' },
+                    id: tc.id || "",
+                    function: { name: "", arguments: "" },
                   };
                 }
                 if (tc.id) toolCalls[tc.index].id = tc.id;
-                if (tc.function?.name) toolCalls[tc.index].function.name += tc.function.name;
+                if (tc.function?.name)
+                  toolCalls[tc.index].function.name += tc.function.name;
                 if (tc.function?.arguments)
-                  toolCalls[tc.index].function.arguments += tc.function.arguments;
+                  toolCalls[tc.index].function.arguments +=
+                    tc.function.arguments;
               }
             }
           }
         }
 
         if (toolCalls.length === 0) {
-          yield { type: 'assistant_message', content };
-          yield { type: 'done' };
+          yield { type: "assistant_message", content };
+          yield { type: "done" };
           return;
         }
 
         messages.push({
-          role: 'assistant',
+          role: "assistant",
           content: content || null,
           tool_calls: toolCalls.map((tc) => ({
             id: tc.id,
-            type: 'function' as const,
+            type: "function" as const,
             function: {
               name: tc.function.name,
               arguments: tc.function.arguments,
@@ -262,49 +272,58 @@ export class AgentEngine {
         });
 
         if (content) {
-          yield { type: 'assistant_message', content };
+          yield { type: "assistant_message", content };
         }
 
         for (const toolCall of toolCalls) {
           // 检查中止
           if (signal.aborted) {
-            yield { type: 'error', error: '已暂停执行' };
-            yield { type: 'done' };
+            yield { type: "error", error: "已暂停执行" };
+            yield { type: "done" };
             return;
           }
 
           const result = await this.executeToolCall(toolCall);
 
-          const skill = this.skills.find((s) => s.id === toolCall.function.name);
+          const skill = this.skills.find(
+            (s) => s.id === toolCall.function.name,
+          );
           const tcDisplay: ToolCallDisplay = {
             id: toolCall.id,
             skillName: skill?.name ?? toolCall.function.name,
             skillId: toolCall.function.name,
-            arguments: result.executedArgs ?? this.safeParseArgs(toolCall.function.arguments),
-            status: result.success ? 'success' : 'error',
+            arguments:
+              result.executedArgs ??
+              this.safeParseArgs(toolCall.function.arguments),
+            status: result.success ? "success" : "error",
             result: result.data,
             error: result.error,
           };
 
           if (result.rejected) {
-            tcDisplay.status = 'rejected';
+            tcDisplay.status = "rejected";
           }
 
-          yield { type: 'tool_call_result', toolCall: tcDisplay, result: result.data };
+          yield {
+            type: "tool_call_result",
+            toolCall: tcDisplay,
+            result: result.data,
+          };
 
           // ★ 将 tool result 写入 messages
           // 如果用户修改了参数，也需要把修改信息带入上下文
           const toolResultContent: Record<string, unknown> = result.success
             ? (result.data as Record<string, unknown>)
-            : { error: result.error ?? 'User declined this API call' };
+            : { error: result.error ?? "User declined this API call" };
 
           if (result.parameterModified) {
-            toolResultContent._note = 'User modified parameters before execution';
+            toolResultContent._note =
+              "User modified parameters before execution";
             toolResultContent._modifiedParameters = result.executedArgs;
           }
 
           messages.push({
-            role: 'tool',
+            role: "tool",
             tool_call_id: toolCall.id,
             content: JSON.stringify(toolResultContent),
           });
@@ -313,17 +332,20 @@ export class AgentEngine {
         const errMsg = error instanceof Error ? error.message : String(error);
         // 如果是 abort 导致的错误，给出更友好的提示
         if (signal.aborted) {
-          yield { type: 'error', error: '已暂停执行' };
+          yield { type: "error", error: "已暂停执行" };
         } else {
-          yield { type: 'error', error: errMsg };
+          yield { type: "error", error: errMsg };
         }
-        yield { type: 'done' };
+        yield { type: "done" };
         return;
       }
     }
 
-    yield { type: 'error', error: '已达到最大执行步骤限制 (' + MAX_AGENT_ITERATIONS + ')' };
-    yield { type: 'done' };
+    yield {
+      type: "error",
+      error: "已达到最大执行步骤限制 (" + MAX_AGENT_ITERATIONS + ")",
+    };
+    yield { type: "done" };
   }
 
   /**
@@ -331,9 +353,7 @@ export class AgentEngine {
    * 内置 Skill 走特殊路径（直接通过 Content Script 读取页面内容）
    * 用户自定义 Skill 走 HTTP 请求路径
    */
-  private async executeToolCall(
-    toolCall: ToolCallRaw
-  ): Promise<{
+  private async executeToolCall(toolCall: ToolCallRaw): Promise<{
     success: boolean;
     data?: unknown;
     error?: string;
@@ -343,7 +363,10 @@ export class AgentEngine {
   }> {
     const skill = this.skills.find((s) => s.id === toolCall.function.name);
     if (!skill) {
-      return { success: false, error: `Skill "${toolCall.function.name}" not found` };
+      return {
+        success: false,
+        error: `Skill "${toolCall.function.name}" not found`,
+      };
     }
 
     let args = this.safeParseArgs(toolCall.function.arguments);
@@ -363,7 +386,7 @@ export class AgentEngine {
         method: skill.api.method,
         url: buildHttpRequest(skill, args).url,
         parameters: args,
-        riskLevel: skill.meta.riskLevel || 'safe',
+        riskLevel: skill.meta.riskLevel || "safe",
         headers: skill.api.headers,
         body: buildHttpRequest(skill, args).body,
       };
@@ -374,7 +397,8 @@ export class AgentEngine {
         return {
           success: false,
           rejected: true,
-          error: 'User declined this API call. Ask user for guidance on how to proceed.',
+          error:
+            "User declined this API call. Ask user for guidance on how to proceed.",
         };
       }
 
@@ -391,7 +415,11 @@ export class AgentEngine {
       try {
         const connected = await Messaging.ensureConnected();
         if (!connected) {
-          return { success: false, error: 'Content Script not connected. Please make sure the active tab is a regular web page.' };
+          return {
+            success: false,
+            error:
+              "Content Script not connected. Please make sure the active tab is a regular web page.",
+          };
         }
 
         const response = await Messaging.executeAPI({
@@ -400,14 +428,17 @@ export class AgentEngine {
         });
 
         if (!response.success) {
-          return { success: false, error: response.error || `HTTP ${response.status}` };
+          return {
+            success: false,
+            error: response.error || `HTTP ${response.status}`,
+          };
         }
 
         const extracted = applyExtractors(
           response.data,
           skill.response.extractors,
           skill.id,
-          args
+          args,
         );
         return {
           success: true,
@@ -426,20 +457,23 @@ export class AgentEngine {
     try {
       const connected = await Messaging.ensureConnected();
       if (!connected) {
-        return { success: false, error: 'Content Script not connected.' };
+        return { success: false, error: "Content Script not connected." };
       }
       const response = await Messaging.executeAPI({
         ...request,
         requestId: toolCall.id,
       });
       if (!response.success) {
-        return { success: false, error: response.error || `HTTP ${response.status}` };
+        return {
+          success: false,
+          error: response.error || `HTTP ${response.status}`,
+        };
       }
       const extracted = applyExtractors(
         response.data,
         skill.response.extractors,
         skill.id,
-        args
+        args,
       );
       return { success: true, data: extracted, executedArgs: args };
     } catch (error: unknown) {
@@ -453,7 +487,7 @@ export class AgentEngine {
    */
   private async executeBuiltinSkill(
     skillId: string,
-    args: Record<string, unknown>
+    args: Record<string, unknown>,
   ): Promise<{ success: boolean; data?: unknown; error?: string }> {
     switch (skillId) {
       case BUILTIN_SKILL_IDS.READ_PAGE_CONTENT: {
@@ -462,18 +496,27 @@ export class AgentEngine {
           if (!connected) {
             return {
               success: false,
-              error: 'Content Script not connected. Please make sure the active tab is a regular web page.',
+              error:
+                "Content Script not connected. Please make sure the active tab is a regular web page.",
             };
           }
 
           const result = await Messaging.readPageContent({
-            maxLength: typeof args.maxLength === 'number' ? args.maxLength : 15000,
-            includeLinks: typeof args.includeLinks === 'boolean' ? args.includeLinks : true,
-            includeHeadings: typeof args.includeHeadings === 'boolean' ? args.includeHeadings : true,
+            maxLength:
+              typeof args.maxLength === "number" ? args.maxLength : 15000,
+            includeLinks:
+              typeof args.includeLinks === "boolean" ? args.includeLinks : true,
+            includeHeadings:
+              typeof args.includeHeadings === "boolean"
+                ? args.includeHeadings
+                : true,
           });
 
           if (!result.success) {
-            return { success: false, error: result.error || 'Failed to read page content' };
+            return {
+              success: false,
+              error: result.error || "Failed to read page content",
+            };
           }
 
           return { success: true, data: result };
@@ -487,15 +530,20 @@ export class AgentEngine {
         // ★ 查询 DataStore 中的数据
         const pointer = args.pointer as string;
         if (!pointer) {
-          return { success: false, error: 'Missing required parameter: pointer' };
+          return {
+            success: false,
+            error: "Missing required parameter: pointer",
+          };
         }
 
         const queryResult = queryStoredData(pointer, {
           path: args.path as string | undefined,
-          offset: typeof args.offset === 'number' ? args.offset : undefined,
-          limit: typeof args.limit === 'number' ? args.limit : undefined,
+          offset: typeof args.offset === "number" ? args.offset : undefined,
+          limit: typeof args.limit === "number" ? args.limit : undefined,
           filter: args.filter as Record<string, unknown> | undefined,
-          fields: Array.isArray(args.fields) ? args.fields as string[] : undefined,
+          fields: Array.isArray(args.fields)
+            ? (args.fields as string[])
+            : undefined,
         });
 
         if (!queryResult.success) {
@@ -508,7 +556,7 @@ export class AgentEngine {
           const { pointer: newPointer, contextMessage } = storeData(
             queryResult.data,
             `query_result_of_${pointer}`,
-            args
+            args,
           );
           return {
             success: true,

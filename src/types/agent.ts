@@ -15,7 +15,7 @@ export interface ConfirmationRequest {
   method: string;
   url: string;
   parameters: Record<string, unknown>;
-  riskLevel: 'safe' | 'moderate' | 'dangerous';
+  riskLevel: "safe" | "moderate" | "dangerous";
   headers?: Record<string, string>;
   body?: unknown;
   isBatch?: boolean;
@@ -40,18 +40,18 @@ export interface ConfirmationCardData {
   method: string;
   url: string;
   parameters: Record<string, unknown>;
-  riskLevel: 'safe' | 'moderate' | 'dangerous';
+  riskLevel: "safe" | "moderate" | "dangerous";
   isBatch?: boolean;
   batchCount?: number;
 }
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system' | 'tool';
+  role: "user" | "assistant" | "system" | "tool";
   content: string;
   timestamp: number;
   toolCalls?: ToolCallDisplay[];
-  status?: 'pending' | 'streaming' | 'done' | 'error';
+  status?: "pending" | "streaming" | "done" | "error";
   toolCallId?: string;
 }
 
@@ -60,7 +60,13 @@ export interface ToolCallDisplay {
   skillName: string;
   skillId: string;
   arguments: Record<string, unknown>;
-  status: 'pending_confirmation' | 'confirmed' | 'rejected' | 'executing' | 'success' | 'error';
+  status:
+    | "pending_confirmation"
+    | "confirmed"
+    | "rejected"
+    | "executing"
+    | "success"
+    | "error";
   result?: unknown;
   error?: string;
   duration?: number;
@@ -86,12 +92,16 @@ export interface BatchResult {
 }
 
 export type AgentEvent =
-  | { type: 'llm_call_start' }
-  | { type: 'llm_streaming'; content: string }
-  | { type: 'assistant_message'; content: string }
-  | { type: 'tool_call_start'; toolCall: ToolCallDisplay }
-  | { type: 'confirmation_required'; toolCall: ToolCallDisplay; confirmData: ConfirmationRequest }
-  | { type: 'tool_call_result'; toolCall: ToolCallDisplay; result: unknown }
-  | { type: 'batch_progress'; progress: BatchProgress }
-  | { type: 'error'; error: string }
-  | { type: 'done' };
+  | { type: "llm_call_start" }
+  | { type: "llm_streaming"; content: string }
+  | { type: "assistant_message"; content: string }
+  | { type: "tool_call_start"; toolCall: ToolCallDisplay }
+  | {
+      type: "confirmation_required";
+      toolCall: ToolCallDisplay;
+      confirmData: ConfirmationRequest;
+    }
+  | { type: "tool_call_result"; toolCall: ToolCallDisplay; result: unknown }
+  | { type: "batch_progress"; progress: BatchProgress }
+  | { type: "error"; error: string }
+  | { type: "done" };

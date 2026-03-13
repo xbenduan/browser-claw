@@ -1,5 +1,5 @@
-import React from 'react';
-import { XMarkdown } from '@ant-design/x-markdown';
+import React from "react";
+import { XMarkdown } from "@ant-design/x-markdown";
 
 interface MarkdownRendererProps {
   content: string;
@@ -7,7 +7,11 @@ interface MarkdownRendererProps {
   isStreaming?: boolean;
 }
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className, isStreaming }) => {
+const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
+  content,
+  className,
+  isStreaming,
+}) => {
   const streaming = isStreaming
     ? {
         hasNextChunk: true,
@@ -16,12 +20,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, className,
     : undefined;
 
   return (
-    <div className={`markdown-body ${className || ''}`}>
-      <XMarkdown
-        content={content}
-        openLinksInNewTab
-        streaming={streaming}
-      />
+    <div className={`markdown-body ${className || ""}`}>
+      <XMarkdown content={content} openLinksInNewTab streaming={streaming} />
     </div>
   );
 };

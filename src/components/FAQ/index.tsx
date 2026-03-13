@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   HelpCircle,
   BookOpen,
@@ -12,18 +12,18 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
-} from 'lucide-react';
-import { APP_NAME, APP_VERSION } from '@/utils/constants';
-import { useI18n } from '@/i18n';
+} from "lucide-react";
+import { APP_NAME, APP_VERSION } from "@/utils/constants";
+import { useI18n } from "@/i18n";
 
 const QUICK_START_ICONS = [Zap, FileJson, Layers, Globe, MessageSquare, Shield];
 const QUICK_START_COLORS = [
-  'text-yellow-500',
-  'text-blue-500',
-  'text-purple-500',
-  'text-green-500',
-  'text-cyan-500',
-  'text-red-500',
+  "text-yellow-500",
+  "text-blue-500",
+  "text-purple-500",
+  "text-green-500",
+  "text-cyan-500",
+  "text-red-500",
 ];
 
 const FAQ: React.FC = () => {
@@ -66,20 +66,23 @@ const FAQ: React.FC = () => {
             const Icon = QUICK_START_ICONS[idx];
             const color = QUICK_START_COLORS[idx];
             return (
-            <div
-              key={step.title}
-              className="glass-card p-3 flex flex-col gap-2 hover:-translate-y-0.5 transition-transform duration-300"
-              style={{ animationDelay: `${idx * 50}ms` }}
-            >
-              <div className="flex items-center gap-2">
-                <Icon className={`w-4 h-4 ${color}`} />
-                <p className="text-xs font-semibold text-slate-800">{step.title}</p>
+              <div
+                key={step.title}
+                className="glass-card p-3 flex flex-col gap-2 hover:-translate-y-0.5 transition-transform duration-300"
+                style={{ animationDelay: `${idx * 50}ms` }}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className={`w-4 h-4 ${color}`} />
+                  <p className="text-xs font-semibold text-slate-800">
+                    {step.title}
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-500 leading-tight">
+                  {step.desc}
+                </p>
               </div>
-              <p className="text-[10px] text-slate-500 leading-tight">
-                {step.desc}
-              </p>
-            </div>
-          )})}
+            );
+          })}
         </div>
       </div>
 
@@ -93,17 +96,21 @@ const FAQ: React.FC = () => {
         </h2>
         <div className="space-y-2">
           {messages.faq.list.map((item, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className={`glass-panel rounded-xl overflow-hidden transition-all duration-300 ${
-                expandedIdx === idx ? 'bg-white border-cyan-200 shadow-sm' : 'bg-white/60 hover:bg-white/80 border-slate-200'
+                expandedIdx === idx
+                  ? "bg-white border-cyan-200 shadow-sm"
+                  : "bg-white/60 hover:bg-white/80 border-slate-200"
               }`}
             >
               <button
                 className="w-full text-left px-4 py-3 flex items-center justify-between gap-3"
                 onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
               >
-                <span className={`text-xs font-medium ${expandedIdx === idx ? 'text-cyan-700' : 'text-slate-700'}`}>
+                <span
+                  className={`text-xs font-medium ${expandedIdx === idx ? "text-cyan-700" : "text-slate-700"}`}
+                >
                   {item.question}
                 </span>
                 {expandedIdx === idx ? (
@@ -112,7 +119,7 @@ const FAQ: React.FC = () => {
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 )}
               </button>
-              
+
               {expandedIdx === idx && (
                 <div className="px-4 pb-4 text-xs text-slate-500 leading-relaxed whitespace-pre-line animate-in slide-in-from-top-2 border-t border-slate-100 mt-1">
                   {item.answer}
@@ -138,7 +145,7 @@ const FAQ: React.FC = () => {
           </a>
         </div>
         <p className="text-[10px] text-slate-400">
-          {t('faq.builtWith', { app: APP_NAME, version: APP_VERSION })}
+          {t("faq.builtWith", { app: APP_NAME, version: APP_VERSION })}
         </p>
       </div>
     </div>

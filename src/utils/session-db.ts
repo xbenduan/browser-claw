@@ -1,8 +1,8 @@
-import type { ChatSession, SessionListItem } from '@/types';
+import type { ChatSession, SessionListItem } from "@/types";
 
-const DB_NAME = 'browser_claw_sessions';
+const DB_NAME = "browser_claw_sessions";
 const DB_VERSION = 1;
-const STORE_NAME = 'sessions';
+const STORE_NAME = "sessions";
 
 /**
  * IndexedDB 封装 —— 专门用于管理 ChatSession
@@ -25,9 +25,9 @@ export class SessionDB {
       request.onupgradeneeded = () => {
         const db = request.result;
         if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-          store.createIndex('hostname', 'hostname', { unique: false });
-          store.createIndex('updatedAt', 'updatedAt', { unique: false });
+          const store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+          store.createIndex("hostname", "hostname", { unique: false });
+          store.createIndex("updatedAt", "updatedAt", { unique: false });
         }
       };
 
@@ -42,7 +42,7 @@ export class SessionDB {
   }
 
   /** 获取 object store 的事务辅助 */
-  private static async getStore(mode: IDBTransactionMode = 'readonly') {
+  private static async getStore(mode: IDBTransactionMode = "readonly") {
     const db = await this.openDB();
     const tx = db.transaction(STORE_NAME, mode);
     return tx.objectStore(STORE_NAME);
@@ -73,13 +73,13 @@ export class SessionDB {
 
   /** 保存（新增或更新）会话 */
   static async save(session: ChatSession): Promise<void> {
-    const store = await this.getStore('readwrite');
+    const store = await this.getStore("readwrite");
     await this.promisify(store.put(session));
   }
 
   /** 删除会话 */
   static async delete(sessionId: string): Promise<void> {
-    const store = await this.getStore('readwrite');
+    const store = await this.getStore("readwrite");
     await this.promisify(store.delete(sessionId));
   }
 
@@ -102,13 +102,13 @@ export class SessionDB {
   /** 按 hostname 查询会话 */
   static async getByHostname(hostname: string): Promise<ChatSession[]> {
     const store = await this.getStore();
-    const index = store.index('hostname');
+    const index = store.index("hostname");
     return this.promisify(index.getAll(hostname));
   }
 
   /** 清空所有会话 */
   static async clear(): Promise<void> {
-    const store = await this.getStore('readwrite');
+    const store = await this.getStore("readwrite");
     await this.promisify(store.clear());
   }
 }

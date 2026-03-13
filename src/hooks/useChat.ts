@@ -1,17 +1,26 @@
-import { useState, useCallback, useRef } from 'react';
-import type { ChatMessage, AgentConfig, SkillDefinition, ConfirmationRequest, ConfirmationResult } from '@/types';
-import { AgentEngine } from '@/core/agent-engine';
+import { useState, useCallback, useRef } from "react";
+import type {
+  ChatMessage,
+  AgentConfig,
+  SkillDefinition,
+  ConfirmationRequest,
+  ConfirmationResult,
+} from "@/types";
+import { AgentEngine } from "@/core/agent-engine";
 
 export function useChat(
   config: AgentConfig,
   skills: SkillDefinition[],
-  hostname: string
+  hostname: string,
 ) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [streamingContent, setStreamingContent] = useState('');
-  const confirmResolverRef = useRef<((result: ConfirmationResult) => void) | null>(null);
-  const [pendingConfirmation, setPendingConfirmation] = useState<ConfirmationRequest | null>(null);
+  const [streamingContent, setStreamingContent] = useState("");
+  const confirmResolverRef = useRef<
+    ((result: ConfirmationResult) => void) | null
+  >(null);
+  const [pendingConfirmation, setPendingConfirmation] =
+    useState<ConfirmationRequest | null>(null);
   const engineRef = useRef<AgentEngine | null>(null);
 
   const addMessage = useCallback((msg: ChatMessage) => {
@@ -51,15 +60,15 @@ export function useChat(
       // 添加用户消息
       const userMsg: ChatMessage = {
         id: `user_${Date.now()}`,
-        role: 'user',
+        role: "user",
         content,
         timestamp: Date.now(),
-        status: 'done',
+        status: "done",
       };
       const prevMessages = [...messages, userMsg];
       setMessages(prevMessages);
       setIsProcessing(true);
-      setStreamingContent('');
+      setStreamingContent("");
 
       // 创建 Agent 引擎
       const engine = new AgentEngine(config, skills, hostname);
@@ -75,43 +84,46 @@ export function useChat(
 
       // 准备 assistant 消息占位
       const assistantMsgId = `asst_${Date.now()}`;
-      let fullContent = '';
+      let fullContent = "";
 
       try {
-        for await (const event of engine.processUserMessage(content, messages)) {
+        for await (const event of engine.processUserMessage(
+          content,
+          messages,
+        )) {
           switch (event.type) {
-            case 'llm_streaming':
+            case "llm_streaming":
               fullContent += event.content;
               setStreamingContent(fullContent);
               break;
 
-            case 'assistant_message':
+            case "assistant_message":
               fullContent = event.content;
-              setStreamingContent('');
+              setStreamingContent("");
               setMessages((prev) => {
                 // 移除之前的 streaming 占位
                 const filtered = prev.filter((m) => m.id !== assistantMsgId);
                 return [
                   ...filtered,
                   {
-                    id: assistantMsgId + '_' + Date.now(),
-                    role: 'assistant' as const,
+                    id: assistantMsgId + "_" + Date.now(),
+                    role: "assistant" as const,
                     content: event.content,
                     timestamp: Date.now(),
-                    status: 'done' as const,
+                    status: "done" as const,
                   },
                 ];
               });
-              fullContent = '';
+              fullContent = "";
               break;
 
-            case 'tool_call_result': {
+            case "tool_call_result": {
               const toolMsg: ChatMessage = {
                 id: `tool_${Date.now()}_${event.toolCall.id}`,
-                role: 'assistant',
-                content: '',
+                role: "assistant",
+                content: "",
                 timestamp: Date.now(),
-                status: 'done',
+                status: "done",
                 toolCalls: [event.toolCall],
               };
               setMessages((prev) => [...prev, toolMsg]);
@@ -120,30 +132,30 @@ export function useChat(
                 ...prev,
                 {
                   id: `toolres_${Date.now()}`,
-                  role: 'tool' as const,
+                  role: "tool" as const,
                   content: JSON.stringify(event.result),
                   timestamp: Date.now(),
-                  status: 'done',
+                  status: "done",
                   toolCallId: event.toolCall.id,
                 },
               ]);
               break;
             }
 
-            case 'error':
+            case "error":
               setMessages((prev) => [
                 ...prev,
                 {
                   id: `err_${Date.now()}`,
-                  role: 'assistant',
+                  role: "assistant",
                   content: `❌ 错误: ${event.error}`,
                   timestamp: Date.now(),
-                  status: 'error',
+                  status: "error",
                 },
               ]);
               break;
 
-            case 'done':
+            case "done":
               break;
           }
         }
@@ -153,24 +165,24 @@ export function useChat(
           ...prev,
           {
             id: `err_${Date.now()}`,
-            role: 'assistant',
+            role: "assistant",
             content: `❌ 处理出错: ${errMsg}`,
             timestamp: Date.now(),
-            status: 'error',
+            status: "error",
           },
         ]);
       } finally {
         setIsProcessing(false);
-        setStreamingContent('');
+        setStreamingContent("");
         engineRef.current = null;
       }
     },
-    [config, skills, hostname, messages, isProcessing]
+    [config, skills, hostname, messages, isProcessing],
   );
 
   const clearMessages = useCallback(() => {
     setMessages([]);
-    setStreamingContent('');
+    setStreamingContent("");
   }, []);
 
   return {

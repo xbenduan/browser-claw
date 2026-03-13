@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { SkillDefinition } from '@/types';
-import { Storage } from '@/utils/storage';
-import { validateSkill, validateSkills } from '@/utils/validation';
-import { builtinSkills } from '@/utils/builtin-skills';
+import { useState, useEffect, useCallback, useMemo } from "react";
+import type { SkillDefinition } from "@/types";
+import { Storage } from "@/utils/storage";
+import { validateSkill, validateSkills } from "@/utils/validation";
+import { builtinSkills } from "@/utils/builtin-skills";
 
 export function useSkills() {
   const [userSkills, setUserSkills] = useState<SkillDefinition[]>([]);
@@ -34,40 +34,42 @@ export function useSkills() {
     async (skill: SkillDefinition) => {
       const validation = validateSkill(skill);
       if (!validation.valid) {
-        throw new Error('Skill 校验失败: ' + validation.errors.join('; '));
+        throw new Error("Skill 校验失败: " + validation.errors.join("; "));
       }
       if (skills.some((s) => s.id === skill.id)) {
         throw new Error(`Skill ID "${skill.id}" 已存在`);
       }
       await persist([...userSkills, skill]);
     },
-    [skills, userSkills, persist]
+    [skills, userSkills, persist],
   );
 
   const updateSkill = useCallback(
     async (skill: SkillDefinition) => {
       const validation = validateSkill(skill);
       if (!validation.valid) {
-        throw new Error('Skill 校验失败: ' + validation.errors.join('; '));
+        throw new Error("Skill 校验失败: " + validation.errors.join("; "));
       }
       const newSkills = userSkills.map((s) => (s.id === skill.id ? skill : s));
       await persist(newSkills);
     },
-    [userSkills, persist]
+    [userSkills, persist],
   );
 
   const removeSkill = useCallback(
     async (id: string) => {
       await persist(userSkills.filter((s) => s.id !== id));
     },
-    [userSkills, persist]
+    [userSkills, persist],
   );
 
   const importSkills = useCallback(
-    async (input: unknown[]): Promise<{ imported: number; errors: string[] }> => {
+    async (
+      input: unknown[],
+    ): Promise<{ imported: number; errors: string[] }> => {
       const { valid, invalid } = validateSkills(input);
       const errors = invalid.map(
-        (inv) => `Item ${inv.index}: ${inv.errors.join('; ')}`
+        (inv) => `Item ${inv.index}: ${inv.errors.join("; ")}`,
       );
       const existingIds = new Set(skills.map((s) => s.id));
       const newSkills = valid.filter((s) => !existingIds.has(s.id));
@@ -76,7 +78,7 @@ export function useSkills() {
       }
       return { imported: newSkills.length, errors };
     },
-    [skills, userSkills, persist]
+    [skills, userSkills, persist],
   );
 
   const exportSkills = useCallback(() => {

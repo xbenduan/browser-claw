@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Sparkles,
   Brain,
@@ -9,19 +9,19 @@ import {
   CheckCircle2,
   Loader2,
   Ban,
-} from 'lucide-react';
-import Skills from '@/components/skills';
-import Chat from '@/components/chat';
-import Models from '@/components/models';
-import Channels from '@/components/channels';
-import FAQ from '@/components/FAQ';
-import LanguageSwitch from '@/components/shared/LanguageSwitch';
+} from "lucide-react";
+import Skills from "@/components/skills";
+import Chat from "@/components/chat";
+import Models from "@/components/models";
+import Channels from "@/components/channels";
+import FAQ from "@/components/FAQ";
+import LanguageSwitch from "@/components/shared/LanguageSwitch";
 
-import { useSkills } from '@/hooks/useSkills';
-import { useModel } from '@/hooks/useModel';
-import { useChannels } from '@/hooks/useChannels';
-import { useContentScript } from '@/hooks/useContentScript';
-import { useI18n } from '@/i18n';
+import { useSkills } from "@/hooks/useSkills";
+import { useModel } from "@/hooks/useModel";
+import { useChannels } from "@/hooks/useChannels";
+import { useContentScript } from "@/hooks/useContentScript";
+import { useI18n } from "@/i18n";
 
 const TAB_IDS = {
   SKILLS: 100 as number,
@@ -70,36 +70,36 @@ export default function App() {
   } = useContentScript();
 
   // ─── Derived ────────────────────────────────
-  const hostname = pageInfo?.hostname || '';
+  const hostname = pageInfo?.hostname || "";
   const isLoading = skillsLoading || modelLoading || channelsLoading;
 
   const tabs = [
     {
       id: TAB_IDS.HISTORY,
-      label: t('popup.tabs.history'),
+      label: t("popup.tabs.history"),
       icon: Clock,
       badge: undefined as string | undefined,
     },
     {
       id: TAB_IDS.SKILLS,
-      label: t('popup.tabs.skills'),
+      label: t("popup.tabs.skills"),
       icon: Sparkles,
     },
     {
       id: TAB_IDS.MODELS,
-      label: t('popup.tabs.models'),
+      label: t("popup.tabs.models"),
       icon: Brain,
-      badge: config.apiKey ? undefined : '!',
+      badge: config.apiKey ? undefined : "!",
     },
     {
       id: TAB_IDS.CHANNELS,
-      label: t('popup.tabs.channels'),
+      label: t("popup.tabs.channels"),
       icon: Wifi,
       badge: channels.length > 0 ? String(channels.length) : undefined,
     },
     {
       id: TAB_IDS.FAQ,
-      label: t('popup.tabs.faq'),
+      label: t("popup.tabs.faq"),
       icon: Info,
       badge: undefined as string | undefined,
     },
@@ -111,7 +111,7 @@ export default function App() {
       return (
         <div className="flex items-center gap-2 text-slate-500 text-xs px-2 py-1 rounded-lg bg-slate-100 border border-slate-200">
           <Loader2 className="w-3 h-3 animate-spin" />
-          <span className="truncate">{t('popup.connection.checking')}</span>
+          <span className="truncate">{t("popup.connection.checking")}</span>
         </div>
       );
     }
@@ -120,10 +120,12 @@ export default function App() {
       return (
         <div
           className="flex items-center gap-2 text-slate-400 text-xs px-2 py-1 rounded-lg bg-slate-100 cursor-not-allowed border border-slate-200"
-          title={t('popup.connection.notInjectableTitle')}
+          title={t("popup.connection.notInjectableTitle")}
         >
           <Ban className="w-3 h-3" />
-          <span className="truncate">{t('popup.connection.notInjectable')}</span>
+          <span className="truncate">
+            {t("popup.connection.notInjectable")}
+          </span>
         </div>
       );
     }
@@ -133,10 +135,14 @@ export default function App() {
         <button
           className="flex items-center gap-2 text-cyan-700 text-xs px-2 py-1 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors w-full border border-cyan-100"
           onClick={reconnect}
-          title={t('popup.connection.connectedTitle', { hostname: hostname || t('common.unknown') })}
+          title={t("popup.connection.connectedTitle", {
+            hostname: hostname || t("common.unknown"),
+          })}
         >
           <CheckCircle2 className="w-3 h-3" />
-          <span className="truncate">{hostname || t('popup.connection.connected')}</span>
+          <span className="truncate">
+            {hostname || t("popup.connection.connected")}
+          </span>
         </button>
       );
     }
@@ -145,10 +151,10 @@ export default function App() {
       <button
         className="flex items-center gap-2 text-amber-700 text-xs px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors w-full border border-amber-100"
         onClick={reconnect}
-        title={t('popup.connection.disconnectedTitle')}
+        title={t("popup.connection.disconnectedTitle")}
       >
         <AlertCircle className="w-3 h-3" />
-        <span className="truncate">{t('popup.connection.disconnected')}</span>
+        <span className="truncate">{t("popup.connection.disconnected")}</span>
       </button>
     );
   };
@@ -176,13 +182,7 @@ export default function App() {
           />
         );
       case TAB_IDS.HISTORY:
-        return (
-          <Chat
-            config={config}
-            skills={skills}
-            hostname={hostname}
-          />
-        );
+        return <Chat config={config} skills={skills} hostname={hostname} />;
       case TAB_IDS.MODELS:
         return (
           <Models
@@ -229,23 +229,26 @@ export default function App() {
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden ${
                   isActive
-                    ? 'bg-cyan-50 text-cyan-700 shadow-sm border border-cyan-100'
-                    : 'text-slate-500 hover:text-slate-800 hover:bg-white/60 border border-transparent'
+                    ? "bg-cyan-50 text-cyan-700 shadow-sm border border-cyan-100"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-white/60 border border-transparent"
                 }`}
               >
-
                 <item.icon
                   className={`w-5 h-5 transition-transform duration-300 ${
-                    isActive ? 'scale-110 text-cyan-600' : 'group-hover:scale-110 text-slate-400 group-hover:text-slate-600'
+                    isActive
+                      ? "scale-110 text-cyan-600"
+                      : "group-hover:scale-110 text-slate-400 group-hover:text-slate-600"
                   }`}
                 />
                 <span className="font-medium">{item.label}</span>
                 {item.badge && (
-                  <span className={`ml-auto text-[10px] px-1.5 py-0.5 rounded-full ${
-                    item.badge === '!' 
-                      ? 'bg-red-50 text-red-600 border border-red-100' 
-                      : 'bg-cyan-50 text-cyan-600 border border-cyan-100'
-                  }`}>
+                  <span
+                    className={`ml-auto text-[10px] px-1.5 py-0.5 rounded-full ${
+                      item.badge === "!"
+                        ? "bg-red-50 text-red-600 border border-red-100"
+                        : "bg-cyan-50 text-cyan-600 border border-cyan-100"
+                    }`}
+                  >
                     {item.badge}
                   </span>
                 )}

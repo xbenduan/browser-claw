@@ -1,4 +1,4 @@
-import type { SkillDefinition } from '@/types';
+import type { SkillDefinition } from "@/types";
 
 export interface ParseResult {
   success: boolean;
@@ -19,14 +19,15 @@ export interface ParseResult {
 export function parseChatModification(
   input: string,
   currentParams: Record<string, unknown>,
-  _skillDef?: SkillDefinition
+  _skillDef?: SkillDefinition,
 ): ParseResult {
   const text = input.trim();
   const changes: string[] = [];
   const newParams = { ...currentParams };
 
   // 模式 1: "把 X 改成/设为/改为 Y" | "将 X 改成/设为/改为 Y"
-  const cnPattern = /(?:把|将)\s*(\w+)\s*(?:改成|设为|改为|设置为|更改为|变为|变成)\s*(.+)/gi;
+  const cnPattern =
+    /(?:把|将)\s*(\w+)\s*(?:改成|设为|改为|设置为|更改为|变为|变成)\s*(.+)/gi;
   let match = cnPattern.exec(text);
   if (match) {
     const [, key, rawValue] = match;
@@ -38,7 +39,8 @@ export function parseChatModification(
   }
 
   // 模式 2: "X 改成/设为 Y"
-  const cnPattern2 = /(\w+)\s*(?:改成|设为|改为|设置为|更改为|变为|变成)\s*(.+)/gi;
+  const cnPattern2 =
+    /(\w+)\s*(?:改成|设为|改为|设置为|更改为|变为|变成)\s*(.+)/gi;
   match = cnPattern2.exec(text);
   if (match) {
     const [, key, rawValue] = match;
@@ -106,7 +108,10 @@ export function parseValue(raw: string): unknown {
   // Number
   if (/^-?\d+(\.\d+)?$/.test(raw)) return Number(raw);
   // JSON array/object
-  if ((raw.startsWith('[') && raw.endsWith(']')) || (raw.startsWith('{') && raw.endsWith('}'))) {
+  if (
+    (raw.startsWith("[") && raw.endsWith("]")) ||
+    (raw.startsWith("{") && raw.endsWith("}"))
+  ) {
     try {
       return JSON.parse(raw);
     } catch {
@@ -114,7 +119,10 @@ export function parseValue(raw: string): unknown {
     }
   }
   // Remove surrounding quotes
-  if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+  if (
+    (raw.startsWith('"') && raw.endsWith('"')) ||
+    (raw.startsWith("'") && raw.endsWith("'"))
+  ) {
     return raw.slice(1, -1);
   }
   return raw;
@@ -123,7 +131,10 @@ export function parseValue(raw: string): unknown {
 /**
  * 在参数对象中查找实际的 key（忽略大小写、camelCase/snake_case）
  */
-export function findActualKey(input: string, params: Record<string, unknown>): string {
+export function findActualKey(
+  input: string,
+  params: Record<string, unknown>,
+): string {
   // 精确匹配
   if (input in params) return input;
   // 忽略大小写匹配
@@ -134,7 +145,7 @@ export function findActualKey(input: string, params: Record<string, unknown>): s
   // camelCase vs snake_case 互转匹配
   const camel = input.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
   if (camel in params) return camel;
-  const snake = input.replace(/[A-Z]/g, (c) => '_' + c.toLowerCase());
+  const snake = input.replace(/[A-Z]/g, (c) => "_" + c.toLowerCase());
   if (snake in params) return snake;
   // 没找到就用原始输入
   return input;

@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { AgentConfig } from '@/types';
-import { DEFAULT_MODEL_CONFIG } from '@/types';
-import { Storage } from '@/utils/storage';
+import { useState, useEffect, useCallback } from "react";
+import type { AgentConfig } from "@/types";
+import { DEFAULT_MODEL_CONFIG } from "@/types";
+import { Storage } from "@/utils/storage";
 
 export function useModel() {
   const [config, setConfig] = useState<AgentConfig>(DEFAULT_MODEL_CONFIG);
@@ -19,9 +19,13 @@ export function useModel() {
     await Storage.setModelConfig(newConfig);
   }, []);
 
-  const testConnection = useCallback(async (): Promise<{ success: boolean; error?: string; models?: string[] }> => {
+  const testConnection = useCallback(async (): Promise<{
+    success: boolean;
+    error?: string;
+    models?: string[];
+  }> => {
     try {
-      const { default: OpenAI } = await import('openai');
+      const { default: OpenAI } = await import("openai");
       const client = new OpenAI({
         apiKey: config.apiKey,
         baseURL: config.baseURL,

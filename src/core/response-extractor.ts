@@ -1,12 +1,12 @@
-import type { ResponseExtractor } from '@/types';
-import { shouldStoreData, storeData } from './data-store';
+import type { ResponseExtractor } from "@/types";
+import { shouldStoreData, storeData } from "./data-store";
 
 /**
  * 使用简易 JSONPath 从响应数据中提取值
  */
 function getByPath(obj: unknown, path: string): unknown {
   // 简易 JSONPath 支持: $.data.items[*].id
-  const parts = path.replace(/^\$\.?/, '').split('.');
+  const parts = path.replace(/^\$\.?/, "").split(".");
   let current: unknown = obj;
 
   for (const part of parts) {
@@ -35,7 +35,9 @@ function getByPath(obj: unknown, path: string): unknown {
 
     // 如果当前是数组（由 [*] 展开），对每个元素取属性
     if (Array.isArray(current)) {
-      current = current.map((item) => (item as Record<string, unknown>)?.[part]).filter(v => v !== undefined);
+      current = current
+        .map((item) => (item as Record<string, unknown>)?.[part])
+        .filter((v) => v !== undefined);
       continue;
     }
 
@@ -48,19 +50,22 @@ function getByPath(obj: unknown, path: string): unknown {
 /**
  * 应用 transform 操作
  */
-function applyTransform(value: unknown, transform?: ResponseExtractor['transform']): unknown {
+function applyTransform(
+  value: unknown,
+  transform?: ResponseExtractor["transform"],
+): unknown {
   if (!transform || !Array.isArray(value)) return value;
 
   switch (transform) {
-    case 'count':
+    case "count":
       return value.length;
-    case 'first':
+    case "first":
       return value[0];
-    case 'last':
+    case "last":
       return value[value.length - 1];
-    case 'flatten':
+    case "flatten":
       return value.flat();
-    case 'unique':
+    case "unique":
       return [...new Set(value)];
     default:
       return value;
@@ -78,15 +83,15 @@ export function applyExtractors(
   data: unknown,
   extractors?: ResponseExtractor[],
   skillId?: string,
-  callArgs?: Record<string, unknown>
+  callArgs?: Record<string, unknown>,
 ): Record<string, unknown> {
   if (!extractors || extractors.length === 0) {
     // 无提取器 — 检查是否需要存入 DataStore
     if (shouldStoreData(data)) {
       const { pointer, contextMessage } = storeData(
         data,
-        skillId ?? 'unknown',
-        callArgs ?? {}
+        skillId ?? "unknown",
+        callArgs ?? {},
       );
       return {
         _data_pointer: pointer,
@@ -108,8 +113,8 @@ export function applyExtractors(
   if (shouldStoreData(result)) {
     const { pointer, contextMessage } = storeData(
       result,
-      skillId ?? 'unknown',
-      callArgs ?? {}
+      skillId ?? "unknown",
+      callArgs ?? {},
     );
     return {
       _data_pointer: pointer,

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Messaging } from '@/utils/messaging';
-import type { PageInfo } from '@/types';
+import { useState, useEffect, useCallback } from "react";
+import { Messaging } from "@/utils/messaging";
+import type { PageInfo } from "@/types";
 
 export function useContentScript() {
   const [connected, setConnected] = useState(false);
@@ -89,7 +89,7 @@ export function useContentScript() {
     pageInfo,
     checking,
     injectable,
-    hostname: pageInfo?.hostname ?? '',
+    hostname: pageInfo?.hostname ?? "",
     checkConnection,
     reconnect,
   };

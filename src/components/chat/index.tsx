@@ -142,10 +142,10 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
               <MessageSquare className="w-8 h-8 text-slate-400" />
             </div>
-            <p className="text-sm text-slate-500 mb-1">{t("chat.emptyTitle")}</p>
-            <p className="text-xs text-slate-400 mb-6">
-              {t("chat.emptyDesc")}
+            <p className="text-sm text-slate-500 mb-1">
+              {t("chat.emptyTitle")}
             </p>
+            <p className="text-xs text-slate-400 mb-6">{t("chat.emptyDesc")}</p>
             <button
               className="glass-button-primary mx-auto"
               onClick={handleNewSession}
@@ -321,7 +321,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
         <button
           className="p-1.5 rounded-lg text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all"
           onClick={onDelete}
-        title={t("chat.deleteSession")}
+          title={t("chat.deleteSession")}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>

@@ -12,8 +12,12 @@
 
 body {
   @apply bg-slate-50 text-slate-700 min-h-screen selection:bg-violet-200 selection:text-violet-900;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 30%),
+  background-image:
+    radial-gradient(
+      circle at 15% 50%,
+      rgba(139, 92, 246, 0.08),
+      transparent 30%
+    ),
     radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.08), transparent 30%);
   background-attachment: fixed;
 }
@@ -25,17 +29,25 @@ body {
 
 .glass-panel {
   @apply bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-lg;
-  box-shadow: 0 6px 15px rgba(15, 23, 42, 0.1), 0 1px 3px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 6px 15px rgba(15, 23, 42, 0.1),
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .glass-card {
   @apply bg-white/85 backdrop-blur-md border border-slate-200/70 rounded-xl transition-all duration-200;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.06),
+    0 1px 1px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .glass-card:hover {
   @apply bg-white/95 border-slate-300/70;
-  box-shadow: 0 3px 7px rgba(139, 92, 246, 0.1), 0 2px 4px rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 3px 7px rgba(139, 92, 246, 0.1),
+    0 2px 4px rgba(15, 23, 42, 0.06);
   transform: translateY(-2px);
 }
 
@@ -122,13 +134,22 @@ pre code.hljs {
   @apply text-slate-600 leading-relaxed;
 }
 
-.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
   @apply text-slate-800 font-semibold border-b border-slate-200 pb-2 mt-6 mb-4;
 }
 
-.markdown-body h1 { @apply text-2xl; }
-.markdown-body h2 { @apply text-xl; }
-.markdown-body h3 { @apply text-lg; }
+.markdown-body h1 {
+  @apply text-2xl;
+}
+.markdown-body h2 {
+  @apply text-xl;
+}
+.markdown-body h3 {
+  @apply text-lg;
+}
 
 .markdown-body a {
   @apply text-violet-600 hover:text-violet-700 no-underline hover:underline transition-colors duration-150;
@@ -185,9 +206,15 @@ pre code.hljs {
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .animate-float {
@@ -195,9 +222,15 @@ pre code.hljs {
 }
 
 @keyframes glow {
-  0% { box-shadow: 0 0 4px rgba(139, 92, 246, 0.2); }
-  50% { box-shadow: 0 0 16px rgba(139, 92, 246, 0.35); }
-  100% { box-shadow: 0 0 4px rgba(139, 92, 246, 0.2); }
+  0% {
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 4px rgba(139, 92, 246, 0.2);
+  }
 }
 
 .animate-glow {
@@ -205,19 +238,33 @@ pre code.hljs {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.05), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(139, 92, 246, 0.05),
+    transparent
+  );
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .animate-pulse-soft {
@@ -254,7 +301,9 @@ pre code.hljs {
 }
 
 .glass-tilt {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .glass-tilt:hover {
@@ -289,7 +338,7 @@ pre code.hljs {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
   }
-  
+
   .border-gradient {
     border-image: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%) 1;
   }
