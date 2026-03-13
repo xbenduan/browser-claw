@@ -1,60 +1,108 @@
+<div align="center">
+
+<img src="public/logo.png" alt="Browser Claw" width="128" />
+
 # Browser Claw
 
-这是一个基于浏览器的 AI 智能助手插件 (Manifest V3)，允许用户通过自然语言指令，自动调用当前网页已配置的 API 接口，实现网页功能的自动化操作。
+**AI-powered browser extension that turns natural language into API calls.**
 
-## 功能特性
+[![Chrome Extension](https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/)
+[![Built with React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 
-- **API 管理面板**: 在 Popup / Side Panel 中可视化管理当前网站的 API 接口（Skill）。
-- **AI 对话助手**: 通过自然语言指令触发 API 调用。
-- **智能任务规划**: 支持复杂任务拆解，例如"批量修改库存"（查询 -> 循环执行）。
-- **安全执行**: 请求在当前页面上下文（Content Script）中执行，自动携带 Cookie/Session。
-- **强制确认机制**: 每次 API 调用前，AI 必须向用户展示即将调用的接口和参数，经用户确认后才真正执行。
+[English](./README.md)&nbsp;·&nbsp;[简体中文](./docs/README_zh.md)
 
-## 安装与开发
+</div>
 
-1. **安装依赖**:
-   ```bash
-   pnpm install
-   ```
+---
 
-2. **开发模式**:
-   ```bash
-   pnpm dev
-   ```
-   这将启动 Vite 开发服务器。
+## ✨ What is Browser Claw?
 
-3. **加载扩展**:
-   - 打开 Chrome 浏览器，进入 `chrome://extensions/`。
-   - 开启右上角的 "Developer mode" (开发者模式)。
-   - 点击 "Load unpacked" (加载已解压的扩展程序)。
-   - 选择项目下的 `dist` 目录 (注意：如果是开发模式，选择 `dist`；如果是构建模式，先运行 `pnpm build`)。
+Browser Claw is a Chrome extension (Manifest V3) that lets you **orchestrate any website's APIs through natural language**. Simply describe what you want to do, and the AI assistant will plan, confirm, and execute the right API calls — all within the security context of the current page.
 
-4. **构建生产版本**:
-   ```bash
-   pnpm build
-   ```
-   构建产物在 `dist` 目录，同时会生成 `release/crx-*.zip`。
+## 🎯 Features
 
-## 使用说明
+| Feature | Description |
+|---------|-------------|
+| **API Skill Manager** | Visually manage API endpoints (Skills) per site via Popup / Side Panel |
+| **AI Chat Assistant** | Trigger API calls through natural language instructions |
+| **Smart Task Planning** | Decompose complex tasks — e.g. "bulk update inventory" → query → loop execute |
+| **Secure Execution** | Requests run inside the Content Script with native Cookie / Session context |
+| **Confirm Before Execute** | Every API call is presented to you for review before it fires |
 
-1. **配置 OpenAI Key**:
-   - 打开扩展的 Popup。
-   - 切换到 "模型" 标签页。
-   - 输入 API Key、Base URL 和模型名称并保存。
+## 🚀 Getting Started
 
-2. **添加 Skill**:
-   - 在 "能力" 标签页点击 "批量导入" 或手动添加。
-   - 输入接口名称、描述、方法、路径和参数定义。
+### Prerequisites
 
-3. **发送指令**:
-   - 切换到 "会话" 标签页，点击 "去对话" 打开完整对话页面。
-   - 输入指令，例如: "把类目为 123 的商品售卖时间用免审更新更新为 2025 年 12 月 12 日"。
-   - AI 会展示即将调用的接口和参数，**用户确认后才真正执行**。
+- [Node.js](https://nodejs.org/) ≥ 18
+- [pnpm](https://pnpm.io/) (recommended)
 
-## 项目结构
+### Install & Run
 
-- `src/popup`: Popup UI (React + Tailwind + daisyUI)。
-- `src/content`: Content Script (负责在页面上下文中发送网络请求)。
-- `src/components`: UI 组件（Skills、Chat、Models、Channels、FAQ）。
-- `src/types`: TypeScript 类型定义。
-- `docs/`: 系统设计文档。
+```bash
+# Install dependencies
+pnpm install
+
+# Start dev server
+pnpm dev
+
+# Build for production — outputs to dist/ and release/crx-*.zip
+pnpm build
+```
+
+### Load in Chrome
+
+1. Navigate to `chrome://extensions/`
+2. Enable **Developer mode** (top-right toggle)
+3. Click **Load unpacked** → select the `dist` directory
+
+## 📖 Usage
+
+### 1 · Configure the Model
+
+Open the extension popup → **Model** tab → enter your API Key, Base URL and model name, then save.
+
+### 2 · Add Skills
+
+In the **Skills** tab, click **Batch Import** or add manually. Each skill needs a name, description, HTTP method, path, and parameter schema.
+
+### 3 · Chat
+
+Switch to the **Chat** tab → click **Go to Chat** to open the full conversation page. Type an instruction like:
+
+> *"Update the selling period of all products in category 123 to December 12, 2025."*
+
+The AI will show the planned API call and parameters — **nothing executes until you confirm**.
+
+## 🗂 Project Structure
+
+```
+browser-claw/
+├── src/
+│   ├── popup/        # Popup UI entry
+│   ├── sidepanel/    # Side Panel UI entry
+│   ├── content/      # Content Script — sends requests in page context
+│   ├── background/   # Service Worker
+│   ├── components/   # Shared React components (Skills, Chat, Models …)
+│   ├── core/         # Core logic & AI orchestration
+│   ├── hooks/        # Custom React hooks
+│   ├── types/        # TypeScript type definitions
+│   ├── utils/        # Utility functions
+│   └── assets/       # Static assets
+├── public/           # Extension static files (logo, etc.)
+├── docs/             # Design documents
+├── dist/             # Build output
+└── release/          # Packaged .zip releases
+```
+
+## 🛠 Tech Stack
+
+- **Extension** — Chrome Manifest V3 + [@crxjs/vite-plugin](https://crxjs.dev/vite-plugin)
+- **UI** — React 19 + Tailwind CSS 4 + Lucide Icons
+- **AI** — OpenAI-compatible SDK
+- **Build** — Vite 7 + TypeScript 5.8
+
+## 📄 License
+
+MIT
