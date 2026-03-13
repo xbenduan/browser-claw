@@ -252,7 +252,7 @@ export default function App() {
         </nav>
 
         {/* Connection Status */}
-        <div className="pt-4 border-t border-slate-200/50">
+        <div className="pt-4 border-t border-slate-200/80">
           {renderConnectionStatus()}
         </div>
       </div>

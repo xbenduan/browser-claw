@@ -274,7 +274,7 @@ export default function SidePanelApp() {
   return (
     <div className="flex flex-col h-screen font-sans text-slate-700 bg-slate-50">
       {/* Header */}
-      <div className="sticky top-0 z-10 px-4 py-3 border-b border-slate-200 bg-white/80 backdrop-blur-md flex items-center justify-between shrink-0 shadow-sm">
+      <div className="sticky top-0 z-10 px-4 py-3 border-b border-slate-200/80 bg-white/90 backdrop-blur-md flex items-center justify-between shrink-0 shadow-sm">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
           {hostname ? (
@@ -319,7 +319,7 @@ export default function SidePanelApp() {
 
         {messages.length === 0 && isConfigured && (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-cyan-100 to-blue-100 border border-white flex items-center justify-center shadow-lg shadow-cyan-100 animate-float">
+            <div className="w-20 h-20 rounded-3xl bg-linear-to-br from-cyan-100 to-blue-100 border border-slate-200/80 flex items-center justify-center shadow-lg shadow-cyan-100 animate-float">
               <MessageSquare className="w-10 h-10 text-cyan-600" />
             </div>
             <div className="space-y-2">
@@ -370,8 +370,8 @@ export default function SidePanelApp() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-slate-200 bg-white/80 backdrop-blur-md shrink-0">
-        <div className="flex items-end gap-2 w-full bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/50">
+      <div className="p-4 border-t border-slate-200/80 bg-white/90 backdrop-blur-md shrink-0">
+        <div className="flex items-end gap-2 w-full bg-white border border-slate-200/80 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/50">
           <textarea
             ref={inputRef}
             className="flex-1 w-full bg-transparent border-none outline-none text-sm text-slate-800 placeholder-slate-400 resize-none py-1"
