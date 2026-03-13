@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { createPortal } from "react-dom";
+import { useI18n } from "@/i18n";
 
 interface ModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ const Modal: React.FC<ModalProps> = ({
   width = "max-w-2xl",
   height = "max-h-[85vh]",
 }) => {
+  const { t } = useI18n();
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -92,7 +94,7 @@ const Modal: React.FC<ModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-slate-200/80 text-slate-400 hover:text-slate-600 transition-colors duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-400/40"
-            aria-label="Close modal"
+            aria-label={t("common.close")}
           >
             <X className="w-5 h-5" />
           </button>

@@ -121,10 +121,10 @@ export class Storage {
     return this.set('activeSessionId', id);
   }
 
-  static createNewSession(hostname: string): ChatSession {
+  static createNewSession(hostname: string, title = '新会话'): ChatSession {
     return {
       id: `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      title: '新会话',
+      title,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       messages: [],

@@ -25,6 +25,7 @@ import {
   getSkillTemplateJSON,
 } from "@/utils/example-skills";
 import Modal from "@/components/shared/Modal";
+import { useI18n } from "@/i18n";
 
 interface SkillsProps {
   skills: SkillDefinition[];
@@ -37,12 +38,12 @@ interface SkillsProps {
   onExport: () => string;
 }
 
-const RISK_LEVEL_CONFIG = {
-  safe: { label: '安全', color: 'text-green-600 bg-green-50 border-green-200', icon: ShieldCheck },
-  moderate: { label: '中风险', color: 'text-amber-600 bg-amber-50 border-amber-200', icon: AlertTriangle },
-  high: { label: '高风险', color: 'text-red-600 bg-red-50 border-red-200', icon: ShieldAlert },
-  dangerous: { label: '高风险', color: 'text-red-600 bg-red-50 border-red-200', icon: ShieldAlert },
-};
+const getRiskLevelConfig = (t: (key: string, vars?: Record<string, string | number>) => string) => ({
+  safe: { label: t('skills.risk.safe'), color: 'text-green-600 bg-green-50 border-green-200', icon: ShieldCheck },
+  moderate: { label: t('skills.risk.moderate'), color: 'text-amber-600 bg-amber-50 border-amber-200', icon: AlertTriangle },
+  high: { label: t('skills.risk.high'), color: 'text-red-600 bg-red-50 border-red-200', icon: ShieldAlert },
+  dangerous: { label: t('skills.risk.high'), color: 'text-red-600 bg-red-50 border-red-200', icon: ShieldAlert },
+});
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'text-green-600',
@@ -62,7 +63,8 @@ function matchHost(hostname: string, pattern: string): boolean {
 
 function groupSkillsByHost(
   skills: SkillDefinition[],
-  hostname: string
+  hostname: string,
+  unboundLabel: string
 ): { pattern: string; matched: boolean; skills: SkillDefinition[] }[] {
   const patternMap = new Map<string, Set<string>>();
   const skillMap = new Map<string, SkillDefinition>();
@@ -111,7 +113,7 @@ function groupSkillsByHost(
 
   const ungrouped = skills.filter((s) => !assignedSkills.has(s.id));
   if (ungrouped.length > 0) {
-    groups.push({ pattern: "(未绑定域名)", matched: false, skills: ungrouped });
+    groups.push({ pattern: unboundLabel, matched: false, skills: ungrouped });
   }
 
   return groups;
@@ -127,6 +129,8 @@ const Skills: React.FC<SkillsProps> = ({
   onImport,
   onExport,
 }) => {
+  const { t } = useI18n();
+  const riskConfig = useMemo(() => getRiskLevelConfig(t), [t]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(
     null
@@ -152,8 +156,8 @@ const Skills: React.FC<SkillsProps> = ({
   }, [skills, searchTerm]);
 
   const groups = useMemo(
-    () => groupSkillsByHost(filteredSkills, hostname),
-    [filteredSkills, hostname]
+    () => groupSkillsByHost(filteredSkills, hostname, t('skills.unboundHost')),
+    [filteredSkills, hostname, t]
   );
 
   const matchedCount = useMemo(
@@ -173,13 +177,13 @@ const Skills: React.FC<SkillsProps> = ({
       const arr = Array.isArray(data) ? data : [data];
       const result = await onImport(arr);
       setImportMessage(
-        `成功导入 ${result.imported} 个 Skill` +
-          (result.errors.length > 0 ? `，${result.errors.length} 个失败` : "")
+        t('skills.importSuccess', { count: result.imported }) +
+          (result.errors.length > 0 ? t('skills.importFailedCount', { count: result.errors.length }) : "")
       );
       setTimeout(() => setImportMessage(""), 3000);
     } catch (err) {
       setImportMessage(
-        "导入失败: " + (err instanceof Error ? err.message : String(err))
+        t('skills.importFailed', { error: err instanceof Error ? err.message : String(err) })
       );
       setTimeout(() => setImportMessage(""), 3000);
     }
@@ -200,8 +204,8 @@ const Skills: React.FC<SkillsProps> = ({
   const handleAddExampleSkills = async () => {
     const result = await onImport(EXAMPLE_SKILLS);
     setImportMessage(
-      `已添加 ${result.imported} 个示例 Skill` +
-        (result.errors.length > 0 ? `（${result.errors.length} 个已存在）` : "")
+      t('skills.addedExample', { count: result.imported }) +
+        (result.errors.length > 0 ? t('skills.existsCount', { count: result.errors.length }) : "")
     );
     setTimeout(() => setImportMessage(""), 3000);
   };
@@ -209,8 +213,8 @@ const Skills: React.FC<SkillsProps> = ({
   const handleTestSkill = async (skill: SkillDefinition) => {
     if (skill.api.method !== 'GET') {
       setAlertInfo({
-        title: '不支持的方法',
-        message: '非 GET 请求需要在 Chat 中通过 AI 执行',
+        title: t('skills.methodNotSupported'),
+        message: t('skills.methodNotSupportedDesc'),
         type: 'warning'
       });
       return;
@@ -219,8 +223,8 @@ const Skills: React.FC<SkillsProps> = ({
       const connected = await Messaging.ensureConnected();
       if (!connected) {
         setAlertInfo({
-          title: '连接失败',
-          message: 'Content Script 未连接。请确保当前标签页是一个普通网页（非 chrome:// 页面），然后重试。',
+          title: t('skills.connectFailed'),
+          message: t('skills.connectFailedDesc'),
           type: 'error'
         });
         return;
@@ -233,20 +237,20 @@ const Skills: React.FC<SkillsProps> = ({
       
       if (response.success) {
         setAlertInfo({
-          title: '测试成功',
-          message: `状态码: ${response.status}`,
+          title: t('skills.testSuccess'),
+          message: t('skills.testSuccessStatus', { status: response.status ?? '' }),
           type: 'success'
         });
       } else {
         setAlertInfo({
-          title: '测试失败',
-          message: response.error || '未知错误',
+          title: t('skills.testFailed'),
+          message: response.error || t('skills.unknownError'),
           type: 'error'
         });
       }
     } catch (err) {
       setAlertInfo({
-        title: '测试出错',
+        title: t('skills.testError'),
         message: err instanceof Error ? err.message : String(err),
         type: 'error'
       });
@@ -263,7 +267,7 @@ const Skills: React.FC<SkillsProps> = ({
 
   // ── Render Skill Card ──
   const renderSkillCard = (skill: SkillDefinition, isMatched: boolean) => {
-    const risk = RISK_LEVEL_CONFIG[skill.meta.riskLevel as keyof typeof RISK_LEVEL_CONFIG] || RISK_LEVEL_CONFIG.safe;
+    const risk = riskConfig[skill.meta.riskLevel as keyof typeof riskConfig] || riskConfig.safe;
     
     return (
       <div
@@ -278,7 +282,7 @@ const Skills: React.FC<SkillsProps> = ({
           <div className="flex items-center gap-2 flex-wrap mb-1">
             {isMatched && (
               <span className="px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-600 text-[10px] border border-cyan-200">
-                当前站点
+                {t('skills.currentSite')}
               </span>
             )}
             <span className="font-medium text-sm text-slate-800 truncate">{skill.name}</span>
@@ -308,21 +312,21 @@ const Skills: React.FC<SkillsProps> = ({
           <button
             className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-slate-100 transition-colors"
             onClick={() => openDetail(skill)}
-            title="详情"
+            title={t('skills.details')}
           >
             <Eye className="w-3.5 h-3.5" />
           </button>
           <button
             className="p-1.5 rounded-lg text-slate-400 hover:text-green-600 hover:bg-slate-100 transition-colors"
             onClick={() => handleTestSkill(skill)}
-            title="测试"
+            title={t('skills.test')}
           >
             <Play className="w-3.5 h-3.5" />
           </button>
           <button
             className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-100 transition-colors"
             onClick={() => setDeleteTarget(skill)}
-            title="删除"
+            title={t('skills.delete')}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -339,7 +343,7 @@ const Skills: React.FC<SkillsProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-500 flex items-center gap-1">
               <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-600 border border-cyan-200">
-                当前网站 {matchedCount} 个可用
+                {t('skills.currentSiteAvailable', { count: matchedCount })}
               </span>
             </span>
           </div>
@@ -354,14 +358,14 @@ const Skills: React.FC<SkillsProps> = ({
             <button
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white transition-colors"
               onClick={() => fileInputRef.current?.click()}
-              title="导入"
+              title={t('skills.import')}
             >
               <Upload className="w-4 h-4" />
             </button>
             <button
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white transition-colors"
               onClick={handleExport}
-              title="导出"
+              title={t('skills.export')}
               disabled={skills.length === 0}
             >
               <Download className="w-4 h-4" />
@@ -370,7 +374,7 @@ const Skills: React.FC<SkillsProps> = ({
               className="glass-button-primary text-xs px-3 py-1.5 h-8 ml-1"
               onClick={() => setShowAddModal(true)}
             >
-              <Plus className="w-3.5 h-3.5" /> 新增
+              <Plus className="w-3.5 h-3.5" /> {t('skills.add')}
             </button>
           </div>
         </div>
@@ -379,7 +383,7 @@ const Skills: React.FC<SkillsProps> = ({
           <input
             type="text"
             className="glass-input w-full pl-9 py-1.5 text-xs h-8"
-            placeholder="搜索 Skills..."
+            placeholder={t('skills.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -404,9 +408,9 @@ const Skills: React.FC<SkillsProps> = ({
                   <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
                     <Lightbulb className="w-8 h-8 text-yellow-500 opacity-80" />
                   </div>
-                  <p className="text-sm font-medium text-slate-800">还没有任何 Skill</p>
+                  <p className="text-sm font-medium text-slate-800">{t('skills.emptyTitle')}</p>
                   <p className="text-xs text-slate-500 mt-1 max-w-50 mx-auto">
-                    Skill 定义了 AI 可以调用的 API，让浏览器变得更强大
+                    {t('skills.emptyDesc')}
                   </p>
                 </div>
 
@@ -416,16 +420,16 @@ const Skills: React.FC<SkillsProps> = ({
                     onClick={handleAddExampleSkills}
                   >
                     <BookOpen className="w-4 h-4" />
-                    一键添加示例 Skills
+                    {t('skills.addExamples')}
                   </button>
                   <span className="text-[10px] text-slate-500">
-                    包含 GitHub、文章列表等 {EXAMPLE_SKILLS.length} 个示例
+                    {t('skills.exampleCount', { count: EXAMPLE_SKILLS.length })}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 w-full max-w-50 mx-auto">
                    <div className="h-px bg-slate-200 flex-1" />
-                   <span className="text-[10px] text-slate-400">或</span>
+                   <span className="text-[10px] text-slate-400">{t('skills.or')}</span>
                    <div className="h-px bg-slate-200 flex-1" />
                 </div>
 
@@ -435,21 +439,21 @@ const Skills: React.FC<SkillsProps> = ({
                     onClick={() => setShowAddModal(true)}
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    手动添加
+                    {t('skills.manualAdd')}
                   </button>
                   <button
                     className="glass-button text-xs"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    导入 JSON
+                    {t('skills.importJson')}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="text-center py-10">
                 <Search className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-xs text-slate-500">没有匹配的搜索结果</p>
+                <p className="text-xs text-slate-500">{t('skills.noSearchResult')}</p>
               </div>
             )}
           </div>
@@ -485,7 +489,7 @@ const Skills: React.FC<SkillsProps> = ({
       <Modal
         isOpen={!!selectedSkill}
         onClose={closeDetail}
-        title="Skill 详情"
+        title={t('skills.detailTitle')}
         width="max-w-lg"
       >
         {selectedSkill && (
@@ -507,7 +511,7 @@ const Skills: React.FC<SkillsProps> = ({
       <Modal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="确认删除"
+        title={t('skills.deleteTitle')}
         width="max-w-sm"
         footer={
           <>
@@ -515,7 +519,7 @@ const Skills: React.FC<SkillsProps> = ({
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
               onClick={() => setDeleteTarget(null)}
             >
-              取消
+              {t('common.cancel')}
             </button>
             <button
               className="glass-button-danger text-xs px-3 py-1.5"
@@ -526,7 +530,7 @@ const Skills: React.FC<SkillsProps> = ({
                 }
               }}
             >
-              删除
+              {t('common.delete')}
             </button>
           </>
         }
@@ -537,10 +541,10 @@ const Skills: React.FC<SkillsProps> = ({
           </div>
           <div>
             <p className="text-sm text-slate-700 font-medium">
-              确定要删除 Skill「{deleteTarget?.name}」吗？
+              {t('skills.deleteConfirm', { name: deleteTarget?.name ?? '' })}
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              此操作无法撤销，相关的会话可能无法正常工作。
+              {t('skills.deleteDesc')}
             </p>
           </div>
         </div>
@@ -550,14 +554,14 @@ const Skills: React.FC<SkillsProps> = ({
       <Modal
         isOpen={!!alertInfo}
         onClose={() => setAlertInfo(null)}
-        title={alertInfo?.title || '提示'}
+        title={alertInfo?.title || t('skills.alertTitle')}
         width="max-w-sm"
         footer={
           <button
             className="glass-button-primary text-xs px-4 py-1.5"
             onClick={() => setAlertInfo(null)}
           >
-            确定
+            {t('skills.ok')}
           </button>
         }
       >
@@ -585,6 +589,7 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
   skill,
   hostname,
 }) => {
+  const { t } = useI18n();
   const isMatched = skill.binding.hostPatterns.some((p) =>
     matchHost(hostname, p)
   );
@@ -598,22 +603,22 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
         </div>
         {isMatched && (
           <div className="px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium border border-green-200 shrink-0 flex items-center gap-1">
-            <Check className="w-3 h-3" /> 匹配当前站点
+            <Check className="w-3 h-3" /> {t('skills.matchedSite')}
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-3 gap-4 text-xs">
         <div className="col-span-2 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">ID</span>
+          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">{t('skills.id')}</span>
           <code className="text-slate-700 bg-white px-1.5 py-0.5 rounded border border-slate-200 block truncate" title={skill.id}>{skill.id}</code>
         </div>
         <div className="col-span-1 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">版本</span>
+          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">{t('skills.version')}</span>
           <span className="text-slate-700 font-medium">{skill.version}</span>
         </div>
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 col-span-3">
-          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">接口 Endpoint</span>
+          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">{t('skills.endpoint')}</span>
           <div className="flex items-center gap-2">
             <span className={`font-bold px-1.5 py-0.5 rounded ${METHOD_COLORS[skill.api.method].replace('text-', 'bg-').replace('600', '100')} ${METHOD_COLORS[skill.api.method]}`}>
               {skill.api.method}
@@ -628,7 +633,7 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
       <div>
         <h4 className="font-bold text-slate-800 mb-3 text-xs flex items-center gap-2">
           <Globe className="w-3.5 h-3.5 text-cyan-500" />
-          站点匹配规则
+          {t('skills.hostRules')}
         </h4>
         <div className="flex flex-wrap gap-2">
           {skill.binding.hostPatterns.map((p, i) => (
@@ -649,19 +654,19 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
       <div>
         <h4 className="font-bold text-slate-800 mb-3 text-xs flex items-center gap-2">
           <FileCode className="w-3.5 h-3.5 text-purple-500" />
-          参数定义
+          {t('skills.paramsDef')}
         </h4>
         {skill.parameters.length === 0 ? (
-          <p className="text-xs text-slate-400 italic pl-1">无参数</p>
+          <p className="text-xs text-slate-400 italic pl-1">{t('skills.noParams')}</p>
         ) : (
           <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-xs text-left">
               <thead className="bg-slate-50/80 text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="p-3 font-medium">名称</th>
-                  <th className="p-3 font-medium">位置</th>
-                  <th className="p-3 font-medium">必填</th>
-                  <th className="p-3 font-medium">说明</th>
+                  <th className="p-3 font-medium">{t('skills.paramName')}</th>
+                  <th className="p-3 font-medium">{t('skills.paramLocation')}</th>
+                  <th className="p-3 font-medium">{t('skills.paramRequired')}</th>
+                  <th className="p-3 font-medium">{t('skills.paramDesc')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -687,7 +692,7 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
              <div className="w-4 h-4 rounded bg-slate-100 flex items-center justify-center group-open:rotate-90 transition-transform">
                <Play className="w-2 h-2 fill-current" />
              </div>
-             查看完整 JSON 配置
+             {t('skills.viewJson')}
           </summary>
           <pre className="mt-3 bg-slate-50 rounded-xl p-4 text-[10px] overflow-auto max-h-60 text-slate-600 font-mono border border-slate-200 custom-scrollbar shadow-inner">
             {JSON.stringify(skill, null, 2)}
@@ -704,6 +709,7 @@ const SkillAddModal: React.FC<{
   onClose: () => void;
   onAdd: (skill: SkillDefinition) => Promise<void>;
 }> = ({ isOpen, onClose, onAdd }) => {
+  const { t, messages } = useI18n();
   const [jsonText, setJsonText] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -740,7 +746,7 @@ const SkillAddModal: React.FC<{
         className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" 
         onClick={onClose}
       >
-        取消
+        {t('common.cancel')}
       </button>
       <button
         className="glass-button-primary px-5 py-2 shadow-md hover:shadow-lg"
@@ -748,7 +754,7 @@ const SkillAddModal: React.FC<{
         disabled={!jsonText.trim() || loading}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-        {loading ? "校验中..." : "确认添加"}
+        {loading ? t('skills.validating') : t('skills.confirmAdd')}
       </button>
     </>
   );
@@ -757,27 +763,27 @@ const SkillAddModal: React.FC<{
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="新增 Skill"
+      title={t('skills.addSkillTitle')}
       footer={footer}
       height="h-[85vh]"
     >
       <div className="space-y-6">
         {/* Quick actions */}
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-slate-500">快速填充：</span>
+          <span className="text-xs font-medium text-slate-500">{t('skills.quickFill')}</span>
           <button
             className="px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-600 text-xs font-medium hover:bg-cyan-100 border border-cyan-100 transition-colors flex items-center gap-1.5"
             onClick={() => setShowExamples(!showExamples)}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            {showExamples ? "收起示例" : "查看示例"}
+            {showExamples ? t('skills.hideExamples') : t('skills.showExamples')}
           </button>
           <button
             className="px-3 py-1.5 rounded-lg bg-purple-50 text-purple-600 text-xs font-medium hover:bg-purple-100 border border-purple-100 transition-colors flex items-center gap-1.5"
             onClick={loadTemplate}
           >
             <FileCode className="w-3.5 h-3.5" />
-            空白模板
+            {t('skills.blankTemplate')}
           </button>
         </div>
 
@@ -785,7 +791,7 @@ const SkillAddModal: React.FC<{
         {showExamples && (
           <div className="p-1 bg-slate-50 rounded-xl border border-slate-200 animate-in slide-in-from-top-2">
             <div className="p-2 text-xs text-slate-500 font-medium">
-              选择一个示例，了解格式后可修改为你自己的配置：
+              {t('skills.exampleHint')}
             </div>
             <div className="grid grid-cols-1 gap-1 max-h-60 overflow-y-auto custom-scrollbar px-1 pb-1">
               {EXAMPLE_SKILLS.map((skill, idx) => (
@@ -817,14 +823,14 @@ const SkillAddModal: React.FC<{
         <div className="relative">
           <textarea
             className="w-full h-80 font-mono text-xs leading-relaxed p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all resize-none shadow-inner text-slate-700"
-            placeholder={`粘贴 Skill JSON ...\n\n必填字段：id, name, description, version, api, parameters, response, meta, binding`}
+            placeholder={t('skills.jsonPlaceholder')}
             value={jsonText}
             onChange={(e) => setJsonText(e.target.value)}
           />
           {!jsonText && (
              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none opacity-40">
                <FileCode className="w-10 h-10 mx-auto mb-3 text-slate-400" />
-               <span className="text-sm font-medium text-slate-500">在此处粘贴 JSON 配置</span>
+               <span className="text-sm font-medium text-slate-500">{t('skills.jsonEmptyHint')}</span>
              </div>
           )}
         </div>
@@ -839,13 +845,11 @@ const SkillAddModal: React.FC<{
         {/* Schema hint */}
         {!jsonText && (
           <div className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 text-xs text-slate-500 space-y-2">
-            <p className="font-semibold text-slate-700">Skill JSON 结构说明：</p>
+            <p className="font-semibold text-slate-700">{t('skills.jsonStructureTitle')}</p>
             <ul className="space-y-1.5 list-disc list-inside opacity-80 pl-1">
-              <li><code className="bg-white px-1 py-0.5 rounded border border-slate-200">id</code> 唯一标识, <code className="bg-white px-1 py-0.5 rounded border border-slate-200">name</code> 显示名称</li>
-              <li><code className="bg-white px-1 py-0.5 rounded border border-slate-200">api</code> HTTP 接口定义 (method, path, etc)</li>
-              <li><code className="bg-white px-1 py-0.5 rounded border border-slate-200">parameters[]</code> 输入参数定义</li>
-              <li><code className="bg-white px-1 py-0.5 rounded border border-slate-200">response</code> 响应提取规则 (JSONPath)</li>
-              <li><code className="bg-white px-1 py-0.5 rounded border border-slate-200">binding.hostPatterns</code> 域名匹配规则</li>
+              {messages.skills.jsonStructureItems.map((item, index) => (
+                <li key={index} dangerouslySetInnerHTML={{ __html: item }} />
+              ))}
             </ul>
           </div>
         )}

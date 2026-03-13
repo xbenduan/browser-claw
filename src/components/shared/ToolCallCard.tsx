@@ -1,43 +1,44 @@
 import React, { useState } from 'react';
 import type { ToolCallDisplay } from '@/types';
 import { ChevronDown, ChevronRight, CheckCircle2, XCircle, Clock, PlayCircle, ToolCase } from 'lucide-react';
+import { useI18n } from '@/i18n';
 
 interface ToolCallCardProps {
   toolCall: ToolCallDisplay;
 }
 
-const STATUS_CONFIG = {
+const getStatusConfig = (t: (key: string, vars?: Record<string, string | number>) => string) => ({
   pending_confirmation: { 
-    label: '等待确认', 
+    label: t('toolCall.pending'), 
     cls: 'bg-amber-50 text-amber-700 border-amber-200',
     icon: Clock
   },
   confirmed: { 
-    label: '已确认', 
+    label: t('toolCall.confirmed'), 
     cls: 'bg-blue-50 text-blue-700 border-blue-200',
     icon: CheckCircle2
   },
   rejected: { 
-    label: '已拒绝', 
+    label: t('toolCall.rejected'), 
     cls: 'bg-red-50 text-red-700 border-red-200',
     icon: XCircle
   },
   executing: { 
-    label: '执行中', 
+    label: t('toolCall.executing'), 
     cls: 'bg-cyan-50 text-cyan-700 border-cyan-200 animate-pulse',
     icon: PlayCircle
   },
   success: { 
-    label: '成功', 
+    label: t('toolCall.success'), 
     cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     icon: CheckCircle2
   },
   error: { 
-    label: '失败', 
+    label: t('toolCall.error'), 
     cls: 'bg-red-50 text-red-700 border-red-200',
     icon: XCircle
   },
-};
+});
 
 const METHOD_COLORS: Record<string, string> = {
   GET: 'text-green-600',
@@ -48,8 +49,10 @@ const METHOD_COLORS: Record<string, string> = {
 };
 
 const ToolCallCard: React.FC<ToolCallCardProps> = ({ toolCall }) => {
+  const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
-  const statusConfig = STATUS_CONFIG[toolCall.status] ?? { 
+  const statusConfigMap = getStatusConfig(t);
+  const statusConfig = statusConfigMap[toolCall.status] ?? { 
     label: toolCall.status, 
     cls: 'bg-slate-100 text-slate-600 border-slate-200',
     icon: Clock
@@ -93,7 +96,7 @@ const ToolCallCard: React.FC<ToolCallCardProps> = ({ toolCall }) => {
             className="flex items-center gap-1 text-xs text-slate-600 hover:text-cyan-600 transition-colors w-full"
           >
             {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-            <span>查看结果</span>
+            <span>{t('toolCall.viewResult')}</span>
           </button>
           
           {isExpanded && (
@@ -122,10 +125,10 @@ const ToolCallCard: React.FC<ToolCallCardProps> = ({ toolCall }) => {
             />
           </div>
           <div className="flex justify-between text-[10px] text-slate-600 px-0.5">
-            <span>进度: {toolCall.batchProgress.completed}/{toolCall.batchProgress.total}</span>
+            <span>{t('toolCall.progress', { completed: toolCall.batchProgress.completed, total: toolCall.batchProgress.total })}</span>
             <div className="flex gap-2">
-              <span className="text-green-600">✅ {toolCall.batchProgress.success}</span>
-              <span className="text-red-600">❌ {toolCall.batchProgress.failed}</span>
+              <span className="text-green-600">{t('toolCall.successCount', { count: toolCall.batchProgress.success })}</span>
+              <span className="text-red-600">{t('toolCall.failedCount', { count: toolCall.batchProgress.failed })}</span>
             </div>
           </div>
         </div>

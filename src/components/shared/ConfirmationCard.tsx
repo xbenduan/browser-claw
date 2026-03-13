@@ -17,6 +17,7 @@ import type {
   SkillDefinition,
 } from "@/types";
 import { parseChatModification } from "@/utils/param-modifier";
+import { useI18n } from "@/i18n";
 
 interface ConfirmationCardProps {
   data: ConfirmationRequest;
@@ -38,6 +39,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
   skillDefinition,
   onResult,
 }) => {
+  const { t } = useI18n();
   const isHighRisk = data.riskLevel === "dangerous";
   const isMediumRisk = data.riskLevel === "moderate";
 
@@ -99,15 +101,15 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
         parsed === null ||
         Array.isArray(parsed)
       ) {
-        setJsonError("参数必须是一个 JSON 对象");
+        setJsonError(t("confirmation.jsonObjectRequired"));
         return;
       }
       setJsonError(null);
       setEditedParams(parsed);
     } catch (e) {
-      setJsonError(`JSON 语法错误: ${(e as Error).message}`);
+      setJsonError(t("confirmation.jsonError", { error: (e as Error).message }));
     }
-  }, []);
+  }, [t]);
 
   // ─── 进入编辑模式 ───
   const handleEnterEditMode = useCallback(() => {
@@ -122,11 +124,11 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
     setChatMessages([
       {
         role: "system",
-        text: '请描述你想修改的参数，例如："把 page 改成 2" 或 "limit 设为 50"。',
+        text: t("confirmation.chatGuide"),
       },
     ]);
     setTimeout(() => chatInputRef.current?.focus(), 100);
-  }, []);
+  }, [t]);
 
   // ─── 回到查看模式 ───
   const handleBackToView = useCallback(() => {
@@ -163,7 +165,9 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
         ...prev,
         {
           role: "system",
-          text: `✅ 已修改: ${result.changes!.join(", ")}`,
+          text: t("confirmation.chatModified", {
+            changes: result.changes!.join(", "),
+          }),
         },
       ]);
     } else {
@@ -172,12 +176,11 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
         {
           role: "system",
           text:
-            result.error ||
-            '❌ 无法理解修改意图，请尝试更明确的描述，如："把 limit 改成 20"',
+            result.error || t("confirmation.chatFailed"),
         },
       ]);
     }
-  }, [chatInput, editedParams, skillDefinition]);
+  }, [chatInput, editedParams, skillDefinition, t]);
 
   // ─── 确认 / 拒绝 ───
   const handleConfirm = useCallback(() => {
@@ -210,13 +213,13 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
-            请求调用工具
+            {t("confirmation.title")}
             <span className="px-1.5 py-0.5 rounded text-xs bg-violet-50 text-violet-700 font-mono border border-violet-200/60">
               {data.skillName}
             </span>
             {isParamsModified && (
               <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-100 text-amber-700 border border-amber-200 font-medium">
-                已修改
+                {t("confirmation.modified")}
               </span>
             )}
           </h3>
@@ -248,7 +251,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
               ) : (
                 <ChevronRight className="w-3 h-3" />
               )}
-              Parameters
+              {t("confirmation.parametersLabel")}
             </button>
 
             {showParams && (
@@ -257,7 +260,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                   <button
                     className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-amber-600 transition-colors"
                     onClick={handleResetParams}
-                    title="重置为原始参数"
+                    title={t("confirmation.resetParams")}
                   >
                     <RotateCcw className="w-3 h-3" />
                   </button>
@@ -268,14 +271,14 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                     <button
                       className="p-1 rounded hover:bg-violet-50 text-slate-400 hover:text-violet-600 transition-colors duration-150 cursor-pointer"
                       onClick={handleEnterEditMode}
-                      title="手动编辑参数"
+                      title={t("confirmation.manualEdit")}
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
                     <button
                       className="p-1 rounded hover:bg-violet-50 text-slate-400 hover:text-violet-600 transition-colors duration-150 cursor-pointer"
                       onClick={handleEnterChatMode}
-                      title="通过对话修改参数"
+                      title={t("confirmation.chatEdit")}
                     >
                       <MessageSquarePlus className="w-3 h-3" />
                     </button>
@@ -287,7 +290,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                     className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
                     onClick={handleBackToView}
                   >
-                    完成
+                    {t("confirmation.done")}
                   </button>
                 )}
               </div>
@@ -316,7 +319,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                           {JSON.stringify(val)}
                           {isChanged && (
                             <span className="ml-1.5 text-[9px] text-amber-500 font-normal">
-                              (原: {JSON.stringify(originalVal)})
+                              ({t("confirmation.original")}: {JSON.stringify(originalVal)})
                             </span>
                           )}
                         </span>
@@ -344,7 +347,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                   {!jsonError && isParamsModified && (
                     <p className="text-[10px] text-green-600 flex items-center gap-1 px-1">
                       <Check className="w-3 h-3" />
-                      参数已更新
+                      {t("confirmation.paramsUpdated")}
                     </p>
                   )}
                 </div>
@@ -378,7 +381,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
                       ref={chatInputRef}
                       type="text"
                       className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50"
-                      placeholder='输入修改指令，如 "把 limit 改成 50"'
+                      placeholder={t("confirmation.inputPlaceholder")}
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => {
@@ -413,12 +416,12 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
         <div className="flex gap-2">
           {isHighRisk && (
             <span className="px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs border border-red-200 flex items-center gap-1">
-              <ShieldAlert className="w-3 h-3" /> 高风险
+              <ShieldAlert className="w-3 h-3" /> {t("confirmation.highRisk")}
             </span>
           )}
           {data.isBatch && (
             <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs border border-blue-200">
-              批量处理: {data.batchCount}
+              {t("confirmation.batch", { count: data.batchCount ?? 0 })}
             </span>
           )}
         </div>
@@ -429,7 +432,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
             onClick={handleReject}
           >
             <X className="w-3.5 h-3.5" />
-            拒绝
+            {t("confirmation.reject")}
           </button>
           <button
             className={`text-xs px-3 py-1.5 h-8 ${
@@ -441,7 +444,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({
             disabled={editMode === "edit" && !!jsonError}
           >
             <Check className="w-3.5 h-3.5" />
-            {isParamsModified ? "确认执行（已修改）" : "确认执行"}
+            {isParamsModified ? t("confirmation.confirmModified") : t("confirmation.confirm")}
           </button>
         </div>
       </div>

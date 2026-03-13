@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Plus,
   Trash2,
@@ -22,131 +22,132 @@ import type {
   IMPlatformInfo,
   IMPlatformField,
 } from "@/types";
+import { useI18n } from "@/i18n";
 
 // ============ 平台预设 ============
 
-const PLATFORMS: IMPlatformInfo[] = [
+const getPlatforms = (t: (key: string, vars?: Record<string, string | number>) => string): IMPlatformInfo[] => [
   {
     id: "feishu",
-    name: "飞书",
+    name: t("channels.platforms.feishu.name"),
     icon: "🪶",
     color: "#3370ff",
-    description: "通过飞书自定义机器人 Webhook 接入",
+    description: t("channels.platforms.feishu.description"),
     fields: [
       {
         key: "botWebhookUrl",
-        label: "Bot Webhook URL",
+        label: t("channels.fields.botWebhookUrl.label"),
         type: "url",
-        placeholder: "https://open.feishu.cn/open-apis/bot/v2/hook/xxx",
+        placeholder: t("channels.platforms.feishu.botWebhookUrlPlaceholder"),
         required: true,
-        helpText: "飞书群机器人的 Webhook 地址",
+        helpText: t("channels.platforms.feishu.botWebhookUrlHelp"),
       },
       {
         key: "secret",
-        label: "签名校验密钥",
+        label: t("channels.platforms.feishu.secretLabel"),
         type: "password",
-        placeholder: "可选，用于消息签名验证",
+        placeholder: t("channels.platforms.feishu.secretPlaceholder"),
         required: false,
-        helpText: "在飞书机器人安全设置中配置的签名密钥",
+        helpText: t("channels.platforms.feishu.secretHelp"),
       },
     ],
   },
   {
     id: "dingtalk",
-    name: "钉钉",
+    name: t("channels.platforms.dingtalk.name"),
     icon: "💬",
     color: "#0089ff",
-    description: "通过钉钉自定义机器人 Webhook 接入",
+    description: t("channels.platforms.dingtalk.description"),
     fields: [
       {
         key: "botWebhookUrl",
-        label: "Bot Webhook URL",
+        label: t("channels.fields.botWebhookUrl.label"),
         type: "url",
-        placeholder: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
+        placeholder: t("channels.platforms.dingtalk.botWebhookUrlPlaceholder"),
         required: true,
-        helpText: "钉钉群机器人的 Webhook 地址",
+        helpText: t("channels.platforms.dingtalk.botWebhookUrlHelp"),
       },
       {
         key: "secret",
-        label: "加签密钥",
+        label: t("channels.platforms.dingtalk.secretLabel"),
         type: "password",
-        placeholder: "SEC...",
+        placeholder: t("channels.platforms.dingtalk.secretPlaceholder"),
         required: false,
-        helpText: "钉钉机器人安全设置中的加签密钥",
+        helpText: t("channels.platforms.dingtalk.secretHelp"),
       },
     ],
   },
   {
     id: "wechat_work",
-    name: "企业微信",
+    name: t("channels.platforms.wechat_work.name"),
     icon: "💼",
     color: "#07c160",
-    description: "通过企业微信群机器人 Webhook 接入",
+    description: t("channels.platforms.wechat_work.description"),
     fields: [
       {
         key: "botWebhookUrl",
-        label: "Bot Webhook URL",
+        label: t("channels.fields.botWebhookUrl.label"),
         type: "url",
-        placeholder: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx",
+        placeholder: t("channels.platforms.wechat_work.botWebhookUrlPlaceholder"),
         required: true,
-        helpText: "企业微信群机器人的 Webhook 地址",
+        helpText: t("channels.platforms.wechat_work.botWebhookUrlHelp"),
       },
     ],
   },
   {
     id: "slack",
-    name: "Slack",
+    name: t("channels.platforms.slack.name"),
     icon: "💜",
     color: "#4a154b",
-    description: "通过 Slack Incoming Webhook 接入",
+    description: t("channels.platforms.slack.description"),
     fields: [
       {
         key: "botWebhookUrl",
-        label: "Webhook URL",
+        label: t("channels.fields.webhookUrl.label"),
         type: "url",
-        placeholder: "https://hooks.slack.com/services/T.../B.../xxx",
+        placeholder: t("channels.platforms.slack.botWebhookUrlPlaceholder"),
         required: true,
-        helpText: "Slack App 的 Incoming Webhook URL",
+        helpText: t("channels.platforms.slack.botWebhookUrlHelp"),
       },
     ],
   },
   {
     id: "discord",
-    name: "Discord",
+    name: t("channels.platforms.discord.name"),
     icon: "🎮",
     color: "#5865f2",
-    description: "通过 Discord Webhook 接入",
+    description: t("channels.platforms.discord.description"),
     fields: [
       {
         key: "botWebhookUrl",
-        label: "Webhook URL",
+        label: t("channels.fields.webhookUrl.label"),
         type: "url",
-        placeholder: "https://discord.com/api/webhooks/xxx/xxx",
+        placeholder: t("channels.platforms.discord.botWebhookUrlPlaceholder"),
         required: true,
-        helpText: "Discord 频道的 Webhook URL",
+        helpText: t("channels.platforms.discord.botWebhookUrlHelp"),
       },
     ],
   },
   {
     id: "custom",
-    name: "自定义",
+    name: t("channels.platforms.custom.name"),
     icon: "🔧",
     color: "#6b7280",
-    description: "自定义 Webhook 接入，适用于其他 IM 平台",
+    description: t("channels.platforms.custom.description"),
     fields: [
       {
         key: "botWebhookUrl",
-        label: "Webhook URL",
+        label: t("channels.fields.webhookUrl.label"),
         type: "url",
-        placeholder: "https://your-webhook-endpoint.com/...",
+        placeholder: t("channels.platforms.custom.botWebhookUrlPlaceholder"),
         required: true,
-        helpText: "目标服务的 Webhook 地址",
+        helpText: t("channels.platforms.custom.botWebhookUrlHelp"),
       },
       {
         key: "secret",
-        label: "认证 Token",
+        label: t("channels.platforms.custom.secretLabel"),
         type: "password",
-        placeholder: "可选",
+        placeholder: t("channels.platforms.custom.secretPlaceholder"),
         required: false,
       },
     ],
@@ -174,6 +175,8 @@ const Channels: React.FC<ChannelsProps> = ({
   onRemove,
   onToggle,
 }) => {
+  const { t } = useI18n();
+  const platforms = useMemo(() => getPlatforms(t), [t]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -193,7 +196,7 @@ const Channels: React.FC<ChannelsProps> = ({
   } | null>(null);
 
   const getPlatformInfo = (id: IMPlatform) =>
-    PLATFORMS.find((p) => p.id === id)!;
+    platforms.find((p) => p.id === id)!;
 
   const resetForm = () => {
     setShowAddForm(false);
@@ -225,7 +228,7 @@ const Channels: React.FC<ChannelsProps> = ({
 
     for (const field of platform.fields) {
       if (field.required && !formValues[field.key]?.trim()) {
-        setError(`${field.label} 不能为空`);
+        setError(t("channels.fieldRequired", { label: field.label }));
         return;
       }
     }
@@ -251,7 +254,7 @@ const Channels: React.FC<ChannelsProps> = ({
       }
       resetForm();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "保存失败");
+      setError(e instanceof Error ? e.message : t("channels.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -269,24 +272,24 @@ const Channels: React.FC<ChannelsProps> = ({
       if (platform === "feishu") {
         body = JSON.stringify({
           msg_type: "text",
-          content: { text: "🦀 Browser Claw 连接测试成功！" },
+          content: { text: t("channels.testContent") },
         });
       } else if (platform === "dingtalk") {
         body = JSON.stringify({
           msgtype: "text",
-          text: { content: "🦀 Browser Claw 连接测试成功！" },
+          text: { content: t("channels.testContent") },
         });
       } else if (platform === "wechat_work") {
         body = JSON.stringify({
           msgtype: "text",
-          text: { content: "🦀 Browser Claw 连接测试成功！" },
+          text: { content: t("channels.testContent") },
         });
       } else if (platform === "slack") {
-        body = JSON.stringify({ text: "🦀 Browser Claw 连接测试成功！" });
+        body = JSON.stringify({ text: t("channels.testContent") });
       } else if (platform === "discord") {
-        body = JSON.stringify({ content: "🦀 Browser Claw 连接测试成功！" });
+        body = JSON.stringify({ content: t("channels.testContent") });
       } else {
-        body = JSON.stringify({ text: "🦀 Browser Claw 连接测试成功！" });
+        body = JSON.stringify({ text: t("channels.testContent") });
       }
 
       const resp = await fetch(channel.botWebhookUrl, {
@@ -299,7 +302,7 @@ const Channels: React.FC<ChannelsProps> = ({
         setTestResult({
           id: channel.id,
           success: true,
-          msg: "发送成功！请检查 IM 是否收到消息",
+          msg: t("channels.testSuccess"),
         });
       } else {
         const text = await resp.text();
@@ -313,7 +316,7 @@ const Channels: React.FC<ChannelsProps> = ({
       setTestResult({
         id: channel.id,
         success: false,
-        msg: e instanceof Error ? e.message : "请求失败",
+        msg: e instanceof Error ? e.message : t("channels.testFailed"),
       });
     } finally {
       setTestingId(null);
@@ -329,8 +332,8 @@ const Channels: React.FC<ChannelsProps> = ({
             <Hash className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-semibold text-lg text-slate-800">IM 频道</h2>
-            <p className="text-xs text-slate-500">连接飞书、钉钉等 IM 平台</p>
+            <h2 className="font-semibold text-lg text-slate-800">{t("channels.title")}</h2>
+            <p className="text-xs text-slate-500">{t("channels.subtitle")}</p>
           </div>
         </div>
         <button
@@ -341,7 +344,7 @@ const Channels: React.FC<ChannelsProps> = ({
           }}
         >
           <Plus className="w-3.5 h-3.5" />
-          添加频道
+          {t("channels.addChannel")}
         </button>
       </div>
 
@@ -350,7 +353,7 @@ const Channels: React.FC<ChannelsProps> = ({
         <div className="glass-panel p-4 mb-6 rounded-xl animate-in fade-in slide-in-from-top-4 border-l-4 border-l-violet-500">
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200">
             <h3 className="font-semibold text-sm text-slate-800">
-              {editingId ? "编辑频道" : "新建 IM 频道"}
+              {editingId ? t("channels.editChannel") : t("channels.newChannel")}
             </h3>
             <button
               className="p-1 rounded hover:bg-slate-100 text-slate-500 cursor-pointer"
@@ -372,10 +375,10 @@ const Channels: React.FC<ChannelsProps> = ({
             {!selectedPlatform && !editingId && (
               <div>
                 <label className="text-xs text-slate-500 mb-2 block">
-                  选择 IM 平台
+                  {t("channels.platformSelect")}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
-                  {PLATFORMS.map((p) => (
+                  {platforms.map((p) => (
                     <button
                       key={p.id}
                       className="glass-button flex-col items-center gap-2 h-auto py-3 hover:border-violet-300 hover:bg-violet-50 cursor-pointer"
@@ -407,14 +410,14 @@ const Channels: React.FC<ChannelsProps> = ({
                       className="text-violet-600 hover:text-violet-500 ml-auto hover:underline cursor-pointer"
                       onClick={() => setSelectedPlatform(null)}
                     >
-                      更换平台
+                      {t("channels.switchPlatform")}
                     </button>
                   )}
                 </div>
 
                 {/* Channel Name */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">频道名称</label>
+                  <label className="text-xs text-slate-500">{t("channels.channelName")}</label>
                   <input
                     type="text"
                     className="glass-input w-full px-3 py-1.5 text-xs"
@@ -426,11 +429,11 @@ const Channels: React.FC<ChannelsProps> = ({
 
                 {/* Description */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">描述（可选）</label>
+                  <label className="text-xs text-slate-500">{t("channels.descriptionOptional")}</label>
                   <input
                     type="text"
                     className="glass-input w-full px-3 py-1.5 text-xs"
-                    placeholder="例：前端团队群"
+                    placeholder={t("channels.descriptionPlaceholder")}
                     value={channelDesc}
                     onChange={(e) => setChannelDesc(e.target.value)}
                   />
@@ -473,7 +476,7 @@ const Channels: React.FC<ChannelsProps> = ({
                     className="glass-button text-xs text-slate-500 hover:text-slate-800"
                     onClick={resetForm}
                   >
-                    取消
+                    {t("channels.cancel")}
                   </button>
                   <button
                     className="glass-button-primary text-xs px-4"
@@ -482,7 +485,7 @@ const Channels: React.FC<ChannelsProps> = ({
                   >
                     {saving && <Loader2 className="w-3 h-3 animate-spin" />}
                     <Save className="w-3 h-3" />
-                    {editingId ? "保存" : "创建"}
+                    {editingId ? t("channels.save") : t("channels.create")}
                   </button>
                 </div>
               </>
@@ -498,15 +501,15 @@ const Channels: React.FC<ChannelsProps> = ({
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
               <MessageCircle className="w-8 h-8 text-slate-400" />
             </div>
-            <p className="text-sm text-slate-500 mb-1">暂无 IM 频道</p>
+            <p className="text-sm text-slate-500 mb-1">{t("channels.noChannels")}</p>
             <p className="text-xs text-slate-400">
-              添加频道后，可通过聊天工具远程触发 Agent 任务
+              {t("channels.noChannelsDesc")}
             </p>
           </div>
         )}
 
         {channels.map((channel) => {
-          const platformInfo = PLATFORMS.find((p) => p.id === channel.platform);
+          const platformInfo = platforms.find((p) => p.id === channel.platform);
           const isExpanded = expandedId === channel.id;
 
           return (
@@ -548,7 +551,7 @@ const Channels: React.FC<ChannelsProps> = ({
                         : "bg-slate-100 text-slate-500 border-slate-200"
                     }`}
                   >
-                    {channel.enabled ? "已启用" : "已停用"}
+                    {channel.enabled ? t("channels.enabled") : t("channels.disabled")}
                   </span>
 
                   <div className="flex items-center gap-1 border-l border-slate-200 pl-2 ml-1">
@@ -557,7 +560,7 @@ const Channels: React.FC<ChannelsProps> = ({
                         channel.enabled ? "text-green-600" : "text-slate-400"
                       }`}
                       onClick={() => onToggle(channel.id)}
-                      title={channel.enabled ? "停用" : "启用"}
+                      title={channel.enabled ? t("channels.disable") : t("channels.enable")}
                     >
                       {channel.enabled ? (
                         <Power className="w-3.5 h-3.5" />
@@ -569,7 +572,7 @@ const Channels: React.FC<ChannelsProps> = ({
                     <button
                       className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-slate-100 transition-colors cursor-pointer"
                       onClick={() => startEdit(channel)}
-                      title="编辑"
+                      title={t("channels.edit")}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
@@ -577,7 +580,7 @@ const Channels: React.FC<ChannelsProps> = ({
                     <button
                       className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-100 transition-colors"
                       onClick={() => onRemove(channel.id)}
-                      title="删除"
+                      title={t("channels.delete")}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -596,7 +599,7 @@ const Channels: React.FC<ChannelsProps> = ({
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="p-2 rounded bg-slate-50 border border-slate-200">
                         <span className="text-slate-500 block mb-0.5">
-                          平台
+                          {t("channels.platform")}
                         </span>
                         <span className="text-slate-700">
                           {platformInfo?.name || channel.platform}
@@ -604,7 +607,7 @@ const Channels: React.FC<ChannelsProps> = ({
                       </div>
                       <div className="p-2 rounded bg-slate-50 border border-slate-200">
                         <span className="text-slate-500 block mb-0.5">
-                          创建时间
+                          {t("channels.createdAt")}
                         </span>
                         <span className="text-slate-700">
                           {new Date(channel.createdAt).toLocaleDateString()}
@@ -615,7 +618,7 @@ const Channels: React.FC<ChannelsProps> = ({
                     {channel.botWebhookUrl && (
                       <div className="p-2 rounded bg-slate-50 border border-slate-200">
                         <span className="text-slate-500 text-xs block mb-1">
-                          Webhook URL
+                          {t("channels.fields.webhookUrl.label")}
                         </span>
                         <code className="text-[10px] text-slate-600 break-all font-mono block bg-white p-1.5 rounded border border-slate-100">
                           {channel.botWebhookUrl}
@@ -636,7 +639,7 @@ const Channels: React.FC<ChannelsProps> = ({
                           ) : (
                             <Send className="w-3 h-3 text-violet-600" />
                           )}
-                          发送测试消息
+                          {t("channels.testMessage")}
                         </button>
 
                         {testResult && testResult.id === channel.id && (

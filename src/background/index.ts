@@ -5,6 +5,14 @@
 // 2. 扩展生命周期管理
 // 3. Side Panel 管理
 
+import { DEFAULT_PREFERENCES } from '@/types';
+
+const getSystemLanguage = () => {
+  const uiLanguage = chrome.i18n?.getUILanguage?.() ?? '';
+  if (!uiLanguage) return 'zh';
+  return uiLanguage.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+};
+
 console.log('[Browser Claw] Background Service Worker started');
 
 // 监听扩展安装
@@ -18,12 +26,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       chatHistory: {},
       sessions: [],
       activeSessionId: '',
-      preferences: {
-        theme: 'auto',
-        language: 'zh-CN',
-        batchConcurrency: 3,
-        batchDelay: 200,
-      },
+      preferences: { ...DEFAULT_PREFERENCES, language: getSystemLanguage() },
     });
   }
 });

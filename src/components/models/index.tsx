@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Zap, Eye, EyeOff, CheckCircle2, AlertCircle, Server, Key, Box, Thermometer, Maximize2 } from 'lucide-react';
 import type { AgentConfig } from '@/types';
+import { useI18n } from '@/i18n';
 
 interface ModelsProps {
   config: AgentConfig;
@@ -9,6 +10,7 @@ interface ModelsProps {
 }
 
 const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => {
+  const { t } = useI18n();
   const [form, setForm] = useState<AgentConfig>(config);
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -49,8 +51,8 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
       setTestResult({
         success: result.success,
         message: result.success
-          ? `连接成功！发现 ${result.models?.length ?? 0} 个模型`
-          : `连接失败: ${result.error}`,
+          ? t('models.testSuccess', { count: result.models?.length ?? 0 })
+          : t('models.testFailed', { error: result.error ?? '' }),
       });
     } catch (err) {
       setTestResult({
@@ -69,8 +71,8 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
           <Server className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="font-semibold text-lg text-slate-800">模型配置</h2>
-          <p className="text-xs text-slate-500">配置 AI 模型连接信息 (OpenAI 兼容)</p>
+          <h2 className="font-semibold text-lg text-slate-800">{t('models.title')}</h2>
+          <p className="text-xs text-slate-500">{t('models.subtitle')}</p>
         </div>
       </div>
 
@@ -79,7 +81,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
             <Server className="w-3.5 h-3.5 text-cyan-600" />
-            Base URL
+            {t('models.baseUrl')}
           </label>
           <input
             type="text"
@@ -89,7 +91,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
             onChange={(e) => handleChange('baseURL', e.target.value)}
           />
           <p className="text-[10px] text-slate-400 pl-1">
-            支持 OpenAI 兼容的任何 API（如 Ollama, vLLM 等）
+            {t('models.baseUrlHint')}
           </p>
         </div>
 
@@ -97,7 +99,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
             <Key className="w-3.5 h-3.5 text-amber-600" />
-            API Key
+            {t('models.apiKey')}
           </label>
           <div className="relative group">
             <input
@@ -120,7 +122,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
             <Box className="w-3.5 h-3.5 text-purple-600" />
-            Model Name
+            {t('models.modelName')}
           </label>
           <input
             type="text"
@@ -136,7 +138,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
               <Thermometer className="w-3.5 h-3.5 text-red-500" />
-              Temperature
+            {t('models.temperature')}
             </label>
             <div className="glass-input w-full px-4 py-3 flex items-center gap-3">
               <input
@@ -153,7 +155,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
               </span>
             </div>
             <p className="text-[10px] text-slate-400">
-              数值越高回复越随机，数值越低回复越严谨
+              {t('models.temperatureHint')}
             </p>
           </div>
 
@@ -161,7 +163,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
               <Maximize2 className="w-3.5 h-3.5 text-blue-500" />
-              Max Tokens
+            {t('models.maxTokens')}
             </label>
             <input
               type="number"
@@ -171,7 +173,7 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
               onChange={(e) => handleChange('maxTokens', parseInt(e.target.value))}
             />
             <p className="text-[10px] text-slate-400">
-              单次回复的最大 Token 数量限制
+              {t('models.maxTokensHint')}
             </p>
           </div>
         </div>
@@ -203,14 +205,14 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
           disabled={saving || testing}
         >
           {saving ? (
-            '保存中...'
+            t('models.saving')
           ) : saved ? (
             <>
-              <CheckCircle2 className="w-4 h-4" /> 已保存
+              <CheckCircle2 className="w-4 h-4" /> {t('models.saved')}
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" /> 保存配置
+              <Save className="w-4 h-4" /> {t('models.saveConfig')}
             </>
           )}
         </button>
@@ -221,10 +223,10 @@ const Models: React.FC<ModelsProps> = ({ config, onSave, onTestConnection }) => 
           disabled={saving || testing}
         >
           {testing ? (
-            '测试中...'
+            t('models.testing')
           ) : (
             <>
-              <Zap className="w-4 h-4 text-yellow-600" /> 测试连接
+              <Zap className="w-4 h-4 text-yellow-600" /> {t('models.test')}
             </>
           )}
         </button>

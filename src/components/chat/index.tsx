@@ -12,6 +12,7 @@ import {
 import type { AgentConfig, SkillDefinition, SessionListItem } from "@/types";
 import { useSessions } from "@/hooks/useSessions";
 import Modal from "@/components/shared/Modal";
+import { useI18n } from "@/i18n";
 
 interface ChatProps {
   config: AgentConfig;
@@ -23,6 +24,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
   const { sessionList, loading, createSession, deleteSession, openSession } =
     useSessions();
   const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
+  const { t, locale } = useI18n();
 
   const isConfigured = !!config.apiKey;
 
@@ -68,17 +70,18 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
   const formatTime = (ts: number) => {
     const d = new Date(ts);
     const now = new Date();
+    const dateLocale = locale === "zh" ? "zh-CN" : "en-US";
     const isToday =
       d.getFullYear() === now.getFullYear() &&
       d.getMonth() === now.getMonth() &&
       d.getDate() === now.getDate();
     if (isToday) {
-      return d.toLocaleTimeString("zh-CN", {
+      return d.toLocaleTimeString(dateLocale, {
         hour: "2-digit",
         minute: "2-digit",
       });
     }
-    return d.toLocaleDateString("zh-CN", {
+    return d.toLocaleDateString(dateLocale, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
@@ -107,7 +110,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
       <div className="sticky top-0 z-10 px-4 py-3 border-b border-slate-200/60 bg-white/80 backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-violet-600" />
-          <span className="font-semibold text-sm">历史会话</span>
+          <span className="font-semibold text-sm">{t("chat.title")}</span>
           {sessionList.length > 0 && (
             <span className="px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-700 text-[10px] border border-violet-200/60">
               {sessionList.length}
@@ -118,17 +121,17 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
           className="glass-button-primary text-xs px-3 py-1.5 h-8 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleNewSession}
           disabled={!isConfigured}
-          title="新建会话并打开侧边栏"
+          title={t("chat.newSessionTitle")}
         >
           <PlusCircle className="w-3.5 h-3.5" />
-          新建会话
+          {t("chat.newSession")}
         </button>
       </div>
 
       {!isConfigured && (
         <div className="p-4">
           <div className="glass-panel p-3 rounded-lg border-amber-200 bg-amber-50 flex items-center gap-2 text-amber-700 text-xs">
-            <span>⚠️ 请先在「模型」页面配置 API Key</span>
+            <span>{t("chat.configRequired")}</span>
           </div>
         </div>
       )}
@@ -139,16 +142,16 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
               <MessageSquare className="w-8 h-8 text-slate-400" />
             </div>
-            <p className="text-sm text-slate-500 mb-1">还没有任何会话</p>
+            <p className="text-sm text-slate-500 mb-1">{t("chat.emptyTitle")}</p>
             <p className="text-xs text-slate-400 mb-6">
-              点击「新建会话」开始对话，对话将在侧边栏中打开
+              {t("chat.emptyDesc")}
             </p>
             <button
               className="glass-button-primary mx-auto"
               onClick={handleNewSession}
             >
               <PlusCircle className="w-4 h-4" />
-              开始第一次对话
+              {t("chat.firstChat")}
             </button>
           </div>
         ) : (
@@ -156,7 +159,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
             {currentHostSessions.length > 0 && (
               <div className="space-y-3">
                 <div className="px-1 text-[10px] font-medium text-violet-600/80 uppercase tracking-wider flex items-center gap-2">
-                  当前站点 · {hostname}
+                  {t("chat.currentSite", { hostname })}
                 </div>
                 <div className="space-y-2">
                   {currentHostSessions.map((item) => (
@@ -176,7 +179,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
             {otherHostSessions.length > 0 && (
               <div className="space-y-3">
                 <div className="px-1 text-[10px] font-medium text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                  其他站点
+                  {t("chat.otherSites")}
                 </div>
                 <div className="space-y-2">
                   {otherHostSessions.map((item) => (
@@ -199,7 +202,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
         <div className="px-4 py-3 border-t border-slate-200 bg-white/50">
           <p className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1">
             <ExternalLink className="w-3 h-3" />
-            点击当前站点的会话可在侧边栏中继续对话
+            {t("chat.openHint")}
           </p>
         </div>
       )}
@@ -208,7 +211,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
       <Modal
         isOpen={!!deleteSessionId}
         onClose={() => setDeleteSessionId(null)}
-        title="确认删除"
+        title={t("chat.deleteTitle")}
         width="max-w-sm"
         footer={
           <>
@@ -216,7 +219,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
               onClick={() => setDeleteSessionId(null)}
             >
-              取消
+              {t("common.cancel")}
             </button>
             <button
               className="glass-button-danger text-xs px-3 py-1.5"
@@ -227,7 +230,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
                 }
               }}
             >
-              删除
+              {t("common.delete")}
             </button>
           </>
         }
@@ -238,10 +241,10 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
           </div>
           <div>
             <p className="text-sm text-slate-700 font-medium">
-              确定要删除此会话吗？
+              {t("chat.deleteConfirm")}
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              此操作无法撤销，所有对话记录将被永久删除。
+              {t("chat.deleteDesc")}
             </p>
           </div>
         </div>
@@ -265,6 +268,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
   onDelete,
   formatTime,
 }) => {
+  const { t } = useI18n();
   return (
     <div
       className={`glass-card p-3 flex items-center gap-3 transition-all duration-200 group cursor-pointer ${
@@ -275,8 +279,8 @@ const SessionItem: React.FC<SessionItemProps> = ({
       onClick={canEnter ? onClick : undefined}
       title={
         canEnter
-          ? "点击在侧边栏中打开"
-          : `此会话来自 ${item.hostname}，需在该网站打开`
+          ? t("chat.openInSidepanel")
+          : t("chat.openInOtherSite", { hostname: item.hostname })
       }
     >
       <div
@@ -301,14 +305,14 @@ const SessionItem: React.FC<SessionItemProps> = ({
           )}
         </div>
         <div className="text-xs text-slate-500 truncate">
-          {item.preview || "空会话"}
+          {item.preview || t("chat.emptySession")}
         </div>
         <div className="flex items-center gap-2 mt-2">
           <span className="text-[10px] text-slate-500 bg-white px-1.5 rounded border border-slate-200">
             {formatTime(item.updatedAt)}
           </span>
           <span className="text-[10px] text-slate-500">
-            {item.messageCount} 条消息
+            {t("chat.messagesCount", { count: item.messageCount })}
           </span>
         </div>
       </div>
@@ -317,7 +321,7 @@ const SessionItem: React.FC<SessionItemProps> = ({
         <button
           className="p-1.5 rounded-lg text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all"
           onClick={onDelete}
-          title="删除会话"
+        title={t("chat.deleteSession")}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>

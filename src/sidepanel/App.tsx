@@ -23,8 +23,11 @@ import ToolCallCard from '@/components/shared/ToolCallCard';
 import { isBuiltinSkill } from '@/utils/builtin-skills';
 import MarkdownRenderer from '@/components/shared/MarkdownRenderer';
 import Modal from '@/components/shared/Modal';
+import LanguageSwitch from '@/components/shared/LanguageSwitch';
+import { useI18n } from '@/i18n';
 
 export default function SidePanelApp() {
+  const { t, locale } = useI18n();
   const { config } = useModel();
   const { skills } = useSkills();
   const { pageInfo } = useContentScript();
@@ -152,14 +155,15 @@ export default function SidePanelApp() {
   const formatTime = (ts: number) => {
     const d = new Date(ts);
     const now = new Date();
+    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
     const isToday =
       d.getFullYear() === now.getFullYear() &&
       d.getMonth() === now.getMonth() &&
       d.getDate() === now.getDate();
     if (isToday) {
-      return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      return d.toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' });
     }
-    return d.toLocaleDateString('zh-CN', {
+    return d.toLocaleDateString(dateLocale, {
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
@@ -179,13 +183,13 @@ export default function SidePanelApp() {
             <button
               className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
               onClick={() => setShowHistory(false)}
-              title="返回对话"
+              title={t('sidepanel.backToChat')}
             >
               <ChevronLeft className="w-5 h-5 text-cyan-600" />
             </button>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-cyan-600" />
-              <span className="font-semibold text-sm text-slate-800">历史会话</span>
+              <span className="font-semibold text-sm text-slate-800">{t('sidepanel.history')}</span>
               {sessionList.length > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-cyan-50 text-cyan-600 text-[10px] border border-cyan-100">
                   {sessionList.length}
@@ -198,7 +202,7 @@ export default function SidePanelApp() {
             onClick={handleNewFromHistory}
           >
             <PlusCircle className="w-3.5 h-3.5" />
-            新建
+            {t('sidepanel.new')}
           </button>
         </div>
 
@@ -208,8 +212,8 @@ export default function SidePanelApp() {
               <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
                 <MessageSquare className="w-8 h-8 text-slate-400" />
               </div>
-              <p className="text-sm text-slate-500 font-medium">还没有任何会话</p>
-              <p className="text-xs text-slate-400 mt-1">点击右上角「新建」开始第一次对话</p>
+              <p className="text-sm text-slate-500 font-medium">{t('sidepanel.emptySessions')}</p>
+              <p className="text-xs text-slate-400 mt-1">{t('sidepanel.emptySessionsHint')}</p>
             </div>
           ) : (
             <>
@@ -217,7 +221,7 @@ export default function SidePanelApp() {
                 <div className="space-y-2">
                   <div className="px-3 text-[10px] font-medium text-cyan-600/80 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-3 h-3" />
-                    当前站点 · {hostname}
+                    {t('sidepanel.currentSite', { hostname })}
                   </div>
                   <ul className="space-y-2">
                     {currentHostSessions.map((item) => (
@@ -239,7 +243,7 @@ export default function SidePanelApp() {
                 <div className="space-y-2">
                   <div className="px-3 text-[10px] font-medium text-slate-500 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-3 h-3" />
-                    其他站点
+                    {t('sidepanel.otherSites')}
                   </div>
                   <ul className="space-y-2">
                     {otherHostSessions.map((item) => (
@@ -264,7 +268,7 @@ export default function SidePanelApp() {
         <Modal
           isOpen={!!deleteSessionId}
           onClose={() => setDeleteSessionId(null)}
-          title="确认删除"
+          title={t('sidepanel.deleteTitle')}
           width="max-w-sm"
           footer={
             <>
@@ -272,7 +276,7 @@ export default function SidePanelApp() {
                 className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
                 onClick={() => setDeleteSessionId(null)}
               >
-                取消
+                {t('common.cancel')}
               </button>
               <button
                 className="glass-button-danger text-xs px-3 py-1.5"
@@ -286,7 +290,7 @@ export default function SidePanelApp() {
                   }
                 }}
               >
-                删除
+                {t('common.delete')}
               </button>
             </>
           }
@@ -297,10 +301,10 @@ export default function SidePanelApp() {
             </div>
             <div>
               <p className="text-sm text-slate-700 font-medium">
-                确定要删除此会话吗？
+                {t('sidepanel.deleteConfirm')}
               </p>
               <p className="text-xs text-slate-500 mt-1">
-                此操作无法撤销，所有对话记录将被永久删除。
+                {t('sidepanel.deleteDesc')}
               </p>
             </div>
           </div>
@@ -319,28 +323,31 @@ export default function SidePanelApp() {
           {hostname ? (
             <span className="text-sm font-medium text-slate-800 truncate">{hostname}</span>
           ) : (
-            <span className="text-sm text-slate-500">未连接站点</span>
+            <span className="text-sm text-slate-500">{t('sidepanel.noSite')}</span>
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          <div className="mr-2">
+            <LanguageSwitch />
+          </div>
           <button
             className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-cyan-600"
             onClick={() => setShowHistory(true)}
-            title="历史会话"
+            title={t('sidepanel.history')}
           >
             <Clock className="w-4 h-4" />
           </button>
           <button
             className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-cyan-600"
             onClick={createNewSession}
-            title="新建会话"
+            title={t('sidepanel.newSession')}
           >
             <PlusCircle className="w-4 h-4" />
           </button>
           <button
             className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-400 hover:text-red-500"
             onClick={clearMessages}
-            title="清除当前对话"
+            title={t('sidepanel.clearChat')}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -352,7 +359,7 @@ export default function SidePanelApp() {
         {!isConfigured && (
           <div className="glass-panel p-4 rounded-xl border-amber-200 bg-amber-50 flex items-center gap-3 text-amber-700 text-sm">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>请先在扩展图标 Popup 中配置模型 API Key</span>
+            <span>{t('sidepanel.notConfigured')}</span>
           </div>
         )}
 
@@ -362,14 +369,14 @@ export default function SidePanelApp() {
               <MessageSquare className="w-10 h-10 text-cyan-600" />
             </div>
             <div className="space-y-2">
-              <p className="text-lg font-medium text-slate-800">有什么我可以帮你的吗？</p>
+              <p className="text-lg font-medium text-slate-800">{t('sidepanel.welcomeTitle')}</p>
               <p className="text-sm text-slate-500 max-w-60 mx-auto leading-relaxed">
-                我可以帮你阅读当前页面内容、执行操作，或者回答任何问题。
+                {t('sidepanel.welcomeDesc')}
               </p>
             </div>
             {userSkillCount > 0 && (
                <div className="px-3 py-1 rounded-full bg-white border border-slate-200 text-xs text-slate-500 shadow-sm">
-                 已加载 {userSkillCount} 个自定义技能
+                 {t('sidepanel.loadedSkills', { count: userSkillCount })}
                </div>
             )}
           </div>
@@ -400,7 +407,7 @@ export default function SidePanelApp() {
         {isProcessing && !streamingContent && !pendingConfirmation && (
           <div className="flex items-center gap-2 text-xs text-cyan-600/80 pl-2">
             <Loader2 className="w-3 h-3 animate-spin" />
-            <span>AI 正在思考...</span>
+            <span>{t('sidepanel.thinking')}</span>
           </div>
         )}
 
@@ -413,7 +420,7 @@ export default function SidePanelApp() {
           <textarea
             ref={inputRef}
             className="flex-1 w-full bg-transparent border-none outline-none text-sm text-slate-800 placeholder:text-slate-400/80 placeholder:italic resize-none py-1"
-            placeholder={!isConfigured ? '等待配置...' : '输入指令… 例如：总结当前页面、提取要点'}
+            placeholder={!isConfigured ? t('sidepanel.inputWaiting') : t('sidepanel.inputPlaceholder')}
             rows={1}
             style={{ minHeight: '28px', maxHeight: '120px' }}
             value={input}
@@ -434,7 +441,7 @@ export default function SidePanelApp() {
             <button
               className="shrink-0 p-1.5 rounded-lg transition-all bg-red-100 text-red-600 hover:bg-red-200 hover:text-red-700"
               onClick={stopProcessing}
-              title="暂停执行"
+              title={t('sidepanel.stop')}
             >
               <Square className="w-4 h-4" />
             </button>
@@ -463,6 +470,7 @@ const SessionItem: React.FC<{
   onDelete: (e: React.MouseEvent) => void;
   formatTime: (ts: number) => string;
 }> = ({ item, isActive, canEnter, onSelect, onDelete, formatTime }) => {
+  const { t } = useI18n();
   return (
     <li
       className={`relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-300 group border border-transparent ${
@@ -490,7 +498,7 @@ const SessionItem: React.FC<{
           )}
         </div>
         <div className="text-xs text-slate-500 truncate">
-          {item.preview || '空会话'}
+          {item.preview || t('sidepanel.emptySession')}
         </div>
         <div className="flex items-center gap-2 mt-1.5">
           <span className="text-[10px] text-slate-500 bg-white px-1.5 rounded border border-slate-200">
@@ -502,7 +510,7 @@ const SessionItem: React.FC<{
       <button
         className="absolute right-2 top-2 p-1.5 rounded-lg text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all"
         onClick={onDelete}
-        title="删除"
+        title={t('sidepanel.deleteSession')}
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>

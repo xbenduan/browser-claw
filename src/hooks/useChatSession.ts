@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { ChatMessage, AgentConfig, SkillDefinition, ConfirmationRequest, ConfirmationResult, ChatSession } from '@/types';
 import { AgentEngine } from '@/core/agent-engine';
 import { Storage } from '@/utils/storage';
+import { useI18n } from '@/i18n';
 
 /**
  * 带会话持久化的聊天 hook — 用于 Side Panel
@@ -11,6 +12,7 @@ export function useChatSession(
   skills: SkillDefinition[],
   hostname: string
 ) {
+  const { t } = useI18n();
   const [session, setSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -25,7 +27,7 @@ export function useChatSession(
     const id = sessionId || (await Storage.getActiveSessionId());
     if (!id) {
       // 没有活跃会话，创建一个新的
-      const newSession = Storage.createNewSession(hostname);
+      const newSession = Storage.createNewSession(hostname, t('chat.newSession'));
       await Storage.saveSession(newSession);
       await Storage.setActiveSessionId(newSession.id);
       setSession(newSession);
@@ -39,13 +41,13 @@ export function useChatSession(
       return loaded;
     }
     // ID 无效，创建新的
-    const newSession = Storage.createNewSession(hostname);
+    const newSession = Storage.createNewSession(hostname, t('chat.newSession'));
     await Storage.saveSession(newSession);
     await Storage.setActiveSessionId(newSession.id);
     setSession(newSession);
     setMessages([]);
     return newSession;
-  }, [hostname]);
+  }, [hostname, t]);
 
   // 初始化时加载
   useEffect(() => {

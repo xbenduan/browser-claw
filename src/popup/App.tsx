@@ -15,11 +15,13 @@ import Chat from '@/components/chat';
 import Models from '@/components/models';
 import Channels from '@/components/channels';
 import FAQ from '@/components/FAQ';
+import LanguageSwitch from '@/components/shared/LanguageSwitch';
 
 import { useSkills } from '@/hooks/useSkills';
 import { useModel } from '@/hooks/useModel';
 import { useChannels } from '@/hooks/useChannels';
 import { useContentScript } from '@/hooks/useContentScript';
+import { useI18n } from '@/i18n';
 
 const TAB_IDS = {
   SKILLS: 100 as number,
@@ -31,6 +33,7 @@ const TAB_IDS = {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState(TAB_IDS.HISTORY);
+  const { t } = useI18n();
 
   // ─── Hooks ──────────────────────────────────
   const {
@@ -73,30 +76,30 @@ export default function App() {
   const tabs = [
     {
       id: TAB_IDS.HISTORY,
-      label: '历史',
+      label: t('popup.tabs.history'),
       icon: Clock,
       badge: undefined as string | undefined,
     },
     {
       id: TAB_IDS.SKILLS,
-      label: '能力',
+      label: t('popup.tabs.skills'),
       icon: Sparkles,
     },
     {
       id: TAB_IDS.MODELS,
-      label: '模型',
+      label: t('popup.tabs.models'),
       icon: Brain,
       badge: config.apiKey ? undefined : '!',
     },
     {
       id: TAB_IDS.CHANNELS,
-      label: '频道',
+      label: t('popup.tabs.channels'),
       icon: Wifi,
       badge: channels.length > 0 ? String(channels.length) : undefined,
     },
     {
       id: TAB_IDS.FAQ,
-      label: '关于',
+      label: t('popup.tabs.faq'),
       icon: Info,
       badge: undefined as string | undefined,
     },
@@ -108,7 +111,7 @@ export default function App() {
       return (
         <div className="flex items-center gap-2 text-slate-500 text-xs px-2 py-1 rounded-lg bg-slate-100 border border-slate-200">
           <Loader2 className="w-3 h-3 animate-spin" />
-          <span className="truncate">检测中...</span>
+          <span className="truncate">{t('popup.connection.checking')}</span>
         </div>
       );
     }
@@ -117,10 +120,10 @@ export default function App() {
       return (
         <div
           className="flex items-center gap-2 text-slate-400 text-xs px-2 py-1 rounded-lg bg-slate-100 cursor-not-allowed border border-slate-200"
-          title="当前页面不支持注入 Content Script"
+          title={t('popup.connection.notInjectableTitle')}
         >
           <Ban className="w-3 h-3" />
-          <span className="truncate">不可用</span>
+          <span className="truncate">{t('popup.connection.notInjectable')}</span>
         </div>
       );
     }
@@ -130,10 +133,10 @@ export default function App() {
         <button
           className="flex items-center gap-2 text-cyan-700 text-xs px-2 py-1 rounded-lg bg-cyan-50 hover:bg-cyan-100 transition-colors w-full border border-cyan-100"
           onClick={reconnect}
-          title={`已连接: ${hostname || '未知'}`}
+          title={t('popup.connection.connectedTitle', { hostname: hostname || t('common.unknown') })}
         >
           <CheckCircle2 className="w-3 h-3" />
-          <span className="truncate">{hostname || '已连接'}</span>
+          <span className="truncate">{hostname || t('popup.connection.connected')}</span>
         </button>
       );
     }
@@ -142,10 +145,10 @@ export default function App() {
       <button
         className="flex items-center gap-2 text-amber-700 text-xs px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors w-full border border-amber-100"
         onClick={reconnect}
-        title="点击重新连接 Content Script"
+        title={t('popup.connection.disconnectedTitle')}
       >
         <AlertCircle className="w-3 h-3" />
-        <span className="truncate">未连接</span>
+        <span className="truncate">{t('popup.connection.disconnected')}</span>
       </button>
     );
   };
@@ -254,6 +257,9 @@ export default function App() {
         {/* Connection Status */}
         <div className="pt-4 border-t border-slate-200/80">
           {renderConnectionStatus()}
+        </div>
+        <div className="pt-3">
+          <LanguageSwitch />
         </div>
       </div>
 
