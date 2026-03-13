@@ -4,7 +4,7 @@
 > **版本**: v1.0.0  
 > **文档版本**: v1.0  
 > **创建日期**: 2026-03-10  
-> **技术栈**: React 19 + TypeScript + Tailwind CSS 4 + daisyUI 5 + Vite 7 + Chrome Extension Manifest V3 + OpenAI SDK  
+> **技术栈**: React 19 + TypeScript + Tailwind CSS 4 + Vite 7 + Chrome Extension Manifest V3 + OpenAI SDK
 
 ---
 
@@ -40,14 +40,14 @@ Browser Claw 是一款基于 Chrome 浏览器的 AI 智能 Agent 插件，核心
 
 ### 1.2 核心价值主张
 
-| 维度 | 传统方式 | 本项目方案 |
-|------|---------|-----------|
-| **认证** | 需要手动获取 Token/Cookie 配置到脚本中 | Content Script 自动复用浏览器 Session |
-| **操作** | 逐个在管理后台页面上手动点击 | 自然语言描述任务，AI 自动规划执行 |
-| **批量** | 借助外部脚本，调试成本高 | 声明式 Skill 配置 + AI 自动循环调用 |
-| **安全** | 可能涉及 Token 泄露风险 | 请求在浏览器沙盒内执行，凭据不外传 |
-| **可扩展** | 每个业务场景需要单独写脚本 | 只需新增 Skill 文档，AI 自动适配 |
-| **可控性** | 脚本执行过程不透明 | 每次 API 调用前强制用户确认，完全可控 |
+| 维度       | 传统方式                               | 本项目方案                            |
+| ---------- | -------------------------------------- | ------------------------------------- |
+| **认证**   | 需要手动获取 Token/Cookie 配置到脚本中 | Content Script 自动复用浏览器 Session |
+| **操作**   | 逐个在管理后台页面上手动点击           | 自然语言描述任务，AI 自动规划执行     |
+| **批量**   | 借助外部脚本，调试成本高               | 声明式 Skill 配置 + AI 自动循环调用   |
+| **安全**   | 可能涉及 Token 泄露风险                | 请求在浏览器沙盒内执行，凭据不外传    |
+| **可扩展** | 每个业务场景需要单独写脚本             | 只需新增 Skill 文档，AI 自动适配      |
+| **可控性** | 脚本执行过程不透明                     | 每次 API 调用前强制用户确认，完全可控 |
 
 ### 1.3 典型使用场景
 
@@ -56,6 +56,7 @@ Browser Claw 是一款基于 Chrome 浏览器的 AI 智能 Agent 插件，核心
 > 用户指令：「帮我把类目为 123 的商品的售卖时间用免审更新的方式更新为 2025 年 12 月 12 日」
 
 AI 执行步骤：
+
 1. **意图识别**：更新商品售卖时间，条件为类目=123，方式=免审更新
 2. **规划**：调用「商品详情查询」Skill → 过滤类目 123 → 提取所有商品 ID → 循环调用「免审更新」Skill
 3. **确认**：向用户展示即将调用的接口和参数（如 `GET /api/v1/products?category_id=123`），**用户确认后才执行**
@@ -139,12 +140,12 @@ AI 引擎基于 OpenAI 兼容的 **Function Calling（Tool Use）** 机制，将
 
 #### 为什么强制确认？
 
-| 原因 | 说明 |
-|------|------|
-| **防误操作** | AI 可能误解用户意图，错误调用写入/删除类接口造成不可逆后果 |
-| **参数透明** | 用户可以在执行前审查 AI 组装的每一个参数是否正确 |
-| **审计可追溯** | 所有操作都经过用户确认，形成明确的操作审批链 |
-| **信任建立** | 在用户尚未完全信任 AI 判断能力时，强制确认是最安全的交互模式 |
+| 原因           | 说明                                                         |
+| -------------- | ------------------------------------------------------------ |
+| **防误操作**   | AI 可能误解用户意图，错误调用写入/删除类接口造成不可逆后果   |
+| **参数透明**   | 用户可以在执行前审查 AI 组装的每一个参数是否正确             |
+| **审计可追溯** | 所有操作都经过用户确认，形成明确的操作审批链                 |
+| **信任建立**   | 在用户尚未完全信任 AI 判断能力时，强制确认是最安全的交互模式 |
 
 #### 确认信息展示内容
 
@@ -207,28 +208,27 @@ AI 引擎基于 OpenAI 兼容的 **Function Calling（Tool Use）** 机制，将
 
 ### 3.2 模块职责划分
 
-| 模块 | 职责 | 运行环境 |
-|------|------|---------|
-| **Popup UI** | 用户交互界面，包括 Chat、Skills、Models、Channels、FAQ 五个 Tab | Popup Page |
-| **Agent Engine** | 与 LLM 交互，管理对话上下文，处理 Function Calling 响应 | Popup / Background |
-| **Task Planner** | 将复杂任务拆分为可执行步骤，管理执行顺序和依赖 | Popup / Background |
-| **Skill Registry** | 管理所有已注册的 Skill，提供查询、匹配、导入导出功能 | Popup / Background |
-| **Message Bridge** | Chrome Extension 各组件间的消息传递 | 全局 |
-| **Storage Manager** | 持久化存储 Skill 配置、模型设置、对话历史等 | 全局 |
-| **Request Proxy** | 在 Content Script 中执行实际的 HTTP 请求 | Content Script |
+| 模块                | 职责                                                            | 运行环境           |
+| ------------------- | --------------------------------------------------------------- | ------------------ |
+| **Popup UI**        | 用户交互界面，包括 Chat、Skills、Models、Channels、FAQ 五个 Tab | Popup Page         |
+| **Agent Engine**    | 与 LLM 交互，管理对话上下文，处理 Function Calling 响应         | Popup / Background |
+| **Task Planner**    | 将复杂任务拆分为可执行步骤，管理执行顺序和依赖                  | Popup / Background |
+| **Skill Registry**  | 管理所有已注册的 Skill，提供查询、匹配、导入导出功能            | Popup / Background |
+| **Message Bridge**  | Chrome Extension 各组件间的消息传递                             | 全局               |
+| **Storage Manager** | 持久化存储 Skill 配置、模型设置、对话历史等                     | 全局               |
+| **Request Proxy**   | 在 Content Script 中执行实际的 HTTP 请求                        | Content Script     |
 
 ### 3.3 技术选型详解
 
-| 技术 | 版本 | 选型理由 |
-|------|------|---------|
-| **React** | 19.x | 声明式 UI 开发，组件化架构，Hooks 生态成熟 |
-| **TypeScript** | 5.8 | 类型安全，IDE 支持完善，Skill Schema 的类型定义 |
-| **Tailwind CSS 4** | 4.2 | 原子化 CSS，减小打包体积，JIT 编译 |
-| **daisyUI 5** | 5.5 | Tailwind 上层组件库，提供开箱即用的 UI 组件 |
-| **Vite 7** | 7.0 | 极速开发体验，HMR 支持，模块联邦 |
-| **@crxjs/vite-plugin** | 2.0 | Vite 环境下开发 Chrome Extension 的最佳实践 |
-| **OpenAI SDK** | 6.x | 官方 TypeScript SDK，完整的 Function Calling 支持 |
-| **Chrome Manifest V3** | 3 | Chrome 强制要求的最新扩展规范，更好的安全模型 |
+| 技术                   | 版本 | 选型理由                                          |
+| ---------------------- | ---- | ------------------------------------------------- |
+| **React**              | 19.x | 声明式 UI 开发，组件化架构，Hooks 生态成熟        |
+| **TypeScript**         | 5.8  | 类型安全，IDE 支持完善，Skill Schema 的类型定义   |
+| **Tailwind CSS 4**     | 4.2  | 原子化 CSS，减小打包体积，用的 UI 组件            |
+| **Vite 7**             | 7.0  | 极速开发体验，HMR 支持，模块联邦                  |
+| **@crxjs/vite-plugin** | 2.0  | Vite 环境下开发 Chrome Extension 的最佳实践       |
+| **OpenAI SDK**         | 6.x  | 官方 TypeScript SDK，完整的 Function Calling 支持 |
+| **Chrome Manifest V3** | 3    | Chrome 强制要求的最新扩展规范，更好的安全模型     |
 
 ---
 
@@ -255,21 +255,21 @@ AI 引擎基于 OpenAI 兼容的 **Function Calling（Tool Use）** 机制，将
 
 #### 权限说明
 
-| 权限 | 用途 | 必要性 |
-|------|------|--------|
-| `storage` | 持久化存储 Skills、模型配置、对话历史 | 必需 |
-| `scripting` | 动态注入脚本到页面（按需场景） | 必需 |
-| `activeTab` | 获取当前活动 Tab 的信息 | 必需 |
-| `host_permissions: *` | 允许 Content Script 在所有站点运行 | 必需 |
+| 权限                  | 用途                                  | 必要性 |
+| --------------------- | ------------------------------------- | ------ |
+| `storage`             | 持久化存储 Skills、模型配置、对话历史 | 必需   |
+| `scripting`           | 动态注入脚本到页面（按需场景）        | 必需   |
+| `activeTab`           | 获取当前活动 Tab 的信息               | 必需   |
+| `host_permissions: *` | 允许 Content Script 在所有站点运行    | 必需   |
 
 #### 建议新增的权限
 
-| 权限 | 用途 |
-|------|------|
-| `tabs` | 查询和操作标签页，用于多 Tab 场景 |
-| `sidePanel` | 使用 Side Panel 替代 Popup，获得更大的操作空间 |
-| `notifications` | 异步任务完成后通知用户 |
-| `contextMenus` | 右键菜单快速触发指令 |
+| 权限            | 用途                                           |
+| --------------- | ---------------------------------------------- |
+| `tabs`          | 查询和操作标签页，用于多 Tab 场景              |
+| `sidePanel`     | 使用 Side Panel 替代 Popup，获得更大的操作空间 |
+| `notifications` | 异步任务完成后通知用户                         |
+| `contextMenus`  | 右键菜单快速触发指令                           |
 
 ### 4.2 三大运行环境
 
@@ -280,17 +280,20 @@ AI 引擎基于 OpenAI 兼容的 **Function Calling（Tool Use）** 机制，将
 **局限性**：Popup 在用户点击其他区域时会关闭，**不适合长时间运行的任务**。
 
 **建议**：迁移到 **Side Panel** 模式，或提供两种模式的切换：
+
 - **Quick Mode (Popup)**：快速查看状态、发送简单指令
 - **Full Mode (Side Panel)**：完整的对话界面、任务监控、详细配置
 
 #### 4.2.2 Background Service Worker
 
 Manifest V3 中 Background Page 被替换为 Service Worker，具有以下特点：
+
 - **无 DOM 访问**：不能操作页面元素
 - **生命周期受限**：空闲 30 秒后可能被终止
 - **事件驱动**：通过 `chrome.runtime.onMessage` 等监听器工作
 
 **关键职责**：
+
 1. 充当 Popup ↔ Content Script 的消息中继
 2. 管理长连接（使用 `chrome.runtime.connect` 的 Port）
 3. 处理 Content Script 无法完成的操作（如跨 Tab 协调）
@@ -302,15 +305,19 @@ Manifest V3 中 Background Page 被替换为 Service Worker，具有以下特点
 ```typescript
 // 监听来自 Popup/Background 的消息
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-  if (request.type === 'EXECUTE_API') {
+  if (request.type === "EXECUTE_API") {
     const { method, url, body, headers } = request.payload;
     fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json', ...headers },
-      body: method !== 'GET' && body ? JSON.stringify(body) : undefined,
+      headers: { "Content-Type": "application/json", ...headers },
+      body: method !== "GET" && body ? JSON.stringify(body) : undefined,
     })
-    .then(async (res) => { /* 响应处理 */ })
-    .catch((err) => { /* 错误处理 */ });
+      .then(async (res) => {
+        /* 响应处理 */
+      })
+      .catch((err) => {
+        /* 错误处理 */
+      });
     return true; // 保持消息通道开放
   }
 });
@@ -341,30 +348,30 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 interface ExtensionMessage {
   type: MessageType;
   payload: unknown;
-  requestId?: string;    // 用于请求-响应匹配
-  timestamp?: number;    // 时间戳
+  requestId?: string; // 用于请求-响应匹配
+  timestamp?: number; // 时间戳
 }
 
 // 消息类型枚举
 enum MessageType {
   // API 执行
-  EXECUTE_API = 'EXECUTE_API',
-  EXECUTE_API_RESULT = 'EXECUTE_API_RESULT',
-  
+  EXECUTE_API = "EXECUTE_API",
+  EXECUTE_API_RESULT = "EXECUTE_API_RESULT",
+
   // 批量操作
-  EXECUTE_BATCH = 'EXECUTE_BATCH',
-  BATCH_PROGRESS = 'BATCH_PROGRESS',
-  
+  EXECUTE_BATCH = "EXECUTE_BATCH",
+  BATCH_PROGRESS = "BATCH_PROGRESS",
+
   // 状态查询
-  GET_PAGE_INFO = 'GET_PAGE_INFO',
-  GET_COOKIES = 'GET_COOKIES',
-  
+  GET_PAGE_INFO = "GET_PAGE_INFO",
+  GET_COOKIES = "GET_COOKIES",
+
   // Skill 相关
-  SKILL_TEST = 'SKILL_TEST',
-  
+  SKILL_TEST = "SKILL_TEST",
+
   // 生命周期
-  PING = 'PING',
-  PONG = 'PONG',
+  PING = "PING",
+  PONG = "PONG",
 }
 ```
 
@@ -379,18 +386,18 @@ Skill 是本系统的核心概念，每个 Skill 对应一个可调用的 API �
 ```typescript
 interface SkillDefinition {
   // === 基础信息 ===
-  id: string;                    // 唯一标识，如 "product_query"
-  name: string;                  // 人类可读名称，如 "商品详情查询"
-  description: string;           // 语义描述，供 AI 理解用途
-  version: string;               // Skill 版本号
+  id: string; // 唯一标识，如 "product_query"
+  name: string; // 人类可读名称，如 "商品详情查询"
+  description: string; // 语义描述，供 AI 理解用途
+  version: string; // Skill 版本号
 
   // === API 定义 ===
   api: {
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-    path: string;                // URL 路径，支持路径参数，如 "/api/v1/products/{id}"
-    baseUrl?: string;            // 基础 URL（可选，默认使用当前站点）
-    headers?: Record<string, string>;  // 额外请求头
-    timeout?: number;            // 超时时间 (ms)
+    method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+    path: string; // URL 路径，支持路径参数，如 "/api/v1/products/{id}"
+    baseUrl?: string; // 基础 URL（可选，默认使用当前站点）
+    headers?: Record<string, string>; // 额外请求头
+    timeout?: number; // 超时时间 (ms)
   };
 
   // === 参数定义 ===
@@ -398,18 +405,19 @@ interface SkillDefinition {
 
   // === 响应定义 ===
   response: {
-    type: 'json' | 'text' | 'blob';
-    schema?: JsonSchema;         // JSON Schema 描述响应结构
-    extractors?: ResponseExtractor[];  // 从响应中提取关键字段
+    type: "json" | "text" | "blob";
+    schema?: JsonSchema; // JSON Schema 描述响应结构
+    extractors?: ResponseExtractor[]; // 从响应中提取关键字段
   };
 
   // === 元信息 ===
   meta: {
-    category?: string;           // 分类，如 "商品管理"、"订单管理"
-    tags?: string[];             // 标签
-    riskLevel?: 'safe' | 'moderate' | 'dangerous';  // 风险等级
-    requireConfirm?: boolean;    // 是否需要用户确认后执行
-    rateLimit?: {                // 频率限制
+    category?: string; // 分类，如 "商品管理"、"订单管理"
+    tags?: string[]; // 标签
+    riskLevel?: "safe" | "moderate" | "dangerous"; // 风险等级
+    requireConfirm?: boolean; // 是否需要用户确认后执行
+    rateLimit?: {
+      // 频率限制
       maxCalls: number;
       windowMs: number;
     };
@@ -417,8 +425,8 @@ interface SkillDefinition {
 
   // === 站点绑定 ===
   binding: {
-    hostPatterns: string[];      // 匹配的站点 Pattern，如 ["*.example.com"]
-    channelId?: string;          // 绑定到特定频道
+    hostPatterns: string[]; // 匹配的站点 Pattern，如 ["*.example.com"]
+    channelId?: string; // 绑定到特定频道
   };
 }
 ```
@@ -427,29 +435,29 @@ interface SkillDefinition {
 
 ```typescript
 interface SkillParameter {
-  name: string;                  // 参数名
-  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
-  location: 'path' | 'query' | 'body' | 'header';  // 参数位置
+  name: string; // 参数名
+  type: "string" | "number" | "boolean" | "array" | "object";
+  location: "path" | "query" | "body" | "header"; // 参数位置
   required: boolean;
-  description: string;           // 参数描述，供 AI 理解
-  default?: unknown;             // 默认值
-  enum?: unknown[];              // 可选值列表
-  example?: unknown;             // 示例值
-  
+  description: string; // 参数描述，供 AI 理解
+  default?: unknown; // 默认值
+  enum?: unknown[]; // 可选值列表
+  example?: unknown; // 示例值
+
   // 校验规则
   validation?: {
     min?: number;
     max?: number;
-    pattern?: string;            // 正则表达式
+    pattern?: string; // 正则表达式
     minLength?: number;
     maxLength?: number;
   };
-  
+
   // 嵌套参数（当 type 为 object 时）
   properties?: SkillParameter[];
-  
+
   // 数组元素类型（当 type 为 array 时）
-  items?: Omit<SkillParameter, 'name' | 'location' | 'required'>;
+  items?: Omit<SkillParameter, "name" | "location" | "required">;
 }
 ```
 
@@ -459,10 +467,10 @@ interface SkillParameter {
 
 ```typescript
 interface ResponseExtractor {
-  name: string;                  // 提取后的字段名
-  path: string;                  // JSONPath 表达式，如 "$.data.items[*].id"
-  description: string;           // 字段描述
-  transform?: 'count' | 'first' | 'last' | 'flatten' | 'unique';
+  name: string; // 提取后的字段名
+  path: string; // JSONPath 表达式，如 "$.data.items[*].id"
+  description: string; // 字段描述
+  transform?: "count" | "first" | "last" | "flatten" | "unique";
 }
 ```
 
@@ -633,18 +641,20 @@ function skillToOpenAITool(skill: SkillDefinition): OpenAI.ChatCompletionTool {
       description: param.description,
     };
     if (param.enum) properties[param.name].enum = param.enum;
-    if (param.validation?.min !== undefined) properties[param.name].minimum = param.validation.min;
-    if (param.validation?.max !== undefined) properties[param.name].maximum = param.validation.max;
+    if (param.validation?.min !== undefined)
+      properties[param.name].minimum = param.validation.min;
+    if (param.validation?.max !== undefined)
+      properties[param.name].maximum = param.validation.max;
     if (param.required) required.push(param.name);
   }
 
   return {
-    type: 'function',
+    type: "function",
     function: {
       name: skill.id,
       description: skill.description,
       parameters: {
-        type: 'object',
+        type: "object",
         properties,
         required,
       },
@@ -660,28 +670,28 @@ function skillToOpenAITool(skill: SkillDefinition): OpenAI.ChatCompletionTool {
 ```typescript
 class SkillRegistry {
   private skills: Map<string, SkillDefinition> = new Map();
-  
+
   // 注册单个 Skill
   async register(skill: SkillDefinition): Promise<void>;
-  
+
   // 批量导入（JSON 文件 / 从 URL 加载）
   async importBatch(source: File | string): Promise<ImportResult>;
-  
+
   // 根据当前站点获取匹配的 Skills
   getSkillsForHost(hostname: string): SkillDefinition[];
-  
+
   // 根据 ID 获取 Skill
   getSkill(id: string): SkillDefinition | undefined;
-  
+
   // 转换为 OpenAI Tools
   toOpenAITools(hostname: string): OpenAI.ChatCompletionTool[];
-  
+
   // 导出所有 Skills
   async exportAll(): Promise<string>;
-  
+
   // 删除 Skill
   async remove(id: string): Promise<void>;
-  
+
   // Skill 持久化（chrome.storage）
   private async persist(): Promise<void>;
   private async restore(): Promise<void>;
@@ -691,6 +701,7 @@ class SkillRegistry {
 #### 5.6.2 批量导入
 
 支持以下导入方式：
+
 1. **JSON 文件导入**：上传包含 Skill 数组的 JSON 文件
 2. **URL 导入**：从远程地址加载 Skill 定义（支持团队共享）
 3. **模板导入**：从预设模板库选择（针对常见平台如电商后台）
@@ -794,7 +805,7 @@ class AgentEngine {
   constructor(config: AgentConfig) {
     this.openai = new OpenAI({
       apiKey: config.apiKey,
-      baseURL: config.baseURL,       // 支持自定义 endpoint
+      baseURL: config.baseURL, // 支持自定义 endpoint
       dangerouslyAllowBrowser: true, // 浏览器环境必需
     });
   }
@@ -803,57 +814,57 @@ class AgentEngine {
   async processUserMessage(
     message: string,
     hostname: string,
-    options?: ProcessOptions
+    options?: ProcessOptions,
   ): AsyncGenerator<AgentEvent> {
     // 1. 获取当前站点的 Skills 并转换为 Tools
     const tools = this.skillRegistry.toOpenAITools(hostname);
-    
+
     // 2. 构建消息列表
     const messages = this.buildMessages(message);
-    
+
     // 3. 进入 Agent Loop
-    yield* this.agentLoop(messages, tools);
+    yield * this.agentLoop(messages, tools);
   }
 
   // Agent 循环
   private async *agentLoop(
     messages: ChatMessage[],
-    tools: OpenAI.ChatCompletionTool[]
+    tools: OpenAI.ChatCompletionTool[],
   ): AsyncGenerator<AgentEvent> {
     const MAX_ITERATIONS = 10; // 防止无限循环
-    
+
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       // 调用 LLM
-      yield { type: 'llm_call_start' };
-      
+      yield { type: "llm_call_start" };
+
       const response = await this.openai.chat.completions.create({
         model: this.config.model,
         messages,
         tools: tools.length > 0 ? tools : undefined,
-        tool_choice: tools.length > 0 ? 'auto' : undefined,
+        tool_choice: tools.length > 0 ? "auto" : undefined,
         stream: true,
       });
 
       // 处理流式响应
       const result = await this.handleStreamResponse(response);
-      
+
       if (!result.toolCalls || result.toolCalls.length === 0) {
         // 没有 Tool Calls，输出文本
-        yield { type: 'assistant_message', content: result.content };
+        yield { type: "assistant_message", content: result.content };
         break;
       }
 
       // 执行 Tool Calls
       for (const toolCall of result.toolCalls) {
-        yield { type: 'tool_call_start', toolCall };
-        
+        yield { type: "tool_call_start", toolCall };
+
         const toolResult = await this.executeToolCall(toolCall);
-        
-        yield { type: 'tool_call_result', toolCall, result: toolResult };
-        
+
+        yield { type: "tool_call_result", toolCall, result: toolResult };
+
         // 将结果加入消息历史
         messages.push({
-          role: 'tool',
+          role: "tool",
           tool_call_id: toolCall.id,
           content: JSON.stringify(toolResult),
         });
@@ -862,20 +873,21 @@ class AgentEngine {
   }
 
   // 执行单个 Tool Call（强制用户确认）
-  private async executeToolCall(
-    toolCall: ToolCall
-  ): Promise<ToolCallResult> {
+  private async executeToolCall(toolCall: ToolCall): Promise<ToolCallResult> {
     const skill = this.skillRegistry.getSkill(toolCall.function.name);
     if (!skill) {
-      return { success: false, error: `Skill "${toolCall.function.name}" not found` };
+      return {
+        success: false,
+        error: `Skill "${toolCall.function.name}" not found`,
+      };
     }
 
     // 解析参数
     const args = JSON.parse(toolCall.function.arguments);
-    
+
     // 构建 HTTP 请求
     const request = this.buildHttpRequest(skill, args);
-    
+
     // ★ 强制用户确认 —— 所有 API 调用都必须经过确认
     const confirmPayload: ConfirmationRequest = {
       skillId: skill.id,
@@ -884,25 +896,26 @@ class AgentEngine {
       method: request.method,
       url: request.url,
       parameters: args,
-      riskLevel: skill.meta.riskLevel || 'safe',
+      riskLevel: skill.meta.riskLevel || "safe",
       headers: request.headers,
       body: request.body,
     };
-    
+
     const confirmed = await this.requestUserConfirmation(confirmPayload);
     if (!confirmed) {
-      return { 
-        success: false, 
-        error: 'User declined this API call. Ask user for guidance on how to proceed.' 
+      return {
+        success: false,
+        error:
+          "User declined this API call. Ask user for guidance on how to proceed.",
       };
     }
-    
+
     // 用户确认后，通过 Content Script 执行请求
     const response = await this.sendToContentScript(request);
-    
+
     // 应用响应提取器
     const extracted = this.applyExtractors(response, skill.response.extractors);
-    
+
     return { success: true, data: extracted };
   }
 }
@@ -911,12 +924,15 @@ class AgentEngine {
 ### 6.3 System Prompt 设计
 
 ```typescript
-function buildSystemPrompt(hostname: string, skills: SkillDefinition[]): string {
+function buildSystemPrompt(
+  hostname: string,
+  skills: SkillDefinition[],
+): string {
   return `你是一个智能 API 助手，运行在 ${hostname} 的浏览器环境中。
 
 ## 你的能力
 你可以通过 Tool Calling 调用以下 API 接口来完成用户的指令：
-${skills.map(s => `- **${s.name}**: ${s.description}`).join('\n')}
+${skills.map((s) => `- **${s.name}**: ${s.description}`).join("\n")}
 
 ## 执行规则
 1. 分析用户的意图，选择合适的接口调用
@@ -950,16 +966,16 @@ ${skills.map(s => `- **${s.name}**: ${s.description}`).join('\n')}
 ```
 Step 1: 调用 product_query(category_id=123, page=1, page_size=100)
         ├─ 获取 total=256, product_ids=[101,102,...,200]
-        
+
 Step 2: 调用 product_query(category_id=123, page=2, page_size=100)
         ├─ 获取 product_ids=[201,202,...,300]
-        
+
 Step 3: 调用 product_query(category_id=123, page=3, page_size=100)
         ├─ 获取 product_ids=[301,302,...,356]
 
 Step 4~259: 循环调用 product_update_no_review(item_id=xxx, sale_start_time="2025-12-12 00:00:00")
             ├─ 逐个汇报进度: "已更新 50/256..."
-            
+
 Final: 汇总结果
        ├─ 成功: 250
        ├─ 失败: 6 (附失败商品ID和原因)
@@ -981,11 +997,11 @@ interface BatchConfirmationRequest {
   skillId: string;
   skillName: string;
   method: string;
-  urlTemplate: string;           // 如 "/api/v1/products/{item_id}/quick-update"
-  parameterTemplate: Record<string, unknown>;  // 参数模板
-  varyingField: string;          // 每次变化的字段名，如 "item_id"
-  varyingValues: unknown[];      // 所有变化值的列表
-  totalCount: number;            // 总执行次数
+  urlTemplate: string; // 如 "/api/v1/products/{item_id}/quick-update"
+  parameterTemplate: Record<string, unknown>; // 参数模板
+  varyingField: string; // 每次变化的字段名，如 "item_id"
+  varyingValues: unknown[]; // 所有变化值的列表
+  totalCount: number; // 总执行次数
   riskLevel: string;
 }
 ```
@@ -1007,13 +1023,13 @@ class RequestExecutor {
 
   async execute(payload: ExecuteAPIPayload): Promise<APIResponse> {
     const { method, url, body, headers, timeout = 30000, requestId } = payload;
-    
+
     // 创建 AbortController 用于超时和取消
     const controller = new AbortController();
     if (requestId) {
       this.pendingRequests.set(requestId, controller);
     }
-    
+
     // 超时处理
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -1021,30 +1037,30 @@ class RequestExecutor {
       // 自动检测并附加 CSRF Token
       const csrfToken = this.getCSRFToken();
       const finalHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       };
       if (csrfToken) {
-        finalHeaders['X-CSRF-Token'] = csrfToken;
+        finalHeaders["X-CSRF-Token"] = csrfToken;
       }
 
       const response = await fetch(url, {
         method,
         headers: finalHeaders,
-        body: method !== 'GET' && body ? JSON.stringify(body) : undefined,
+        body: method !== "GET" && body ? JSON.stringify(body) : undefined,
         signal: controller.signal,
-        credentials: 'include', // 确保携带 Cookie
+        credentials: "include", // 确保携带 Cookie
       });
 
-      const contentType = response.headers.get('content-type');
+      const contentType = response.headers.get("content-type");
       let data: unknown;
-      
-      if (contentType?.includes('application/json')) {
+
+      if (contentType?.includes("application/json")) {
         data = await response.json();
-      } else if (contentType?.includes('text/')) {
+      } else if (contentType?.includes("text/")) {
         data = { text: await response.text() };
       } else {
-        data = { blob: true, size: response.headers.get('content-length') };
+        data = { blob: true, size: response.headers.get("content-length") };
       }
 
       return {
@@ -1055,8 +1071,8 @@ class RequestExecutor {
         headers: Object.fromEntries(response.headers.entries()),
       };
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        return { success: false, error: 'Request timed out or was cancelled' };
+      if (error.name === "AbortError") {
+        return { success: false, error: "Request timed out or was cancelled" };
       }
       return { success: false, error: error.message };
     } finally {
@@ -1080,7 +1096,7 @@ class RequestExecutor {
   private getCSRFToken(): string | null {
     // 尝试从 meta 标签获取
     const meta = document.querySelector('meta[name="csrf-token"]');
-    if (meta) return meta.getAttribute('content');
+    if (meta) return meta.getAttribute("content");
 
     // 尝试从 Cookie 获取
     const match = document.cookie.match(/(?:^|;\s*)csrf[_-]?token=([^;]+)/i);
@@ -1108,23 +1124,24 @@ const collector = new PageInfoCollector();
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   switch (request.type) {
-    case 'EXECUTE_API':
-      executor.execute(request.payload)
+    case "EXECUTE_API":
+      executor
+        .execute(request.payload)
         .then(sendResponse)
-        .catch(err => sendResponse({ success: false, error: err.message }));
+        .catch((err) => sendResponse({ success: false, error: err.message }));
       return true;
 
-    case 'CANCEL_REQUEST':
+    case "CANCEL_REQUEST":
       executor.cancel(request.payload.requestId);
       sendResponse({ success: true });
       return false;
 
-    case 'GET_PAGE_INFO':
+    case "GET_PAGE_INFO":
       sendResponse(collector.getPageInfo());
       return false;
 
-    case 'PING':
-      sendResponse({ type: 'PONG', timestamp: Date.now() });
+    case "PING":
+      sendResponse({ type: "PONG", timestamp: Date.now() });
       return false;
   }
 });
@@ -1137,7 +1154,7 @@ Skill 定义中的参数需要根据 `location` 字段组装到 HTTP 请求的�
 ```typescript
 function buildHttpRequest(
   skill: SkillDefinition,
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
 ): ExecuteAPIPayload {
   let url = skill.api.path;
   const queryParams: URLSearchParams = new URLSearchParams();
@@ -1149,25 +1166,25 @@ function buildHttpRequest(
     if (value === undefined) continue;
 
     switch (param.location) {
-      case 'path':
+      case "path":
         url = url.replace(`{${param.name}}`, encodeURIComponent(String(value)));
         break;
-      case 'query':
+      case "query":
         queryParams.set(param.name, String(value));
         break;
-      case 'body':
+      case "body":
         bodyParams[param.name] = value;
         break;
-      case 'header':
+      case "header":
         headerParams[param.name] = String(value);
         break;
     }
   }
 
   // 拼接 baseUrl
-  const baseUrl = skill.api.baseUrl || '';
+  const baseUrl = skill.api.baseUrl || "";
   const queryString = queryParams.toString();
-  const fullUrl = `${baseUrl}${url}${queryString ? '?' + queryString : ''}`;
+  const fullUrl = `${baseUrl}${url}${queryString ? "?" + queryString : ""}`;
 
   return {
     method: skill.api.method,
@@ -1185,13 +1202,13 @@ function buildHttpRequest(
 
 ```typescript
 class BatchExecutor {
-  private concurrency: number = 3;   // 并发数
-  private delayMs: number = 200;     // 请求间隔
+  private concurrency: number = 3; // 并发数
+  private delayMs: number = 200; // 请求间隔
 
   async executeBatch(
     items: unknown[],
     executeFn: (item: unknown) => Promise<ToolCallResult>,
-    onProgress: (progress: BatchProgress) => void
+    onProgress: (progress: BatchProgress) => void,
   ): Promise<BatchResult> {
     const results: BatchResult = {
       total: items.length,
@@ -1204,20 +1221,21 @@ class BatchExecutor {
     for (let i = 0; i < items.length; i += this.concurrency) {
       const batch = items.slice(i, i + this.concurrency);
       const batchResults = await Promise.allSettled(
-        batch.map(item => executeFn(item))
+        batch.map((item) => executeFn(item)),
       );
 
       for (let j = 0; j < batchResults.length; j++) {
         const result = batchResults[j];
-        if (result.status === 'fulfilled' && result.value.success) {
+        if (result.status === "fulfilled" && result.value.success) {
           results.success++;
         } else {
           results.failed++;
           results.errors.push({
             item: batch[j],
-            error: result.status === 'rejected' 
-              ? result.reason.message 
-              : result.value.error,
+            error:
+              result.status === "rejected"
+                ? result.reason.message
+                : result.value.error,
           });
         }
       }
@@ -1232,7 +1250,7 @@ class BatchExecutor {
 
       // 请求间隔
       if (i + this.concurrency < items.length) {
-        await new Promise(r => setTimeout(r, this.delayMs));
+        await new Promise((r) => setTimeout(r, this.delayMs));
       }
     }
 
@@ -1264,13 +1282,13 @@ class BatchExecutor {
 
 现有 5 个 Tab 页面：
 
-| Tab | 组件 | 当前状态 | 预期功能 |
-|-----|------|---------|---------|
-| 能力 | `<Skills />` | ✅ 已实现列表 + Modal | Skill CRUD + 批量导入 |
-| 会话 | `<Chat />` | ⬜ 仅占位 | AI 对话 + 任务执行面板 |
-| 模型 | `<Models />` | ⬜ 仅占位 | LLM 模型配置 |
-| 频道 | `<Channels />` | ⬜ 仅占位 | 站点频道管理 |
-| 关于 | `<FAQ />` | ⬜ 仅占位 | 使用说明 + FAQ |
+| Tab  | 组件           | 当前状态              | 预期功能               |
+| ---- | -------------- | --------------------- | ---------------------- |
+| 能力 | `<Skills />`   | ✅ 已实现列表 + Modal | Skill CRUD + 批量导入  |
+| 会话 | `<Chat />`     | ⬜ 仅占位             | AI 对话 + 任务执行面板 |
+| 模型 | `<Models />`   | ⬜ 仅占位             | LLM 模型配置           |
+| 频道 | `<Channels />` | ⬜ 仅占位             | 站点频道管理           |
+| 关于 | `<FAQ />`      | ⬜ 仅占位             | 使用说明 + FAQ         |
 
 ### 8.2 UI 组件设计规划
 
@@ -1298,6 +1316,7 @@ class BatchExecutor {
 ```
 
 **功能清单**：
+
 - Skill 列表展示（带搜索过滤）
 - Skill 详情弹窗（完整参数定义预览）
 - Skill 新增/编辑表单
@@ -1386,11 +1405,11 @@ class BatchExecutor {
 // 消息类型
 interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: number;
-  toolCalls?: ToolCallDisplay[];    // 关联的 Tool 调用信息
-  status?: 'pending' | 'streaming' | 'done' | 'error';
+  toolCalls?: ToolCallDisplay[]; // 关联的 Tool 调用信息
+  status?: "pending" | "streaming" | "done" | "error";
 }
 
 // Tool 调用展示信息
@@ -1398,22 +1417,28 @@ interface ToolCallDisplay {
   skillName: string;
   skillId: string;
   arguments: Record<string, unknown>;
-  status: 'pending_confirmation' | 'confirmed' | 'rejected' | 'executing' | 'success' | 'error';
+  status:
+    | "pending_confirmation"
+    | "confirmed"
+    | "rejected"
+    | "executing"
+    | "success"
+    | "error";
   result?: unknown;
   error?: string;
   duration?: number;
-  
+
   // 确认相关
   confirmation?: {
     method: string;
     url: string;
     parameters: Record<string, unknown>;
-    riskLevel: 'safe' | 'moderate' | 'dangerous';
+    riskLevel: "safe" | "moderate" | "dangerous";
     description: string;
-    confirmedAt?: number;        // 用户确认时间
-    rejectedAt?: number;         // 用户拒绝时间
+    confirmedAt?: number; // 用户确认时间
+    rejectedAt?: number; // 用户拒绝时间
   };
-  
+
   // 批量执行进度
   batchProgress?: {
     total: number;
@@ -1464,11 +1489,11 @@ interface ToolCallDisplay {
 
 **支持的模型提供商**：
 
-| Provider | Base URL | 说明 |
-|----------|---------|------|
-| OpenAI | `https://api.openai.com/v1` | 官方 API |
-| Azure OpenAI | `https://{name}.openai.azure.com/...` | Azure 部署 |
-| 自定义兼容 | 用户自定义 | 任何 OpenAI 兼容 API（如 Ollama、vLLM） |
+| Provider     | Base URL                              | 说明                                    |
+| ------------ | ------------------------------------- | --------------------------------------- |
+| OpenAI       | `https://api.openai.com/v1`           | 官方 API                                |
+| Azure OpenAI | `https://{name}.openai.azure.com/...` | Azure 部署                              |
+| 自定义兼容   | 用户自定义                            | 任何 OpenAI 兼容 API（如 Ollama、vLLM） |
 
 #### 8.2.4 Channels Panel（频道管理）
 
@@ -1505,11 +1530,11 @@ interface ToolCallDisplay {
 ```typescript
 interface Channel {
   id: string;
-  name: string;                    // 频道名称
+  name: string; // 频道名称
   description?: string;
-  hostPatterns: string[];          // 匹配的站点 Pattern
-  skillIds: string[];              // 关联的 Skill ID 列表
-  color?: string;                  // 标识颜色
+  hostPatterns: string[]; // 匹配的站点 Pattern
+  skillIds: string[]; // 关联的 Skill ID 列表
+  color?: string; // 标识颜色
   createdAt: number;
   updatedAt: number;
   lastUsedAt?: number;
@@ -1550,6 +1575,7 @@ interface Channel {
 Popup 的宽高限制（约 800×600px）对复杂交互不友好。建议引入 **Chrome Side Panel API**，在浏览器侧边栏打开完整面板：
 
 **manifest 配置**：
+
 ```json
 {
   "side_panel": {
@@ -1560,6 +1586,7 @@ Popup 的宽高限制（约 800×600px）对复杂交互不友好。建议引入
 ```
 
 Side Panel 的优势：
+
 - 不会因为用户点击页面其他区域而关闭
 - 占据整个浏览器侧边高度，空间更充裕
 - 可以持续显示任务执行进度
@@ -1620,19 +1647,22 @@ function useSkillsStore() {
 
   useEffect(() => {
     // 从 chrome.storage 恢复
-    chrome.storage.local.get('skills', (result) => {
+    chrome.storage.local.get("skills", (result) => {
       if (result.skills) {
-        dispatch({ type: 'LOAD_SKILLS', payload: result.skills });
+        dispatch({ type: "LOAD_SKILLS", payload: result.skills });
       }
     });
   }, []);
 
-  const addSkill = useCallback(async (skill: SkillDefinition) => {
-    dispatch({ type: 'ADD_SKILL', payload: skill });
-    // 同步到 chrome.storage
-    const skills = [...state.skills, skill];
-    await chrome.storage.local.set({ skills });
-  }, [state.skills]);
+  const addSkill = useCallback(
+    async (skill: SkillDefinition) => {
+      dispatch({ type: "ADD_SKILL", payload: skill });
+      // 同步到 chrome.storage
+      const skills = [...state.skills, skill];
+      await chrome.storage.local.set({ skills });
+    },
+    [state.skills],
+  );
 
   // ... 更多方法
 
@@ -1647,27 +1677,27 @@ function useSkillsStore() {
 interface StorageSchema {
   // Skill 定义列表
   skills: SkillDefinition[];
-  
+
   // 模型配置
   modelConfig: {
-    provider: 'openai' | 'azure' | 'custom';
+    provider: "openai" | "azure" | "custom";
     baseURL: string;
-    apiKey: string;          // 加密存储
+    apiKey: string; // 加密存储
     model: string;
     temperature: number;
     maxTokens: number;
   };
-  
+
   // 频道配置
   channels: Channel[];
-  
+
   // 对话历史（按频道分组）
   chatHistory: Record<string, ChatMessage[]>;
-  
+
   // 用户偏好
   preferences: {
-    theme: 'light' | 'dark' | 'auto';
-    language: 'zh-CN' | 'en-US';
+    theme: "light" | "dark" | "auto";
+    language: "zh-CN" | "en-US";
     batchConcurrency: number;
     batchDelay: number;
     autoConfirmSafeOps: boolean;
@@ -1694,7 +1724,7 @@ class ChannelMatcher {
   // 根据当前 URL 匹配频道
   match(url: string, channels: Channel[]): Channel | null {
     const hostname = new URL(url).hostname;
-    
+
     for (const channel of channels) {
       for (const pattern of channel.hostPatterns) {
         if (this.matchPattern(hostname, pattern)) {
@@ -1707,9 +1737,7 @@ class ChannelMatcher {
 
   // 支持通配符的 Pattern 匹配
   private matchPattern(hostname: string, pattern: string): boolean {
-    const regex = pattern
-      .replace(/\./g, '\\.')
-      .replace(/\*/g, '[^.]+');
+    const regex = pattern.replace(/\./g, "\\.").replace(/\*/g, "[^.]+");
     return new RegExp(`^${regex}$`).test(hostname);
   }
 }
@@ -1722,7 +1750,7 @@ class ChannelMatcher {
 interface ChannelExport {
   version: string;
   channel: Channel;
-  skills: SkillDefinition[];      // 频道关联的所有 Skills
+  skills: SkillDefinition[]; // 频道关联的所有 Skills
   exportedAt: string;
   exportedBy?: string;
 }
@@ -1734,21 +1762,21 @@ interface ChannelExport {
 
 ### 11.1 威胁模型
 
-| 威胁 | 风险等级 | 缓解措施 |
-|------|---------|---------|
-| API Key 泄露 | 高 | 使用 chrome.storage 加密存储，不在页面 DOM 中暴露 |
-| 恶意 Skill 注入 | 高 | Skill 导入时进行 Schema 校验，限制 URL Pattern |
-| XSS 攻击（通过 AI 输出） | 中 | AI 输出在渲染前进行 HTML 转义 |
-| CSRF Token 外泄 | 中 | Token 仅在 Content Script 内使用，不传递到外部 |
-| 批量操作误伤 | 中 | 高风险操作需用户确认，批量操作增加预览步骤 |
-| Content Script 被恶意页面利用 | 低 | 仅响应来自扩展内部的消息（验证 sender） |
+| 威胁                          | 风险等级 | 缓解措施                                          |
+| ----------------------------- | -------- | ------------------------------------------------- |
+| API Key 泄露                  | 高       | 使用 chrome.storage 加密存储，不在页面 DOM 中暴露 |
+| 恶意 Skill 注入               | 高       | Skill 导入时进行 Schema 校验，限制 URL Pattern    |
+| XSS 攻击（通过 AI 输出）      | 中       | AI 输出在渲染前进行 HTML 转义                     |
+| CSRF Token 外泄               | 中       | Token 仅在 Content Script 内使用，不传递到外部    |
+| 批量操作误伤                  | 中       | 高风险操作需用户确认，批量操作增加预览步骤        |
+| Content Script 被恶意页面利用 | 低       | 仅响应来自扩展内部的消息（验证 sender）           |
 
 ### 11.2 API Key 安全存储
 
 ```typescript
 // 简单的加密存储方案
 class SecureStorage {
-  private static ENCRYPTION_KEY = 'crx-agent-v1'; // 实际应使用更安全的密钥
+  private static ENCRYPTION_KEY = "crx-agent-v1"; // 实际应使用更安全的密钥
 
   static async setApiKey(key: string): Promise<void> {
     const encoded = btoa(key); // 基础编码，生产环境建议使用 Web Crypto API
@@ -1756,7 +1784,7 @@ class SecureStorage {
   }
 
   static async getApiKey(): Promise<string | null> {
-    const result = await chrome.storage.local.get('_apiKey');
+    const result = await chrome.storage.local.get("_apiKey");
     if (!result._apiKey) return null;
     return atob(result._apiKey);
   }
@@ -1768,30 +1796,30 @@ class SecureStorage {
 ```typescript
 function validateSkill(skill: unknown): ValidationResult {
   const errors: string[] = [];
-  
+
   // 1. Schema 校验
   if (!isValidSkillSchema(skill)) {
-    errors.push('Invalid Skill schema');
+    errors.push("Invalid Skill schema");
   }
-  
+
   // 2. URL 安全检查
   const s = skill as SkillDefinition;
-  if (s.api.baseUrl && !s.api.baseUrl.startsWith('https://')) {
-    errors.push('baseUrl must use HTTPS');
+  if (s.api.baseUrl && !s.api.baseUrl.startsWith("https://")) {
+    errors.push("baseUrl must use HTTPS");
   }
-  
+
   // 3. 路径注入检查
-  if (s.api.path.includes('..') || s.api.path.includes('//')) {
-    errors.push('Suspicious path pattern detected');
+  if (s.api.path.includes("..") || s.api.path.includes("//")) {
+    errors.push("Suspicious path pattern detected");
   }
-  
+
   // 4. Host Pattern 校验
   for (const pattern of s.binding.hostPatterns) {
-    if (pattern === '*' || pattern === '*.*') {
-      errors.push('Host pattern too broad');
+    if (pattern === "*" || pattern === "*.*") {
+      errors.push("Host pattern too broad");
     }
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,
@@ -1815,7 +1843,7 @@ interface ConfirmationRequest {
   riskLevel: 'safe' | 'moderate' | 'dangerous';
   headers?: Record<string, string>;
   body?: unknown;
-  
+
   // 批量操作专属
   isBatch?: boolean;
   batchCount?: number;
@@ -1839,7 +1867,7 @@ async function requestUserConfirmation(
       isBatch: request.isBatch,
       batchCount: request.batchCount,
     };
-    
+
     // 在 Chat UI 中渲染确认卡片，等待用户操作
     // 用户可以：
     //   1. 点击「确认执行」按钮 → resolve(true)
@@ -1860,7 +1888,7 @@ interface ConfirmationCardProps {
 const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ data, onConfirm, onReject }) => {
   const riskColors = {
     safe: 'badge-success',
-    moderate: 'badge-warning', 
+    moderate: 'badge-warning',
     dangerous: 'badge-error',
   };
 
@@ -1871,7 +1899,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ data, onConfirm, on
           ⚠️ {data.title}
         </h3>
         <p className="text-xs opacity-70">{data.description}</p>
-        
+
         <div className="bg-base-300 rounded p-2 text-xs font-mono">
           <div><span className="font-bold">{data.method}</span> {data.url}</div>
           <div className="mt-1 text-xs">
@@ -1880,7 +1908,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ data, onConfirm, on
             ))}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 mt-1">
           <span className={\`badge badge-sm \${riskColors[data.riskLevel]}\`}>
             {data.riskLevel}
@@ -1891,7 +1919,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ data, onConfirm, on
             </span>
           )}
         </div>
-        
+
         <div className="card-actions justify-end mt-2">
           <button className="btn btn-sm btn-error btn-outline" onClick={onReject}>
             ❌ 拒绝
@@ -1912,7 +1940,7 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ data, onConfirm, on
                           用户确认
   Tool Call 生成 ──► 待确认 ────────► 执行中 ──► 成功/失败
        │            (pending_       (executing)
-       │            confirmation)       
+       │            confirmation)
        │                │
        │                │ 用户拒绝
        │                └────────► 已拒绝 ──► 结果回传 AI
@@ -1925,42 +1953,46 @@ const ConfirmationCard: React.FC<ConfirmationCardProps> = ({ data, onConfirm, on
 
 ### 12.1 错误分类
 
-| 错误类型 | 说明| 处理策略 |
-|---------|------|---------|
-| **网络错误** | 请求超时、连接失败 | 自动重试（最多 3 次，指数退避） |
-| **HTTP 错误** | 4xx、5xx 响应 | 返回给 AI 分析错误原因 |
-| **认证错误** | 401/403 | 提示用户重新登录目标站点 |
-| **LLM 错误** | API 限流、Token 超限 | 提示用户，建议等待或切换模型 |
-| **参数错误** | AI 生成了不合法的参数 | 返回校验错误给 AI 重新生成 |
-| **Content Script 断开** | 页面刷新导致 CS 丢失 | 自动重新注入 |
+| 错误类型                | 说明                  | 处理策略                        |
+| ----------------------- | --------------------- | ------------------------------- |
+| **网络错误**            | 请求超时、连接失败    | 自动重试（最多 3 次，指数退避） |
+| **HTTP 错误**           | 4xx、5xx 响应         | 返回给 AI 分析错误原因          |
+| **认证错误**            | 401/403               | 提示用户重新登录目标站点        |
+| **LLM 错误**            | API 限流、Token 超限  | 提示用户，建议等待或切换模型    |
+| **参数错误**            | AI 生成了不合法的参数 | 返回校验错误给 AI 重新生成      |
+| **Content Script 断开** | 页面刷新导致 CS 丢失  | 自动重新注入                    |
 
 ### 12.2 自动重试机制
 
 ```typescript
 async function withRetry<T>(
   fn: () => Promise<T>,
-  options: { maxRetries?: number; baseDelay?: number } = {}
+  options: { maxRetries?: number; baseDelay?: number } = {},
 ): Promise<T> {
   const { maxRetries = 3, baseDelay = 1000 } = options;
-  
+
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error: any) {
       // 不可重试的错误
-      if (error.status === 401 || error.status === 403 || error.status === 404) {
+      if (
+        error.status === 401 ||
+        error.status === 403 ||
+        error.status === 404
+      ) {
         throw error;
       }
-      
+
       if (attempt === maxRetries) throw error;
-      
+
       // 指数退避
       const delay = baseDelay * Math.pow(2, attempt);
-      await new Promise(r => setTimeout(r, delay));
+      await new Promise((r) => setTimeout(r, delay));
     }
   }
-  
-  throw new Error('Unexpected: retry loop exited without return or throw');
+
+  throw new Error("Unexpected: retry loop exited without return or throw");
 }
 ```
 
@@ -1971,24 +2003,24 @@ class ContentScriptConnection {
   // 检查 Content Script 是否可用
   static async ping(tabId: number): Promise<boolean> {
     try {
-      const response = await chrome.tabs.sendMessage(tabId, { type: 'PING' });
-      return response?.type === 'PONG';
+      const response = await chrome.tabs.sendMessage(tabId, { type: "PING" });
+      return response?.type === "PONG";
     } catch {
       return false;
     }
   }
-  
+
   // 如果不可用，尝试重新注入
   static async ensureConnected(tabId: number): Promise<boolean> {
     if (await this.ping(tabId)) return true;
-    
+
     try {
       await chrome.scripting.executeScript({
         target: { tabId },
-        files: ['src/content/main.tsx'],
+        files: ["src/content/main.tsx"],
       });
       // 等待注入完成
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
       return await this.ping(tabId);
     } catch {
       return false;
@@ -2042,14 +2074,14 @@ LLM API 调用的主要成本是 Token 消耗。优化策略：
 
 ### 14.2 关键测试场景
 
-| 场景 | 测试方法 | 覆盖内容 |
-|------|---------|---------|
-| Skill Schema 校验 | 单元测试 | 各种合法/非法 Schema |
-| HTTP 请求参数组装 | 单元测试 | path/query/body/header 参数 |
-| Skill → OpenAI Tool 转换 | 单元测试 | 类型映射、必填字段 |
-| Agent Loop 执行 | 集成测试 | Mock LLM 返回，验证 Tool Call 执行链 |
-| Content Script 通信 | E2E | 真实浏览器环境消息传递 |
-| 批量操作 | 集成测试 | 并发控制、错误处理、进度回调 |
+| 场景                     | 测试方法 | 覆盖内容                             |
+| ------------------------ | -------- | ------------------------------------ |
+| Skill Schema 校验        | 单元测试 | 各种合法/非法 Schema                 |
+| HTTP 请求参数组装        | 单元测试 | path/query/body/header 参数          |
+| Skill → OpenAI Tool 转换 | 单元测试 | 类型映射、必填字段                   |
+| Agent Loop 执行          | 集成测试 | Mock LLM 返回，验证 Tool Call 执行链 |
+| Content Script 通信      | E2E      | 真实浏览器环境消息传递               |
+| 批量操作                 | 集成测试 | 并发控制、错误处理、进度回调         |
 
 ---
 
@@ -2132,25 +2164,26 @@ LLM API 调用的主要成本是 Token 消耗。优化策略：
 
 基于对项目源码的全面分析，当前项目处于**早期原型阶段**：
 
-| 维度 | 现状 | 评分 |
-|------|------|------|
-| 项目结构 | ✅ 基础结构合理，使用 @crxjs/vite-plugin | ⭐⭐⭐⭐ |
-| UI 框架 | ✅ React + Tailwind + daisyUI 选型合理 | ⭐⭐⭐⭐ |
-| Popup 布局 | ✅ 左导航 + 右内容，Tab 切换已实现 | ⭐⭐⭐ |
-| Skills 列表 | ✅ 硬编码 Mock 数据 + Modal 弹窗 | ⭐⭐ |
-| Chat 功能 | ⬜ 仅占位文字 | ⭐ |
-| Models 配置 | ⬜ 仅占位文字 | ⭐ |
-| Channels | ⬜ 仅占位文字 | ⭐ |
-| Content Script | ✅ 基础 fetch 代理已实现 | ⭐⭐⭐ |
-| Background SW | ⬜ 未实现 | ⭐ |
-| AI 集成 | ⬜ openai SDK 已安装但未使用 | ⭐ |
-| 类型定义 | ⬜ types/index.ts 为空 | ⭐ |
+| 维度           | 现状                                     | 评分     |
+| -------------- | ---------------------------------------- | -------- |
+| 项目结构       | ✅ 基础结构合理，使用 @crxjs/vite-plugin | ⭐⭐⭐⭐ |
+| UI 框架        | ✅ React + Tailwind                      | ⭐⭐⭐⭐ |
+| Popup 布局     | ✅ 左导航 + 右内容，Tab 切换已实现       | ⭐⭐⭐   |
+| Skills 列表    | ✅ 硬编码 Mock 数据 + Modal 弹窗         | ⭐⭐     |
+| Chat 功能      | ⬜ 仅占位文字                            | ⭐       |
+| Models 配置    | ⬜ 仅占位文字                            | ⭐       |
+| Channels       | ⬜ 仅占位文字                            | ⭐       |
+| Content Script | ✅ 基础 fetch 代理已实现                 | ⭐⭐⭐   |
+| Background SW  | ⬜ 未实现                                | ⭐       |
+| AI 集成        | ⬜ openai SDK 已安装但未使用             | ⭐       |
+| 类型定义       | ⬜ types/index.ts 为空                   | ⭐       |
 
 ### 16.2 具体改进建议
 
 #### 16.2.1 项目结构重组
 
 **当前**：
+
 ```
 src/
 ├── components/
@@ -2169,6 +2202,7 @@ src/
 ```
 
 **建议**：
+
 ```
 src/
 ├── background/              # 新增：Background Service Worker
@@ -2252,7 +2286,7 @@ const skills = [
 const Skills = () => {
   const { skills, loading, addSkill, removeSkill } = useSkills();
   const currentHost = useCurrentHost();
-  const filteredSkills = skills.filter(s => matchHost(s, currentHost));
+  const filteredSkills = skills.filter((s) => matchHost(s, currentHost));
   // ...
 };
 ```
@@ -2294,7 +2328,7 @@ export interface SkillDefinition {
 }
 
 export interface SkillAPI {
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string;
   baseUrl?: string;
   headers?: Record<string, string>;
@@ -2303,8 +2337,8 @@ export interface SkillAPI {
 
 export interface SkillParameter {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
-  location: 'path' | 'query' | 'body' | 'header';
+  type: "string" | "number" | "boolean" | "array" | "object";
+  location: "path" | "query" | "body" | "header";
   required: boolean;
   description: string;
   default?: unknown;
@@ -2312,7 +2346,7 @@ export interface SkillParameter {
   example?: unknown;
   validation?: ParameterValidation;
   properties?: SkillParameter[];
-  items?: Omit<SkillParameter, 'name' | 'location' | 'required'>;
+  items?: Omit<SkillParameter, "name" | "location" | "required">;
 }
 
 export interface ParameterValidation {
@@ -2324,7 +2358,7 @@ export interface ParameterValidation {
 }
 
 export interface SkillResponse {
-  type: 'json' | 'text' | 'blob';
+  type: "json" | "text" | "blob";
   schema?: Record<string, unknown>;
   extractors?: ResponseExtractor[];
 }
@@ -2333,13 +2367,13 @@ export interface ResponseExtractor {
   name: string;
   path: string;
   description: string;
-  transform?: 'count' | 'first' | 'last' | 'flatten' | 'unique';
+  transform?: "count" | "first" | "last" | "flatten" | "unique";
 }
 
 export interface SkillMeta {
   category?: string;
   tags?: string[];
-  riskLevel?: 'safe' | 'moderate' | 'dangerous';
+  riskLevel?: "safe" | "moderate" | "dangerous";
   requireConfirm?: boolean;
   rateLimit?: {
     maxCalls: number;
@@ -2355,15 +2389,15 @@ export interface SkillBinding {
 // ============ 消息通信 ============
 
 export enum MessageType {
-  EXECUTE_API = 'EXECUTE_API',
-  EXECUTE_API_RESULT = 'EXECUTE_API_RESULT',
-  EXECUTE_BATCH = 'EXECUTE_BATCH',
-  BATCH_PROGRESS = 'BATCH_PROGRESS',
-  CANCEL_REQUEST = 'CANCEL_REQUEST',
-  GET_PAGE_INFO = 'GET_PAGE_INFO',
-  SKILL_TEST = 'SKILL_TEST',
-  PING = 'PING',
-  PONG = 'PONG',
+  EXECUTE_API = "EXECUTE_API",
+  EXECUTE_API_RESULT = "EXECUTE_API_RESULT",
+  EXECUTE_BATCH = "EXECUTE_BATCH",
+  BATCH_PROGRESS = "BATCH_PROGRESS",
+  CANCEL_REQUEST = "CANCEL_REQUEST",
+  GET_PAGE_INFO = "GET_PAGE_INFO",
+  SKILL_TEST = "SKILL_TEST",
+  PING = "PING",
+  PONG = "PONG",
 }
 
 export interface ExtensionMessage<T = unknown> {
@@ -2410,7 +2444,7 @@ export interface ConfirmationRequest {
   method: string;
   url: string;
   parameters: Record<string, unknown>;
-  riskLevel: 'safe' | 'moderate' | 'dangerous';
+  riskLevel: "safe" | "moderate" | "dangerous";
   headers?: Record<string, string>;
   body?: unknown;
   isBatch?: boolean;
@@ -2425,7 +2459,7 @@ export interface ConfirmationCardData {
   method: string;
   url: string;
   parameters: Record<string, unknown>;
-  riskLevel: 'safe' | 'moderate' | 'dangerous';
+  riskLevel: "safe" | "moderate" | "dangerous";
   isBatch?: boolean;
   batchCount?: number;
 }
@@ -2433,16 +2467,16 @@ export interface ConfirmationCardData {
 export type ConfirmationResult = {
   confirmed: boolean;
   timestamp: number;
-  userMessage?: string;         // 用户输入的确认/拒绝文本
+  userMessage?: string; // 用户输入的确认/拒绝文本
 };
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system' | 'tool';
+  role: "user" | "assistant" | "system" | "tool";
   content: string;
   timestamp: number;
   toolCalls?: ToolCallDisplay[];
-  status?: 'pending' | 'streaming' | 'done' | 'error';
+  status?: "pending" | "streaming" | "done" | "error";
   toolCallId?: string;
 }
 
@@ -2451,7 +2485,13 @@ export interface ToolCallDisplay {
   skillName: string;
   skillId: string;
   arguments: Record<string, unknown>;
-  status: 'pending_confirmation' | 'confirmed' | 'rejected' | 'executing' | 'success' | 'error';
+  status:
+    | "pending_confirmation"
+    | "confirmed"
+    | "rejected"
+    | "executing"
+    | "success"
+    | "error";
   result?: unknown;
   error?: string;
   duration?: number;
@@ -2476,14 +2516,14 @@ export interface BatchResult {
 }
 
 export type AgentEvent =
-  | { type: 'llm_call_start' }
-  | { type: 'llm_streaming'; content: string }
-  | { type: 'assistant_message'; content: string }
-  | { type: 'tool_call_start'; toolCall: ToolCallDisplay }
-  | { type: 'tool_call_result'; toolCall: ToolCallDisplay; result: unknown }
-  | { type: 'batch_progress'; progress: BatchProgress }
-  | { type: 'error'; error: string }
-  | { type: 'done' };
+  | { type: "llm_call_start" }
+  | { type: "llm_streaming"; content: string }
+  | { type: "assistant_message"; content: string }
+  | { type: "tool_call_start"; toolCall: ToolCallDisplay }
+  | { type: "tool_call_result"; toolCall: ToolCallDisplay; result: unknown }
+  | { type: "batch_progress"; progress: BatchProgress }
+  | { type: "error"; error: string }
+  | { type: "done" };
 
 // ============ 频道 ============
 
@@ -2510,8 +2550,8 @@ export interface StorageSchema {
 }
 
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'auto';
-  language: 'zh-CN' | 'en-US';
+  theme: "light" | "dark" | "auto";
+  language: "zh-CN" | "en-US";
   batchConcurrency: number;
   batchDelay: number;
   autoConfirmSafeOps: boolean;
@@ -2525,6 +2565,7 @@ export interface UserPreferences {
 Browser Claw 的核心创新在于将 **AI Function Calling** 与 **Chrome Extension Content Script** 结合，实现了"自然语言 → API 调用"的无缝桥接。通过 Skill-as-Document 的设计，用户无需编写代码即可扩展系统能力，AI 则负责理解意图、规划执行步骤、处理结果反馈。
 
 项目当前已完成基础框架搭建，接下来的重点是：
+
 1. **补全 Skill 系统**：让 Skill 从硬编码走向动态管理
 2. **实现 Agent 引擎**：打通 LLM → Skill → Content Script 的完整链路
 3. **完善 Chat UI**：提供直观的对话和任务执行体验
