@@ -255,6 +255,11 @@ export const translations = {
       showExamples: '查看示例',
       hideExamples: '收起示例',
       blankTemplate: '空白模板',
+      openAPITemplate: 'OpenAPI 模板',
+      importHint: '导入 Skill 或 OpenAPI 规范 (JSON / YAML)',
+      exportOpenAPI: '导出为 OpenAPI',
+      importOpenAPISuccess: '已从 OpenAPI 导入 {count} 个接口',
+      jsonOrOpenAPIPlaceholder: '粘贴 Skill JSON 或 OpenAPI 3.x 规范 (JSON / YAML) ...\\n\\n支持单条 Skill 定义 / OpenAPI 文档批量导入',
       exampleHint: '选择一个示例，了解格式后可修改为你自己的配置：',
       jsonPlaceholder: '粘贴 Skill JSON ...\n\n必填字段：id, name, description, version, api, parameters, response, meta, binding',
       jsonEmptyHint: '在此处粘贴 JSON 配置',
@@ -333,7 +338,7 @@ export const translations = {
         {
           question: '什么是频道（Channel）？',
           answer:
-            '频道是 Skills 的分组机制，按照网站域名进行组织。每个频道绑定一组域名规则（支持 * 通配符），当你浏览匹配域名的网站时，系统会自动筛选出该频道关联的 Skills，让 AI 只看到与当前网站相关的能力。',
+            '频道是第三方即时通讯（IM）工具的接入渠道。通过配置频道，你可以将 AI 能力集成到常用的 IM 软件中，实现与用户的交互和消息传递。',
         },
         {
           question: 'Content Script 连接失败怎么办？',
@@ -362,7 +367,7 @@ export const translations = {
         },
         {
           title: '3. 创建频道',
-          desc: '在「频道」面板按网站分组 Skills（可选）',
+          desc: '在「频道」面板配置第三方 IM 接入（可选）',
         },
         {
           title: '4. 打开目标网站',
@@ -634,6 +639,11 @@ export const translations = {
       showExamples: 'Show examples',
       hideExamples: 'Hide examples',
       blankTemplate: 'Blank template',
+      openAPITemplate: 'OpenAPI template',
+      importHint: 'Import Skill or OpenAPI spec (JSON / YAML)',
+      exportOpenAPI: 'Export as OpenAPI',
+      importOpenAPISuccess: 'Imported {count} operation(s) from OpenAPI',
+      jsonOrOpenAPIPlaceholder: 'Paste Skill JSON or OpenAPI 3.x spec (JSON / YAML) ...\\n\\nSupports single skill definition or bulk OpenAPI import',
       exampleHint: 'Choose an example and customize it:',
       jsonPlaceholder: 'Paste Skill JSON...\n\nRequired fields: id, name, description, version, api, parameters, response, meta, binding',
       jsonEmptyHint: 'Paste JSON configuration here',
@@ -712,7 +722,7 @@ export const translations = {
         {
           question: 'What is a Channel?',
           answer:
-            'Channels group skills by domain. Each channel binds host patterns (supports * wildcards). When you browse a matching site, only relevant skills are exposed to the AI.',
+            'Channels are integration points for third-party Instant Messaging (IM) tools. By configuring channels, you can integrate AI capabilities into common IM software to enable interaction and messaging with users.',
         },
         {
           question: 'What if Content Script fails to connect?',
@@ -741,7 +751,7 @@ export const translations = {
         },
         {
           title: '3. Create channels',
-          desc: 'Group skills by site in Channels (optional)',
+          desc: 'Connect third-party IM tools in Channels (optional)',
         },
         {
           title: '4. Open target site',

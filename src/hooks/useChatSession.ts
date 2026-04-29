@@ -175,6 +175,9 @@ export function useChatSession(
               fullContent = '';
               break;
 
+            case 'tool_call_start':
+              break;
+
             case 'tool_call_result': {
               const toolMsg: ChatMessage = {
                 id: `tool_${Date.now()}_${event.toolCall.id}`,
@@ -213,6 +216,9 @@ export function useChatSession(
             }
 
             case 'done':
+              break;
+
+            case 'step_finish':
               break;
           }
         }

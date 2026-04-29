@@ -21,17 +21,25 @@ export function useModel() {
 
   const testConnection = useCallback(async (): Promise<{ success: boolean; error?: string; models?: string[] }> => {
     try {
-      const { default: OpenAI } = await import('openai');
-      const client = new OpenAI({
-        apiKey: config.apiKey,
-        baseURL: config.baseURL,
-        dangerouslyAllowBrowser: true,
+      const url = `${config.baseURL.replace(/\/+$/, '')}/models`;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${config.apiKey}`,
+          'Content-Type': 'application/json',
+        },
       });
-      const modelList = await client.models.list();
-      const models = [];
-      for await (const model of modelList) {
-        models.push(model.id);
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText}`,
+        };
       }
+
+      const data = await response.json();
+      const models = Array.isArray(data?.data)
+        ? data.data.map((m: any) => m.id).filter(Boolean)
+        : [];
       return { success: true, models };
     } catch (error: unknown) {
       return {

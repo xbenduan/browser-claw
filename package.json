@@ -9,18 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.42",
+    "@ant-design/x-markdown": "^2.3.0",
+    "ai": "^6.0.168",
     "clsx": "^2.1.1",
+    "js-yaml": "^4.1.1",
     "lucide-react": "^0.577.0",
-    "openai": "^6.25.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "@ant-design/x-markdown": "^2.3.0",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.3",
     "@tailwindcss/vite": "^4.2.1",
     "@types/chrome": "^0.1.1",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.0.15",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",

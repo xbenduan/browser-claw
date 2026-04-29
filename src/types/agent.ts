@@ -94,4 +94,5 @@ export type AgentEvent =
   | { type: 'tool_call_result'; toolCall: ToolCallDisplay; result: unknown }
   | { type: 'batch_progress'; progress: BatchProgress }
   | { type: 'error'; error: string }
-  | { type: 'done' };
+  | { type: 'done' }
+  | { type: 'step_finish' };

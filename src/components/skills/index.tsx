@@ -10,6 +10,7 @@ import {
   Globe,
   BookOpen,
   FileCode,
+  FileJson,
   Lightbulb,
   Check,
   AlertTriangle,
@@ -17,6 +18,7 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
+import yaml from "js-yaml";
 import type { SkillDefinition } from "@/types";
 import { Messaging } from "@/utils/messaging";
 import {
@@ -24,6 +26,13 @@ import {
   getExampleSkillJSON,
   getSkillTemplateJSON,
 } from "@/utils/example-skills";
+import {
+
+  validateOpenAPISpec,
+  openAPISpecToSkills,
+  skillToOpenAPISpec,
+} from "@/core/openapi-converter";
+import type { OpenAPISpec } from "@/types/openapi";
 import Modal from "@/components/shared/Modal";
 import { useI18n } from "@/i18n";
 
@@ -168,11 +177,52 @@ const Skills: React.FC<SkillsProps> = ({
     [skills, hostname]
   );
 
+  // Detect whether input text is an OpenAPI 3.x spec (JSON or YAML)
+  const detectOpenAPI = (text: string): unknown | null => {
+    const trimmed = text.trim();
+    try {
+      const parsed = trimmed.startsWith('{') || trimmed.startsWith('[')
+        ? JSON.parse(trimmed)
+        : yaml.load(trimmed);
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        typeof (parsed as { openapi?: unknown }).openapi === 'string' &&
+        String((parsed as { openapi: string }).openapi).startsWith('3.')
+      ) {
+        return parsed;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       const text = await file.text();
+
+      // Try OpenAPI first
+      const maybeOpenAPI = detectOpenAPI(text);
+      if (maybeOpenAPI) {
+        const validation = validateOpenAPISpec(maybeOpenAPI);
+        if (!validation.valid) {
+          throw new Error(`OpenAPI 格式错误: ${validation.errors.join('; ')}`);
+        }
+        const skillsFromSpec = openAPISpecToSkills(maybeOpenAPI as OpenAPISpec);
+        const result = await onImport(skillsFromSpec as unknown as unknown[]);
+        setImportMessage(
+          t('skills.importOpenAPISuccess', { count: result.imported }) +
+            (result.errors.length > 0 ? t('skills.importFailedCount', { count: result.errors.length }) : "")
+        );
+        setTimeout(() => setImportMessage(""), 3000);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
+      // Fallback: legacy skill-JSON
       const data = JSON.parse(text);
       const arr = Array.isArray(data) ? data : [data];
       const result = await onImport(arr);
@@ -197,6 +247,33 @@ const Skills: React.FC<SkillsProps> = ({
     const a = document.createElement("a");
     a.href = url;
     a.download = `browser-claw-skills-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportOpenAPI = () => {
+    // Merge all user skills into a single OpenAPI document grouped by path
+    const specs = skills.map(skillToOpenAPISpec);
+    const merged: OpenAPISpec = {
+      openapi: '3.1.0',
+      info: {
+        title: 'Browser Claw Skills',
+        version: '1.0.0',
+        description: `Exported ${skills.length} skill(s) from Browser Claw`,
+      },
+      paths: {},
+    };
+    for (const spec of specs) {
+      for (const [path, methods] of Object.entries(spec.paths)) {
+        merged.paths[path] = { ...(merged.paths[path] ?? {}), ...methods };
+      }
+    }
+    const text = JSON.stringify(merged, null, 2);
+    const blob = new Blob([text], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `browser-claw-openapi-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -351,14 +428,14 @@ const Skills: React.FC<SkillsProps> = ({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json"
+              accept=".json,.yaml,.yml"
               className="hidden"
               onChange={handleImportFile}
             />
             <button
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white transition-colors"
               onClick={() => fileInputRef.current?.click()}
-              title={t('skills.import')}
+              title={t('skills.importHint')}
             >
               <Upload className="w-4 h-4" />
             </button>
@@ -369,6 +446,14 @@ const Skills: React.FC<SkillsProps> = ({
               disabled={skills.length === 0}
             >
               <Download className="w-4 h-4" />
+            </button>
+            <button
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white transition-colors"
+              onClick={handleExportOpenAPI}
+              title={t('skills.exportOpenAPI')}
+              disabled={skills.length === 0}
+            >
+              <FileJson className="w-4 h-4" />
             </button>
             <button
               className="glass-button-primary text-xs px-3 py-1.5 h-8 ml-1"
@@ -505,6 +590,7 @@ const Skills: React.FC<SkillsProps> = ({
           await onAdd(skill);
           setShowAddModal(false);
         }}
+        onImport={onImport}
       />
 
       {/* Delete Confirmation Modal */}
@@ -708,7 +794,8 @@ const SkillAddModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onAdd: (skill: SkillDefinition) => Promise<void>;
-}> = ({ isOpen, onClose, onAdd }) => {
+  onImport: (data: unknown[]) => Promise<{ imported: number; errors: string[] }>;
+}> = ({ isOpen, onClose, onAdd, onImport }) => {
   const { t, messages } = useI18n();
   const [jsonText, setJsonText] = useState("");
   const [error, setError] = useState("");
@@ -719,13 +806,76 @@ const SkillAddModal: React.FC<{
     setError("");
     setLoading(true);
     try {
-      const parsed = JSON.parse(jsonText);
-      await onAdd(parsed);
+      const text = jsonText.trim();
+      // Try parse as YAML or JSON
+      let parsed: unknown;
+      if (text.startsWith('{') || text.startsWith('[')) {
+        parsed = JSON.parse(text);
+      } else {
+        parsed = yaml.load(text);
+      }
+
+      // Detect OpenAPI
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        typeof (parsed as { openapi?: unknown }).openapi === 'string' &&
+        String((parsed as { openapi: string }).openapi).startsWith('3.')
+      ) {
+        const validation = validateOpenAPISpec(parsed);
+        if (!validation.valid) {
+          throw new Error(`OpenAPI 格式错误: ${validation.errors.join('; ')}`);
+        }
+        const skillsFromSpec = openAPISpecToSkills(parsed as OpenAPISpec);
+        if (skillsFromSpec.length === 0) {
+          throw new Error('OpenAPI 中未找到任何可导入的接口');
+        }
+        const result = await onImport(skillsFromSpec as unknown as unknown[]);
+        if (result.errors.length > 0 && result.imported === 0) {
+          throw new Error(result.errors.join('; '));
+        }
+        onClose();
+        return;
+      }
+
+      // Single skill JSON
+      await onAdd(parsed as SkillDefinition);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadOpenAPITemplate = () => {
+    setJsonText(`openapi: 3.1.0
+info:
+  title: My API
+  version: 1.0.0
+  x-hostPatterns:
+    - api.example.com
+servers:
+  - url: https://api.example.com
+paths:
+  /users/{id}:
+    get:
+      operationId: getUser
+      summary: 获取用户信息
+      description: 根据用户 ID 查询用户详情
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 用户 ID
+      responses:
+        '200':
+          description: OK
+      x-riskLevel: safe
+`);
+    setShowExamples(false);
+    setError('');
   };
 
   const loadExample = (index: number) => {
@@ -785,6 +935,13 @@ const SkillAddModal: React.FC<{
             <FileCode className="w-3.5 h-3.5" />
             {t('skills.blankTemplate')}
           </button>
+          <button
+            className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-medium hover:bg-emerald-100 border border-emerald-100 transition-colors flex items-center gap-1.5"
+            onClick={loadOpenAPITemplate}
+          >
+            <FileJson className="w-3.5 h-3.5" />
+            {t('skills.openAPITemplate')}
+          </button>
         </div>
 
         {/* Example selector */}
@@ -823,7 +980,7 @@ const SkillAddModal: React.FC<{
         <div className="relative">
           <textarea
             className="w-full h-80 font-mono text-xs leading-relaxed p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500/50 transition-all resize-none shadow-inner text-slate-700"
-            placeholder={t('skills.jsonPlaceholder')}
+            placeholder={t('skills.jsonOrOpenAPIPlaceholder')}
             value={jsonText}
             onChange={(e) => setJsonText(e.target.value)}
           />

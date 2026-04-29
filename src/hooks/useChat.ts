@@ -89,7 +89,6 @@ export function useChat(
               fullContent = event.content;
               setStreamingContent('');
               setMessages((prev) => {
-                // 移除之前的 streaming 占位
                 const filtered = prev.filter((m) => m.id !== assistantMsgId);
                 return [
                   ...filtered,
@@ -105,6 +104,9 @@ export function useChat(
               fullContent = '';
               break;
 
+            case 'tool_call_start':
+              break;
+
             case 'tool_call_result': {
               const toolMsg: ChatMessage = {
                 id: `tool_${Date.now()}_${event.toolCall.id}`,
@@ -115,7 +117,6 @@ export function useChat(
                 toolCalls: [event.toolCall],
               };
               setMessages((prev) => [...prev, toolMsg]);
-              // Also add the tool result to messages for context
               setMessages((prev) => [
                 ...prev,
                 {
@@ -144,6 +145,9 @@ export function useChat(
               break;
 
             case 'done':
+              break;
+
+            case 'step_finish':
               break;
           }
         }
