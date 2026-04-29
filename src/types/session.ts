@@ -1,6 +1,6 @@
 // ============ 会话管理类型 ============
 
-import type { ChatMessage } from './agent';
+import type { ChatMessage } from "./agent";
 
 export interface ChatSession {
   id: string;

@@ -13,7 +13,7 @@ export interface SkillDefinition {
 }
 
 export interface SkillAPI {
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   path: string;
   baseUrl?: string;
   headers?: Record<string, string>;
@@ -22,8 +22,8 @@ export interface SkillAPI {
 
 export interface SkillParameter {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'null';
-  location: 'path' | 'query' | 'body' | 'header';
+  type: "string" | "number" | "boolean" | "array" | "object" | "null";
+  location: "path" | "query" | "body" | "header";
   required: boolean;
   description: string;
   default?: unknown;
@@ -31,7 +31,7 @@ export interface SkillParameter {
   example?: unknown;
   validation?: ParameterValidation;
   properties?: SkillParameter[];
-  items?: Omit<SkillParameter, 'name' | 'location' | 'required'>;
+  items?: Omit<SkillParameter, "name" | "location" | "required">;
 }
 
 export interface ParameterValidation {
@@ -43,7 +43,7 @@ export interface ParameterValidation {
 }
 
 export interface SkillResponse {
-  type: 'json' | 'text' | 'blob';
+  type: "json" | "text" | "blob";
   schema?: Record<string, unknown>;
   extractors?: ResponseExtractor[];
 }
@@ -52,13 +52,13 @@ export interface ResponseExtractor {
   name: string;
   path: string;
   description: string;
-  transform?: 'count' | 'first' | 'last' | 'flatten' | 'unique';
+  transform?: "count" | "first" | "last" | "flatten" | "unique";
 }
 
 export interface SkillMeta {
   category?: string;
   tags?: string[];
-  riskLevel?: 'safe' | 'moderate' | 'dangerous';
+  riskLevel?: "safe" | "moderate" | "dangerous";
   requireConfirm?: boolean;
   rateLimit?: {
     maxCalls: number;

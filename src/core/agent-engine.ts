@@ -4,9 +4,9 @@ import type {
   AgentConfig,
   AgentEvent,
   ChatMessage,
-  SkillDefinition,
   ConfirmationRequest,
   ConfirmationResult,
+  SkillDefinition,
   ToolCallDisplay,
 } from '@/types';
 import { skillsToAITools } from './skill-converter';
@@ -86,7 +86,7 @@ export class AgentEngine {
   constructor(
     config: AgentConfig,
     skills: SkillDefinition[],
-    hostname: string
+    hostname: string,
   ) {
     this.config = config;
     this.skills = skills;
@@ -94,7 +94,7 @@ export class AgentEngine {
   }
 
   setConfirmationHandler(
-    handler: (request: ConfirmationRequest) => Promise<ConfirmationResult>
+    handler: (request: ConfirmationRequest) => Promise<ConfirmationResult>,
   ) {
     this.confirmationHandler = handler;
   }
@@ -107,7 +107,7 @@ export class AgentEngine {
 
   async *processUserMessage(
     userMessage: string,
-    conversationHistory: ChatMessage[]
+    conversationHistory: ChatMessage[],
   ): AsyncGenerator<AgentEvent> {
     this.abortController = new AbortController();
     const signal = this.abortController.signal;
@@ -128,7 +128,7 @@ export class AgentEngine {
 
     const recentHistory = conversationHistory.slice(-20);
     for (const msg of recentHistory) {
-      if (msg.role === 'tool') {
+      if (msg.role === "tool") {
         messages.push({
           role: 'tool',
           content: [
@@ -140,7 +140,11 @@ export class AgentEngine {
             },
           ],
         });
-      } else if (msg.role === 'assistant' && msg.toolCalls && msg.toolCalls.length > 0) {
+      } else if (
+        msg.role === "assistant" &&
+        msg.toolCalls &&
+        msg.toolCalls.length > 0
+      ) {
         messages.push({
           role: 'assistant',
           content: [
@@ -153,12 +157,12 @@ export class AgentEngine {
             })),
           ],
         });
-      } else if (msg.role === 'user' || msg.role === 'assistant') {
+      } else if (msg.role === "user" || msg.role === "assistant") {
         messages.push({ role: msg.role, content: msg.content });
       }
     }
 
-    messages.push({ role: 'user', content: userMessage });
+    messages.push({ role: "user", content: userMessage });
 
     yield { type: 'llm_call_start' };
 
@@ -418,7 +422,7 @@ export class AgentEngine {
 
   private async executeBuiltinSkill(
     skillId: string,
-    args: Record<string, unknown>
+    args: Record<string, unknown>,
   ): Promise<{ success: boolean; data?: unknown; error?: string }> {
     switch (skillId) {
       case BUILTIN_SKILL_IDS.READ_PAGE_CONTENT: {
@@ -427,18 +431,27 @@ export class AgentEngine {
           if (!connected) {
             return {
               success: false,
-              error: 'Content Script not connected. Please make sure the active tab is a regular web page.',
+              error:
+                "Content Script not connected. Please make sure the active tab is a regular web page.",
             };
           }
 
           const result = await Messaging.readPageContent({
-            maxLength: typeof args.maxLength === 'number' ? args.maxLength : 15000,
-            includeLinks: typeof args.includeLinks === 'boolean' ? args.includeLinks : true,
-            includeHeadings: typeof args.includeHeadings === 'boolean' ? args.includeHeadings : true,
+            maxLength:
+              typeof args.maxLength === "number" ? args.maxLength : 15000,
+            includeLinks:
+              typeof args.includeLinks === "boolean" ? args.includeLinks : true,
+            includeHeadings:
+              typeof args.includeHeadings === "boolean"
+                ? args.includeHeadings
+                : true,
           });
 
           if (!result.success) {
-            return { success: false, error: result.error || 'Failed to read page content' };
+            return {
+              success: false,
+              error: result.error || "Failed to read page content",
+            };
           }
 
           return { success: true, data: result };
@@ -451,15 +464,20 @@ export class AgentEngine {
       case BUILTIN_SKILL_IDS.QUERY_STORED_DATA: {
         const pointer = args.pointer as string;
         if (!pointer) {
-          return { success: false, error: 'Missing required parameter: pointer' };
+          return {
+            success: false,
+            error: "Missing required parameter: pointer",
+          };
         }
 
         const queryResult = queryStoredData(pointer, {
           path: args.path as string | undefined,
-          offset: typeof args.offset === 'number' ? args.offset : undefined,
-          limit: typeof args.limit === 'number' ? args.limit : undefined,
+          offset: typeof args.offset === "number" ? args.offset : undefined,
+          limit: typeof args.limit === "number" ? args.limit : undefined,
           filter: args.filter as Record<string, unknown> | undefined,
-          fields: Array.isArray(args.fields) ? args.fields as string[] : undefined,
+          fields: Array.isArray(args.fields)
+            ? (args.fields as string[])
+            : undefined,
         });
 
         if (!queryResult.success) {

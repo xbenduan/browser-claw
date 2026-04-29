@@ -1,18 +1,19 @@
-import React, { useCallback, useState } from "react";
 import {
+  AlertTriangle,
+  Clock,
+  ExternalLink,
+  Loader2,
+  Lock,
+  MessageSquare,
   PlusCircle,
   Trash2,
-  MessageSquare,
-  Clock,
-  Loader2,
-  ExternalLink,
-  Lock,
-  AlertTriangle,
 } from "lucide-react";
-import type { AgentConfig, SkillDefinition, SessionListItem } from "@/types";
-import { useSessions } from "@/hooks/useSessions";
+import type React from "react";
+import { useCallback, useState } from "react";
 import Modal from "@/components/shared/Modal";
+import { useSessions } from "@/hooks/useSessions";
 import { useI18n } from "@/i18n";
+import type { AgentConfig, SessionListItem, SkillDefinition } from "@/types";
 
 interface ChatProps {
   config: AgentConfig;
@@ -118,6 +119,7 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
           )}
         </div>
         <button
+          type="button"
           className="glass-button-primary text-xs px-3 py-1.5 h-8 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleNewSession}
           disabled={!isConfigured}
@@ -142,11 +144,12 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
               <MessageSquare className="w-8 h-8 text-slate-400" />
             </div>
-            <p className="text-sm text-slate-500 mb-1">{t("chat.emptyTitle")}</p>
-            <p className="text-xs text-slate-400 mb-6">
-              {t("chat.emptyDesc")}
+            <p className="text-sm text-slate-500 mb-1">
+              {t("chat.emptyTitle")}
             </p>
+            <p className="text-xs text-slate-400 mb-6">{t("chat.emptyDesc")}</p>
             <button
+              type="button"
               className="glass-button-primary mx-auto"
               onClick={handleNewSession}
             >
@@ -216,12 +219,14 @@ const Chat: React.FC<ChatProps> = ({ config, hostname }) => {
         footer={
           <>
             <button
+              type="button"
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
               onClick={() => setDeleteSessionId(null)}
             >
               {t("common.cancel")}
             </button>
             <button
+              type="button"
               className="glass-button-danger text-xs px-3 py-1.5"
               onClick={async () => {
                 if (deleteSessionId) {
@@ -276,58 +281,66 @@ const SessionItem: React.FC<SessionItemProps> = ({
           ? "hover:bg-white/90 hover:border-violet-200 hover:shadow-violet-100"
           : "opacity-50 cursor-not-allowed bg-slate-100"
       }`}
-      onClick={canEnter ? onClick : undefined}
-      title={
-        canEnter
-          ? t("chat.openInSidepanel")
-          : t("chat.openInOtherSite", { hostname: item.hostname })
-      }
     >
-      <div
-        className={`shrink-0 p-2 rounded-lg ${canEnter ? "bg-violet-50 text-violet-600" : "bg-white text-slate-400 border border-slate-100"}`}
+      <button
+        type="button"
+        className="flex-1 min-w-0 flex items-center gap-3 text-left disabled:cursor-not-allowed"
+        onClick={onClick}
+        disabled={!canEnter}
+        title={
+          canEnter
+            ? t("chat.openInSidepanel")
+            : t("chat.openInOtherSite", { hostname: item.hostname })
+        }
       >
-        {canEnter ? (
-          <MessageSquare className="w-4 h-4" />
-        ) : (
-          <Lock className="w-4 h-4" />
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-slate-800 truncate">
-            {item.title}
-          </span>
-          {item.hostname && (
-            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-50 border border-slate-200 text-slate-500 truncate max-w-30">
-              {item.hostname}
-            </span>
+        <div
+          className={`shrink-0 p-2 rounded-lg ${canEnter ? "bg-violet-50 text-violet-600" : "bg-white text-slate-400 border border-slate-100"}`}
+        >
+          {canEnter ? (
+            <MessageSquare className="w-4 h-4" />
+          ) : (
+            <Lock className="w-4 h-4" />
           )}
         </div>
-        <div className="text-xs text-slate-500 truncate">
-          {item.preview || t("chat.emptySession")}
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium text-slate-800 truncate">
+              {item.title}
+            </span>
+            {item.hostname && (
+              <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-50 border border-slate-200 text-slate-500 truncate max-w-30">
+                {item.hostname}
+              </span>
+            )}
+          </div>
+          <div className="text-xs text-slate-500 truncate">
+            {item.preview || t("chat.emptySession")}
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-[10px] text-slate-500 bg-white px-1.5 rounded border border-slate-200">
+              {formatTime(item.updatedAt)}
+            </span>
+            <span className="text-[10px] text-slate-500">
+              {t("chat.messagesCount", { count: item.messageCount })}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-[10px] text-slate-500 bg-white px-1.5 rounded border border-slate-200">
-            {formatTime(item.updatedAt)}
-          </span>
-          <span className="text-[10px] text-slate-500">
-            {t("chat.messagesCount", { count: item.messageCount })}
-          </span>
-        </div>
-      </div>
+
+        {canEnter && (
+          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-violet-600 transition-colors opacity-0 group-hover:opacity-100 shrink-0" />
+        )}
+      </button>
 
       <div className="flex items-center gap-1 shrink-0">
         <button
+          type="button"
           className="p-1.5 rounded-lg text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 transition-all"
           onClick={onDelete}
-        title={t("chat.deleteSession")}
+          title={t("chat.deleteSession")}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
-        {canEnter && (
-          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-violet-600 transition-colors opacity-0 group-hover:opacity-100" />
-        )}
       </div>
     </div>
   );

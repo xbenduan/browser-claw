@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { ChatSession, SessionListItem } from '@/types';
-import { Storage } from '@/utils/storage';
-import { useI18n } from '@/i18n';
+import { useCallback, useEffect, useState } from "react";
+import { useI18n } from "@/i18n";
+import type { ChatSession, SessionListItem } from "@/types";
+import { Storage } from "@/utils/storage";
 
 export function useSessions() {
   const [sessionList, setSessionList] = useState<SessionListItem[]>([]);
@@ -19,7 +19,9 @@ export function useSessions() {
 
   // 监听 _sessionUpdate 信号以跨页面同步（IndexedDB 无原生 change 事件）
   useEffect(() => {
-    const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
+    const listener = (
+      changes: Record<string, chrome.storage.StorageChange>,
+    ) => {
       if (changes._sessionUpdate || changes.activeSessionId) {
         refresh();
       }
@@ -30,13 +32,13 @@ export function useSessions() {
 
   const createSession = useCallback(
     async (hostname: string): Promise<ChatSession> => {
-      const session = Storage.createNewSession(hostname, t('chat.newSession'));
+      const session = Storage.createNewSession(hostname, t("chat.newSession"));
       await Storage.saveSession(session);
       await Storage.setActiveSessionId(session.id);
       await refresh();
       return session;
     },
-    [refresh, t]
+    [refresh, t],
   );
 
   const deleteSession = useCallback(
@@ -44,7 +46,7 @@ export function useSessions() {
       await Storage.deleteSession(sessionId);
       await refresh();
     },
-    [refresh]
+    [refresh],
   );
 
   const openSession = useCallback(async (sessionId: string) => {

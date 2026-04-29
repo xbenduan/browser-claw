@@ -1,32 +1,35 @@
-import React, { useMemo, useState } from "react";
 import {
-  Plus,
-  Trash2,
-  Edit2,
-  Save,
-  X,
-  Power,
-  PowerOff,
-  MessageCircle,
+  AlertCircle,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
-  Send,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
+  Edit2,
   Hash,
+  Loader2,
+  MessageCircle,
+  Plus,
+  Power,
+  PowerOff,
+  Save,
+  Send,
+  Trash2,
+  X,
 } from "lucide-react";
+import type React from "react";
+import { useMemo, useState } from "react";
+import { useI18n } from "@/i18n";
 import type {
   Channel,
   IMPlatform,
-  IMPlatformInfo,
   IMPlatformField,
+  IMPlatformInfo,
 } from "@/types";
-import { useI18n } from "@/i18n";
 
 // ============ 平台预设 ============
 
-const getPlatforms = (t: (key: string, vars?: Record<string, string | number>) => string): IMPlatformInfo[] => [
+const getPlatforms = (
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): IMPlatformInfo[] => [
   {
     id: "feishu",
     name: t("channels.platforms.feishu.name"),
@@ -88,7 +91,9 @@ const getPlatforms = (t: (key: string, vars?: Record<string, string | number>) =
         key: "botWebhookUrl",
         label: t("channels.fields.botWebhookUrl.label"),
         type: "url",
-        placeholder: t("channels.platforms.wechat_work.botWebhookUrlPlaceholder"),
+        placeholder: t(
+          "channels.platforms.wechat_work.botWebhookUrlPlaceholder",
+        ),
         required: true,
         helpText: t("channels.platforms.wechat_work.botWebhookUrlHelp"),
       },
@@ -332,7 +337,9 @@ const Channels: React.FC<ChannelsProps> = ({
             <Hash className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-semibold text-lg text-slate-800">{t("channels.title")}</h2>
+            <h2 className="font-semibold text-lg text-slate-800">
+              {t("channels.title")}
+            </h2>
             <p className="text-xs text-slate-500">{t("channels.subtitle")}</p>
           </div>
         </div>
@@ -417,7 +424,9 @@ const Channels: React.FC<ChannelsProps> = ({
 
                 {/* Channel Name */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">{t("channels.channelName")}</label>
+                  <label className="text-xs text-slate-500">
+                    {t("channels.channelName")}
+                  </label>
                   <input
                     type="text"
                     className="glass-input w-full px-3 py-1.5 text-xs"
@@ -429,7 +438,9 @@ const Channels: React.FC<ChannelsProps> = ({
 
                 {/* Description */}
                 <div className="space-y-1">
-                  <label className="text-xs text-slate-500">{t("channels.descriptionOptional")}</label>
+                  <label className="text-xs text-slate-500">
+                    {t("channels.descriptionOptional")}
+                  </label>
                   <input
                     type="text"
                     className="glass-input w-full px-3 py-1.5 text-xs"
@@ -501,7 +512,9 @@ const Channels: React.FC<ChannelsProps> = ({
             <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
               <MessageCircle className="w-8 h-8 text-slate-400" />
             </div>
-            <p className="text-sm text-slate-500 mb-1">{t("channels.noChannels")}</p>
+            <p className="text-sm text-slate-500 mb-1">
+              {t("channels.noChannels")}
+            </p>
             <p className="text-xs text-slate-400">
               {t("channels.noChannelsDesc")}
             </p>
@@ -551,7 +564,9 @@ const Channels: React.FC<ChannelsProps> = ({
                         : "bg-slate-100 text-slate-500 border-slate-200"
                     }`}
                   >
-                    {channel.enabled ? t("channels.enabled") : t("channels.disabled")}
+                    {channel.enabled
+                      ? t("channels.enabled")
+                      : t("channels.disabled")}
                   </span>
 
                   <div className="flex items-center gap-1 border-l border-slate-200 pl-2 ml-1">
@@ -560,7 +575,11 @@ const Channels: React.FC<ChannelsProps> = ({
                         channel.enabled ? "text-green-600" : "text-slate-400"
                       }`}
                       onClick={() => onToggle(channel.id)}
-                      title={channel.enabled ? t("channels.disable") : t("channels.enable")}
+                      title={
+                        channel.enabled
+                          ? t("channels.disable")
+                          : t("channels.enable")
+                      }
                     >
                       {channel.enabled ? (
                         <Power className="w-3.5 h-3.5" />

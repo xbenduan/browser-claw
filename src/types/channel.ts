@@ -6,7 +6,13 @@
  * 用途：接收 IM 消息 → 解析指令 → 调用 Agent 执行 → 回传结果
  */
 
-export type IMPlatform = 'feishu' | 'dingtalk' | 'wechat_work' | 'slack' | 'discord' | 'custom';
+export type IMPlatform =
+  | "feishu"
+  | "dingtalk"
+  | "wechat_work"
+  | "slack"
+  | "discord"
+  | "custom";
 
 export interface Channel {
   id: string;
@@ -45,7 +51,7 @@ export interface IMPlatformInfo {
 export interface IMPlatformField {
   key: string;
   label: string;
-  type: 'text' | 'url' | 'password';
+  type: "text" | "url" | "password";
   placeholder: string;
   required: boolean;
   helpText?: string;

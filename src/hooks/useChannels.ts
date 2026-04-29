@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { Channel } from '@/types';
-import { Storage } from '@/utils/storage';
+import { useCallback, useEffect, useState } from "react";
+import type { Channel } from "@/types";
+import { Storage } from "@/utils/storage";
 
 export function useChannels() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -19,7 +19,7 @@ export function useChannels() {
   }, []);
 
   const addChannel = useCallback(
-    async (channel: Omit<Channel, 'id' | 'createdAt' | 'updatedAt'>) => {
+    async (channel: Omit<Channel, "id" | "createdAt" | "updatedAt">) => {
       const newChannel: Channel = {
         ...channel,
         id: `ch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
@@ -30,24 +30,24 @@ export function useChannels() {
       await persist(updated);
       return newChannel;
     },
-    [channels, persist]
+    [channels, persist],
   );
 
   const updateChannel = useCallback(
     async (id: string, updates: Partial<Channel>) => {
       const newChannels = channels.map((ch) =>
-        ch.id === id ? { ...ch, ...updates, updatedAt: Date.now() } : ch
+        ch.id === id ? { ...ch, ...updates, updatedAt: Date.now() } : ch,
       );
       await persist(newChannels);
     },
-    [channels, persist]
+    [channels, persist],
   );
 
   const removeChannel = useCallback(
     async (id: string) => {
       await persist(channels.filter((ch) => ch.id !== id));
     },
-    [channels, persist]
+    [channels, persist],
   );
 
   const toggleChannel = useCallback(
@@ -57,8 +57,15 @@ export function useChannels() {
         await updateChannel(id, { enabled: !ch.enabled });
       }
     },
-    [channels, updateChannel]
+    [channels, updateChannel],
   );
 
-  return { channels, loading, addChannel, updateChannel, removeChannel, toggleChannel };
+  return {
+    channels,
+    loading,
+    addChannel,
+    updateChannel,
+    removeChannel,
+    toggleChannel,
+  };
 }

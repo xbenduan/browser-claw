@@ -49,7 +49,8 @@
       "description": "sort",
       "default": "FAVORITE_WEIGHTED_DESC",
       "enum": ["FAVORITE_WEIGHTED_DESC", "UPDATE_TIME_DESC", "FAVORITE_DESC"]
-    },{
+    },
+    {
       "name": "keyword",
       "type": "string",
       "location": "query",

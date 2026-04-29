@@ -1,4 +1,3 @@
-import React, { useState, useRef, useMemo } from "react";
 import {
   Plus,
   Upload,
@@ -14,13 +13,24 @@ import {
   Lightbulb,
   Check,
   AlertTriangle,
+  BookOpen,
+  Check,
+  Download,
+  Eye,
+  FileCode,
+  Globe,
+  Lightbulb,
+  Loader2,
+  Play,
+  Plus,
+  Search,
   ShieldAlert,
   ShieldCheck,
-  Loader2,
+  Trash2,
+  Upload,
 } from "lucide-react";
 import yaml from "js-yaml";
 import type { SkillDefinition } from "@/types";
-import { Messaging } from "@/utils/messaging";
 import {
   EXAMPLE_SKILLS,
   getExampleSkillJSON,
@@ -42,24 +52,42 @@ interface SkillsProps {
   onAdd: (skill: SkillDefinition) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
   onImport: (
-    data: unknown[]
+    data: unknown[],
   ) => Promise<{ imported: number; errors: string[] }>;
   onExport: () => string;
 }
 
-const getRiskLevelConfig = (t: (key: string, vars?: Record<string, string | number>) => string) => ({
-  safe: { label: t('skills.risk.safe'), color: 'text-green-600 bg-green-50 border-green-200', icon: ShieldCheck },
-  moderate: { label: t('skills.risk.moderate'), color: 'text-amber-600 bg-amber-50 border-amber-200', icon: AlertTriangle },
-  high: { label: t('skills.risk.high'), color: 'text-red-600 bg-red-50 border-red-200', icon: ShieldAlert },
-  dangerous: { label: t('skills.risk.high'), color: 'text-red-600 bg-red-50 border-red-200', icon: ShieldAlert },
+const getRiskLevelConfig = (
+  t: (key: string, vars?: Record<string, string | number>) => string,
+) => ({
+  safe: {
+    label: t("skills.risk.safe"),
+    color: "text-green-600 bg-green-50 border-green-200",
+    icon: ShieldCheck,
+  },
+  moderate: {
+    label: t("skills.risk.moderate"),
+    color: "text-amber-600 bg-amber-50 border-amber-200",
+    icon: AlertTriangle,
+  },
+  high: {
+    label: t("skills.risk.high"),
+    color: "text-red-600 bg-red-50 border-red-200",
+    icon: ShieldAlert,
+  },
+  dangerous: {
+    label: t("skills.risk.high"),
+    color: "text-red-600 bg-red-50 border-red-200",
+    icon: ShieldAlert,
+  },
 });
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: 'text-green-600',
-  POST: 'text-blue-600',
-  PUT: 'text-amber-600',
-  PATCH: 'text-amber-600',
-  DELETE: 'text-red-600',
+  GET: "text-green-600",
+  POST: "text-blue-600",
+  PUT: "text-amber-600",
+  PATCH: "text-amber-600",
+  DELETE: "text-red-600",
 };
 
 // ============ 域名匹配 ============
@@ -73,7 +101,7 @@ function matchHost(hostname: string, pattern: string): boolean {
 function groupSkillsByHost(
   skills: SkillDefinition[],
   hostname: string,
-  unboundLabel: string
+  unboundLabel: string,
 ): { pattern: string; matched: boolean; skills: SkillDefinition[] }[] {
   const patternMap = new Map<string, Set<string>>();
   const skillMap = new Map<string, SkillDefinition>();
@@ -142,14 +170,20 @@ const Skills: React.FC<SkillsProps> = ({
   const riskConfig = useMemo(() => getRiskLevelConfig(t), [t]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSkill, setSelectedSkill] = useState<SkillDefinition | null>(
-    null
+    null,
   );
   const [showAddModal, setShowAddModal] = useState(false);
   const [importMessage, setImportMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [deleteTarget, setDeleteTarget] = useState<SkillDefinition | null>(null);
-  const [alertInfo, setAlertInfo] = useState<{ title: string; message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SkillDefinition | null>(
+    null,
+  );
+  const [alertInfo, setAlertInfo] = useState<{
+    title: string;
+    message: string;
+    type: "success" | "error" | "warning";
+  } | null>(null);
 
   const filteredSkills = useMemo(() => {
     if (!searchTerm) return skills;
@@ -160,21 +194,21 @@ const Skills: React.FC<SkillsProps> = ({
         s.description.toLowerCase().includes(term) ||
         s.id.toLowerCase().includes(term) ||
         (s.meta.category ?? "").toLowerCase().includes(term) ||
-        s.binding.hostPatterns.some((p) => p.toLowerCase().includes(term))
+        s.binding.hostPatterns.some((p) => p.toLowerCase().includes(term)),
     );
   }, [skills, searchTerm]);
 
   const groups = useMemo(
-    () => groupSkillsByHost(filteredSkills, hostname, t('skills.unboundHost')),
-    [filteredSkills, hostname, t]
+    () => groupSkillsByHost(filteredSkills, hostname, t("skills.unboundHost")),
+    [filteredSkills, hostname, t],
   );
 
   const matchedCount = useMemo(
     () =>
       skills.filter((s) =>
-        s.binding.hostPatterns.some((p) => matchHost(hostname, p))
+        s.binding.hostPatterns.some((p) => matchHost(hostname, p)),
       ).length,
-    [skills, hostname]
+    [skills, hostname],
   );
 
   // Detect whether input text is an OpenAPI 3.x spec (JSON or YAML)
@@ -227,13 +261,17 @@ const Skills: React.FC<SkillsProps> = ({
       const arr = Array.isArray(data) ? data : [data];
       const result = await onImport(arr);
       setImportMessage(
-        t('skills.importSuccess', { count: result.imported }) +
-          (result.errors.length > 0 ? t('skills.importFailedCount', { count: result.errors.length }) : "")
+        t("skills.importSuccess", { count: result.imported }) +
+          (result.errors.length > 0
+            ? t("skills.importFailedCount", { count: result.errors.length })
+            : ""),
       );
       setTimeout(() => setImportMessage(""), 3000);
     } catch (err) {
       setImportMessage(
-        t('skills.importFailed', { error: err instanceof Error ? err.message : String(err) })
+        t("skills.importFailed", {
+          error: err instanceof Error ? err.message : String(err),
+        }),
       );
       setTimeout(() => setImportMessage(""), 3000);
     }
@@ -281,18 +319,20 @@ const Skills: React.FC<SkillsProps> = ({
   const handleAddExampleSkills = async () => {
     const result = await onImport(EXAMPLE_SKILLS);
     setImportMessage(
-      t('skills.addedExample', { count: result.imported }) +
-        (result.errors.length > 0 ? t('skills.existsCount', { count: result.errors.length }) : "")
+      t("skills.addedExample", { count: result.imported }) +
+        (result.errors.length > 0
+          ? t("skills.existsCount", { count: result.errors.length })
+          : ""),
     );
     setTimeout(() => setImportMessage(""), 3000);
   };
 
   const handleTestSkill = async (skill: SkillDefinition) => {
-    if (skill.api.method !== 'GET') {
+    if (skill.api.method !== "GET") {
       setAlertInfo({
-        title: t('skills.methodNotSupported'),
-        message: t('skills.methodNotSupportedDesc'),
-        type: 'warning'
+        title: t("skills.methodNotSupported"),
+        message: t("skills.methodNotSupportedDesc"),
+        type: "warning",
       });
       return;
     }
@@ -300,36 +340,38 @@ const Skills: React.FC<SkillsProps> = ({
       const connected = await Messaging.ensureConnected();
       if (!connected) {
         setAlertInfo({
-          title: t('skills.connectFailed'),
-          message: t('skills.connectFailedDesc'),
-          type: 'error'
+          title: t("skills.connectFailed"),
+          message: t("skills.connectFailedDesc"),
+          type: "error",
         });
         return;
       }
       const response = await Messaging.executeAPI({
         method: skill.api.method,
-        url: (skill.api.baseUrl ?? '') + skill.api.path,
+        url: (skill.api.baseUrl ?? "") + skill.api.path,
         timeout: skill.api.timeout,
       });
-      
+
       if (response.success) {
         setAlertInfo({
-          title: t('skills.testSuccess'),
-          message: t('skills.testSuccessStatus', { status: response.status ?? '' }),
-          type: 'success'
+          title: t("skills.testSuccess"),
+          message: t("skills.testSuccessStatus", {
+            status: response.status ?? "",
+          }),
+          type: "success",
         });
       } else {
         setAlertInfo({
-          title: t('skills.testFailed'),
-          message: response.error || t('skills.unknownError'),
-          type: 'error'
+          title: t("skills.testFailed"),
+          message: response.error || t("skills.unknownError"),
+          type: "error",
         });
       }
     } catch (err) {
       setAlertInfo({
-        title: t('skills.testError'),
+        title: t("skills.testError"),
         message: err instanceof Error ? err.message : String(err),
-        type: 'error'
+        type: "error",
       });
     }
   };
@@ -344,14 +386,16 @@ const Skills: React.FC<SkillsProps> = ({
 
   // ── Render Skill Card ──
   const renderSkillCard = (skill: SkillDefinition, isMatched: boolean) => {
-    const risk = riskConfig[skill.meta.riskLevel as keyof typeof riskConfig] || riskConfig.safe;
-    
+    const risk =
+      riskConfig[skill.meta.riskLevel as keyof typeof riskConfig] ||
+      riskConfig.safe;
+
     return (
       <div
         key={skill.id}
         className={`flex items-start gap-3 p-3 rounded-lg border transition-all duration-300 mb-2 ${
-          isMatched 
-            ? "bg-cyan-50 border-cyan-200 hover:bg-cyan-100" 
+          isMatched
+            ? "bg-cyan-50 border-cyan-200 hover:bg-cyan-100"
             : "bg-white border-slate-200 hover:bg-slate-50"
         }`}
       >
@@ -359,10 +403,12 @@ const Skills: React.FC<SkillsProps> = ({
           <div className="flex items-center gap-2 flex-wrap mb-1">
             {isMatched && (
               <span className="px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-600 text-[10px] border border-cyan-200">
-                {t('skills.currentSite')}
+                {t("skills.currentSite")}
               </span>
             )}
-            <span className="font-medium text-sm text-slate-800 truncate">{skill.name}</span>
+            <span className="font-medium text-sm text-slate-800 truncate">
+              {skill.name}
+            </span>
             <span
               className={`text-[10px] font-mono font-bold ${
                 METHOD_COLORS[skill.api.method] ?? "text-slate-400"
@@ -380,7 +426,9 @@ const Skills: React.FC<SkillsProps> = ({
                 {skill.meta.category}
               </span>
             )}
-            <span className={`px-1.5 py-0.5 rounded text-[10px] border flex items-center gap-1 ${risk.color}`}>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[10px] border flex items-center gap-1 ${risk.color}`}
+            >
               {risk.label}
             </span>
           </div>
@@ -389,21 +437,21 @@ const Skills: React.FC<SkillsProps> = ({
           <button
             className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-600 hover:bg-slate-100 transition-colors"
             onClick={() => openDetail(skill)}
-            title={t('skills.details')}
+            title={t("skills.details")}
           >
             <Eye className="w-3.5 h-3.5" />
           </button>
           <button
             className="p-1.5 rounded-lg text-slate-400 hover:text-green-600 hover:bg-slate-100 transition-colors"
             onClick={() => handleTestSkill(skill)}
-            title={t('skills.test')}
+            title={t("skills.test")}
           >
             <Play className="w-3.5 h-3.5" />
           </button>
           <button
             className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-100 transition-colors"
             onClick={() => setDeleteTarget(skill)}
-            title={t('skills.delete')}
+            title={t("skills.delete")}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -420,7 +468,7 @@ const Skills: React.FC<SkillsProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-500 flex items-center gap-1">
               <span className="px-2 py-0.5 rounded-full bg-cyan-50 text-cyan-600 border border-cyan-200">
-                {t('skills.currentSiteAvailable', { count: matchedCount })}
+                {t("skills.currentSiteAvailable", { count: matchedCount })}
               </span>
             </span>
           </div>
@@ -442,7 +490,7 @@ const Skills: React.FC<SkillsProps> = ({
             <button
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white transition-colors"
               onClick={handleExport}
-              title={t('skills.export')}
+              title={t("skills.export")}
               disabled={skills.length === 0}
             >
               <Download className="w-4 h-4" />
@@ -459,7 +507,7 @@ const Skills: React.FC<SkillsProps> = ({
               className="glass-button-primary text-xs px-3 py-1.5 h-8 ml-1"
               onClick={() => setShowAddModal(true)}
             >
-              <Plus className="w-3.5 h-3.5" /> {t('skills.add')}
+              <Plus className="w-3.5 h-3.5" /> {t("skills.add")}
             </button>
           </div>
         </div>
@@ -468,7 +516,7 @@ const Skills: React.FC<SkillsProps> = ({
           <input
             type="text"
             className="glass-input w-full pl-9 py-1.5 text-xs h-8"
-            placeholder={t('skills.searchPlaceholder')}
+            placeholder={t("skills.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -493,9 +541,11 @@ const Skills: React.FC<SkillsProps> = ({
                   <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
                     <Lightbulb className="w-8 h-8 text-yellow-500 opacity-80" />
                   </div>
-                  <p className="text-sm font-medium text-slate-800">{t('skills.emptyTitle')}</p>
+                  <p className="text-sm font-medium text-slate-800">
+                    {t("skills.emptyTitle")}
+                  </p>
                   <p className="text-xs text-slate-500 mt-1 max-w-50 mx-auto">
-                    {t('skills.emptyDesc')}
+                    {t("skills.emptyDesc")}
                   </p>
                 </div>
 
@@ -505,17 +555,19 @@ const Skills: React.FC<SkillsProps> = ({
                     onClick={handleAddExampleSkills}
                   >
                     <BookOpen className="w-4 h-4" />
-                    {t('skills.addExamples')}
+                    {t("skills.addExamples")}
                   </button>
                   <span className="text-[10px] text-slate-500">
-                    {t('skills.exampleCount', { count: EXAMPLE_SKILLS.length })}
+                    {t("skills.exampleCount", { count: EXAMPLE_SKILLS.length })}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 w-full max-w-50 mx-auto">
-                   <div className="h-px bg-slate-200 flex-1" />
-                   <span className="text-[10px] text-slate-400">{t('skills.or')}</span>
-                   <div className="h-px bg-slate-200 flex-1" />
+                  <div className="h-px bg-slate-200 flex-1" />
+                  <span className="text-[10px] text-slate-400">
+                    {t("skills.or")}
+                  </span>
+                  <div className="h-px bg-slate-200 flex-1" />
                 </div>
 
                 <div className="flex justify-center gap-3">
@@ -524,21 +576,23 @@ const Skills: React.FC<SkillsProps> = ({
                     onClick={() => setShowAddModal(true)}
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    {t('skills.manualAdd')}
+                    {t("skills.manualAdd")}
                   </button>
                   <button
                     className="glass-button text-xs"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    {t('skills.importJson')}
+                    {t("skills.importJson")}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="text-center py-10">
                 <Search className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-xs text-slate-500">{t('skills.noSearchResult')}</p>
+                <p className="text-xs text-slate-500">
+                  {t("skills.noSearchResult")}
+                </p>
               </div>
             )}
           </div>
@@ -554,14 +608,16 @@ const Skills: React.FC<SkillsProps> = ({
                   }`}
                 >
                   <Globe className="w-3 h-3" />
-                  <span className="font-mono truncate max-w-45">{group.pattern}</span>
+                  <span className="font-mono truncate max-w-45">
+                    {group.pattern}
+                  </span>
                   <span className="px-1.5 py-0.5 rounded bg-slate-100 text-[10px] ml-auto">
                     {group.skills.length}
                   </span>
                 </div>
                 <div>
                   {group.skills.map((skill) =>
-                    renderSkillCard(skill, group.matched)
+                    renderSkillCard(skill, group.matched),
                   )}
                 </div>
               </div>
@@ -574,7 +630,7 @@ const Skills: React.FC<SkillsProps> = ({
       <Modal
         isOpen={!!selectedSkill}
         onClose={closeDetail}
-        title={t('skills.detailTitle')}
+        title={t("skills.detailTitle")}
         width="max-w-lg"
       >
         {selectedSkill && (
@@ -597,7 +653,7 @@ const Skills: React.FC<SkillsProps> = ({
       <Modal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title={t('skills.deleteTitle')}
+        title={t("skills.deleteTitle")}
         width="max-w-sm"
         footer={
           <>
@@ -605,7 +661,7 @@ const Skills: React.FC<SkillsProps> = ({
               className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
               onClick={() => setDeleteTarget(null)}
             >
-              {t('common.cancel')}
+              {t("common.cancel")}
             </button>
             <button
               className="glass-button-danger text-xs px-3 py-1.5"
@@ -616,7 +672,7 @@ const Skills: React.FC<SkillsProps> = ({
                 }
               }}
             >
-              {t('common.delete')}
+              {t("common.delete")}
             </button>
           </>
         }
@@ -627,10 +683,10 @@ const Skills: React.FC<SkillsProps> = ({
           </div>
           <div>
             <p className="text-sm text-slate-700 font-medium">
-              {t('skills.deleteConfirm', { name: deleteTarget?.name ?? '' })}
+              {t("skills.deleteConfirm", { name: deleteTarget?.name ?? "" })}
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              {t('skills.deleteDesc')}
+              {t("skills.deleteDesc")}
             </p>
           </div>
         </div>
@@ -640,26 +696,34 @@ const Skills: React.FC<SkillsProps> = ({
       <Modal
         isOpen={!!alertInfo}
         onClose={() => setAlertInfo(null)}
-        title={alertInfo?.title || t('skills.alertTitle')}
+        title={alertInfo?.title || t("skills.alertTitle")}
         width="max-w-sm"
         footer={
           <button
             className="glass-button-primary text-xs px-4 py-1.5"
             onClick={() => setAlertInfo(null)}
           >
-            {t('skills.ok')}
+            {t("skills.ok")}
           </button>
         }
       >
         <div className="flex items-start gap-3">
-          <div className={`p-2 rounded-full shrink-0 ${
-            alertInfo?.type === 'success' ? 'bg-green-50 text-green-600' :
-            alertInfo?.type === 'error' ? 'bg-red-50 text-red-600' :
-            'bg-amber-50 text-amber-600'
-          }`}>
-            {alertInfo?.type === 'success' ? <Check className="w-5 h-5" /> :
-             alertInfo?.type === 'error' ? <AlertTriangle className="w-5 h-5" /> :
-             <Lightbulb className="w-5 h-5" />}
+          <div
+            className={`p-2 rounded-full shrink-0 ${
+              alertInfo?.type === "success"
+                ? "bg-green-50 text-green-600"
+                : alertInfo?.type === "error"
+                  ? "bg-red-50 text-red-600"
+                  : "bg-amber-50 text-amber-600"
+            }`}
+          >
+            {alertInfo?.type === "success" ? (
+              <Check className="w-5 h-5" />
+            ) : alertInfo?.type === "error" ? (
+              <AlertTriangle className="w-5 h-5" />
+            ) : (
+              <Lightbulb className="w-5 h-5" />
+            )}
           </div>
           <div className="text-sm text-slate-600 leading-relaxed pt-1">
             {alertInfo?.message}
@@ -677,40 +741,56 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
 }) => {
   const { t } = useI18n();
   const isMatched = skill.binding.hostPatterns.some((p) =>
-    matchHost(hostname, p)
+    matchHost(hostname, p),
   );
 
   return (
     <div className="space-y-6 text-slate-600 text-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
-           <h3 className="font-bold text-xl text-slate-800">{skill.name}</h3>
-           <p className="text-sm text-slate-500 mt-1 leading-relaxed">{skill.description}</p>
+          <h3 className="font-bold text-xl text-slate-800">{skill.name}</h3>
+          <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+            {skill.description}
+          </p>
         </div>
         {isMatched && (
           <div className="px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium border border-green-200 shrink-0 flex items-center gap-1">
-            <Check className="w-3 h-3" /> {t('skills.matchedSite')}
+            <Check className="w-3 h-3" /> {t("skills.matchedSite")}
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-3 gap-4 text-xs">
         <div className="col-span-2 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">{t('skills.id')}</span>
-          <code className="text-slate-700 bg-white px-1.5 py-0.5 rounded border border-slate-200 block truncate" title={skill.id}>{skill.id}</code>
+          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">
+            {t("skills.id")}
+          </span>
+          <code
+            className="text-slate-700 bg-white px-1.5 py-0.5 rounded border border-slate-200 block truncate"
+            title={skill.id}
+          >
+            {skill.id}
+          </code>
         </div>
         <div className="col-span-1 p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">{t('skills.version')}</span>
+          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">
+            {t("skills.version")}
+          </span>
           <span className="text-slate-700 font-medium">{skill.version}</span>
         </div>
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 col-span-3">
-          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">{t('skills.endpoint')}</span>
+          <span className="block text-slate-400 mb-1.5 font-medium uppercase tracking-wider text-[10px]">
+            {t("skills.endpoint")}
+          </span>
           <div className="flex items-center gap-2">
-            <span className={`font-bold px-1.5 py-0.5 rounded ${METHOD_COLORS[skill.api.method].replace('text-', 'bg-').replace('600', '100')} ${METHOD_COLORS[skill.api.method]}`}>
+            <span
+              className={`font-bold px-1.5 py-0.5 rounded ${METHOD_COLORS[skill.api.method].replace("text-", "bg-").replace("600", "100")} ${METHOD_COLORS[skill.api.method]}`}
+            >
               {skill.api.method}
             </span>
             <code className="text-slate-700 break-all bg-white px-2 py-0.5 rounded border border-slate-200 flex-1">
-              {skill.api.baseUrl ?? ""}{skill.api.path}
+              {skill.api.baseUrl ?? ""}
+              {skill.api.path}
             </code>
           </div>
         </div>
@@ -719,15 +799,15 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
       <div>
         <h4 className="font-bold text-slate-800 mb-3 text-xs flex items-center gap-2">
           <Globe className="w-3.5 h-3.5 text-cyan-500" />
-          {t('skills.hostRules')}
+          {t("skills.hostRules")}
         </h4>
         <div className="flex flex-wrap gap-2">
           {skill.binding.hostPatterns.map((p, i) => (
             <span
               key={i}
               className={`px-2.5 py-1 rounded-lg text-xs font-mono border transition-colors ${
-                matchHost(hostname, p) 
-                  ? "bg-green-50 text-green-700 border-green-200 shadow-sm" 
+                matchHost(hostname, p)
+                  ? "bg-green-50 text-green-700 border-green-200 shadow-sm"
                   : "bg-white text-slate-500 border-slate-200"
               }`}
             >
@@ -740,29 +820,48 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
       <div>
         <h4 className="font-bold text-slate-800 mb-3 text-xs flex items-center gap-2">
           <FileCode className="w-3.5 h-3.5 text-purple-500" />
-          {t('skills.paramsDef')}
+          {t("skills.paramsDef")}
         </h4>
         {skill.parameters.length === 0 ? (
-          <p className="text-xs text-slate-400 italic pl-1">{t('skills.noParams')}</p>
+          <p className="text-xs text-slate-400 italic pl-1">
+            {t("skills.noParams")}
+          </p>
         ) : (
           <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
             <table className="w-full text-xs text-left">
               <thead className="bg-slate-50/80 text-slate-500 border-b border-slate-100">
                 <tr>
-                  <th className="p-3 font-medium">{t('skills.paramName')}</th>
-                  <th className="p-3 font-medium">{t('skills.paramLocation')}</th>
-                  <th className="p-3 font-medium">{t('skills.paramRequired')}</th>
-                  <th className="p-3 font-medium">{t('skills.paramDesc')}</th>
+                  <th className="p-3 font-medium">{t("skills.paramName")}</th>
+                  <th className="p-3 font-medium">
+                    {t("skills.paramLocation")}
+                  </th>
+                  <th className="p-3 font-medium">
+                    {t("skills.paramRequired")}
+                  </th>
+                  <th className="p-3 font-medium">{t("skills.paramDesc")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
                 {skill.parameters.map((p) => (
-                  <tr key={p.name} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="p-3 font-mono text-cyan-600 font-medium">{p.name}</td>
-                    <td className="p-3 text-slate-500">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px]">{p.location}</span>
+                  <tr
+                    key={p.name}
+                    className="hover:bg-slate-50/50 transition-colors"
+                  >
+                    <td className="p-3 font-mono text-cyan-600 font-medium">
+                      {p.name}
                     </td>
-                    <td className="p-3">{p.required ? <Check className="w-3.5 h-3.5 text-green-500" /> : <span className="text-slate-300">-</span>}</td>
+                    <td className="p-3 text-slate-500">
+                      <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px]">
+                        {p.location}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      {p.required ? (
+                        <Check className="w-3.5 h-3.5 text-green-500" />
+                      ) : (
+                        <span className="text-slate-300">-</span>
+                      )}
+                    </td>
                     <td className="p-3 text-slate-600">{p.description}</td>
                   </tr>
                 ))}
@@ -771,14 +870,14 @@ const SkillDetail: React.FC<{ skill: SkillDefinition; hostname: string }> = ({
           </div>
         )}
       </div>
-      
+
       <div className="pt-2">
         <details className="group">
           <summary className="text-xs cursor-pointer text-slate-500 hover:text-cyan-600 transition-colors list-none flex items-center gap-1.5 font-medium">
-             <div className="w-4 h-4 rounded bg-slate-100 flex items-center justify-center group-open:rotate-90 transition-transform">
-               <Play className="w-2 h-2 fill-current" />
-             </div>
-             {t('skills.viewJson')}
+            <div className="w-4 h-4 rounded bg-slate-100 flex items-center justify-center group-open:rotate-90 transition-transform">
+              <Play className="w-2 h-2 fill-current" />
+            </div>
+            {t("skills.viewJson")}
           </summary>
           <pre className="mt-3 bg-slate-50 rounded-xl p-4 text-[10px] overflow-auto max-h-60 text-slate-600 font-mono border border-slate-200 custom-scrollbar shadow-inner">
             {JSON.stringify(skill, null, 2)}
@@ -892,19 +991,23 @@ paths:
 
   const footer = (
     <>
-      <button 
-        className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" 
+      <button
+        className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 transition-colors"
         onClick={onClose}
       >
-        {t('common.cancel')}
+        {t("common.cancel")}
       </button>
       <button
         className="glass-button-primary px-5 py-2 shadow-md hover:shadow-lg"
         onClick={handleSubmit}
         disabled={!jsonText.trim() || loading}
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-        {loading ? t('skills.validating') : t('skills.confirmAdd')}
+        {loading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Check className="w-4 h-4" />
+        )}
+        {loading ? t("skills.validating") : t("skills.confirmAdd")}
       </button>
     </>
   );
@@ -913,27 +1016,29 @@ paths:
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('skills.addSkillTitle')}
+      title={t("skills.addSkillTitle")}
       footer={footer}
       height="h-[85vh]"
     >
       <div className="space-y-6">
         {/* Quick actions */}
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium text-slate-500">{t('skills.quickFill')}</span>
+          <span className="text-xs font-medium text-slate-500">
+            {t("skills.quickFill")}
+          </span>
           <button
             className="px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-600 text-xs font-medium hover:bg-cyan-100 border border-cyan-100 transition-colors flex items-center gap-1.5"
             onClick={() => setShowExamples(!showExamples)}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            {showExamples ? t('skills.hideExamples') : t('skills.showExamples')}
+            {showExamples ? t("skills.hideExamples") : t("skills.showExamples")}
           </button>
           <button
             className="px-3 py-1.5 rounded-lg bg-purple-50 text-purple-600 text-xs font-medium hover:bg-purple-100 border border-purple-100 transition-colors flex items-center gap-1.5"
             onClick={loadTemplate}
           >
             <FileCode className="w-3.5 h-3.5" />
-            {t('skills.blankTemplate')}
+            {t("skills.blankTemplate")}
           </button>
           <button
             className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-medium hover:bg-emerald-100 border border-emerald-100 transition-colors flex items-center gap-1.5"
@@ -948,7 +1053,7 @@ paths:
         {showExamples && (
           <div className="p-1 bg-slate-50 rounded-xl border border-slate-200 animate-in slide-in-from-top-2">
             <div className="p-2 text-xs text-slate-500 font-medium">
-              {t('skills.exampleHint')}
+              {t("skills.exampleHint")}
             </div>
             <div className="grid grid-cols-1 gap-1 max-h-60 overflow-y-auto custom-scrollbar px-1 pb-1">
               {EXAMPLE_SKILLS.map((skill, idx) => (
@@ -959,13 +1064,20 @@ paths:
                 >
                   <div className="flex items-center gap-2 w-full">
                     <span
-                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                        METHOD_COLORS[skill.api.method].replace('text-', 'bg-').replace('600', '100')
-                      } ${METHOD_COLORS[skill.api.method]}`}
+                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${METHOD_COLORS[
+                        skill.api.method
+                      ]
+                        .replace("text-", "bg-")
+                        .replace(
+                          "600",
+                          "100",
+                        )} ${METHOD_COLORS[skill.api.method]}`}
                     >
                       {skill.api.method}
                     </span>
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-cyan-600 transition-colors">{skill.name}</span>
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-cyan-600 transition-colors">
+                      {skill.name}
+                    </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-1.5 truncate w-full pl-0.5">
                     {skill.description}
@@ -985,24 +1097,28 @@ paths:
             onChange={(e) => setJsonText(e.target.value)}
           />
           {!jsonText && (
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none opacity-40">
-               <FileCode className="w-10 h-10 mx-auto mb-3 text-slate-400" />
-               <span className="text-sm font-medium text-slate-500">{t('skills.jsonEmptyHint')}</span>
-             </div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none opacity-40">
+              <FileCode className="w-10 h-10 mx-auto mb-3 text-slate-400" />
+              <span className="text-sm font-medium text-slate-500">
+                {t("skills.jsonEmptyHint")}
+              </span>
+            </div>
           )}
         </div>
-        
+
         {error && (
           <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-xs flex items-center gap-2 animate-in slide-in-from-top-1">
-             <AlertTriangle className="w-4 h-4 shrink-0" />
-             {error}
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            {error}
           </div>
         )}
 
         {/* Schema hint */}
         {!jsonText && (
           <div className="p-4 rounded-xl bg-slate-50/50 border border-slate-100 text-xs text-slate-500 space-y-2">
-            <p className="font-semibold text-slate-700">{t('skills.jsonStructureTitle')}</p>
+            <p className="font-semibold text-slate-700">
+              {t("skills.jsonStructureTitle")}
+            </p>
             <ul className="space-y-1.5 list-disc list-inside opacity-80 pl-1">
               {messages.skills.jsonStructureItems.map((item, index) => (
                 <li key={index} dangerouslySetInnerHTML={{ __html: item }} />

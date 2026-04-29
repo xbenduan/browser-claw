@@ -92,7 +92,7 @@ export function shouldStoreData(data: unknown): boolean {
 export function storeData(
   data: unknown,
   skillId: string,
-  callArgs: Record<string, unknown>
+  callArgs: Record<string, unknown>,
 ): { pointer: string; contextMessage: string } {
   const id = `ref_${skillId}_${++counter}_${Date.now().toString(36)}`;
   const rawStr = JSON.stringify(data);
@@ -128,14 +128,19 @@ export function storeData(
  */
 export function queryStoredData(
   pointerId: string,
-  options: QueryOptions = {}
-): { success: boolean; data?: unknown; error?: string; meta?: Record<string, unknown> } {
+  options: QueryOptions = {},
+): {
+  success: boolean;
+  data?: unknown;
+  error?: string;
+  meta?: Record<string, unknown>;
+} {
   const stored = store.get(pointerId);
   if (!stored) {
     // 可能已过期淘汰，给出更友好的提示
     return {
       success: false,
-      error: `Data pointer "${pointerId}" not found (may have expired). Available pointers: ${[...store.keys()].join(', ') || 'none'}. Please re-fetch the data if needed.`,
+      error: `Data pointer "${pointerId}" not found (may have expired). Available pointers: ${[...store.keys()].join(", ") || "none"}. Please re-fetch the data if needed.`,
     };
   }
 
@@ -150,7 +155,7 @@ export function queryStoredData(
     if (result === undefined) {
       return {
         success: false,
-        error: `Path "${options.path}" not found in stored data. Top-level keys: ${stored.summary.topKeys?.join(', ') ?? 'N/A'}`,
+        error: `Path "${options.path}" not found in stored data. Top-level keys: ${stored.summary.topKeys?.join(", ") ?? "N/A"}`,
       };
     }
   }
@@ -162,11 +167,11 @@ export function queryStoredData(
     // 过滤
     if (options.filter && Object.keys(options.filter).length > 0) {
       arr = arr.filter((item) => {
-        if (typeof item !== 'object' || item === null) return false;
+        if (typeof item !== "object" || item === null) return false;
         const rec = item as Record<string, unknown>;
         return Object.entries(options.filter!).every(([k, v]) => {
           const val = rec[k];
-          if (typeof v === 'string') {
+          if (typeof v === "string") {
             return String(val).toLowerCase().includes(v.toLowerCase());
           }
           return val === v;
@@ -184,7 +189,7 @@ export function queryStoredData(
     // 字段投影
     if (options.fields && options.fields.length > 0) {
       arr = arr.map((item) => {
-        if (typeof item !== 'object' || item === null) return item;
+        if (typeof item !== "object" || item === null) return item;
         const rec = item as Record<string, unknown>;
         const projected: Record<string, unknown> = {};
         for (const f of options.fields!) {
@@ -252,7 +257,9 @@ function evict(): void {
 
   // 2. 如果仍超出容量上限，按 lastAccess 升序淘汰最久未访问的
   if (store.size >= MAX_ENTRIES) {
-    const sorted = [...store.entries()].sort((a, b) => a[1].lastAccess - b[1].lastAccess);
+    const sorted = [...store.entries()].sort(
+      (a, b) => a[1].lastAccess - b[1].lastAccess,
+    );
     const toRemove = store.size - MAX_ENTRIES + 1; // 留出 1 个位置给即将存入的
     for (let i = 0; i < toRemove; i++) {
       store.delete(sorted[i][0]);
@@ -263,7 +270,7 @@ function evict(): void {
 // ============ 内部辅助函数 ============
 
 function navigatePath(obj: unknown, path: string): unknown {
-  const parts = path.split('.');
+  const parts = path.split(".");
   let current: unknown = obj;
   for (const part of parts) {
     if (current === null || current === undefined) return undefined;
@@ -271,7 +278,7 @@ function navigatePath(obj: unknown, path: string): unknown {
     if (indexMatch) {
       const key = indexMatch[1];
       current = (current as Record<string, unknown>)[key];
-      if (indexMatch[2] === '*') continue;
+      if (indexMatch[2] === "*") continue;
       if (Array.isArray(current)) {
         current = current[parseInt(indexMatch[2])];
       }
@@ -284,14 +291,14 @@ function navigatePath(obj: unknown, path: string): unknown {
 
 function buildSummary(data: unknown, rawSizeChars: number): DataSummary {
   if (data === null || data === undefined) {
-    return { type: 'null', rawSizeChars };
+    return { type: "null", rawSizeChars };
   }
 
   if (Array.isArray(data)) {
     return buildArraySummary(data, rawSizeChars);
   }
 
-  if (typeof data === 'object') {
+  if (typeof data === "object") {
     return buildObjectSummary(data as Record<string, unknown>, rawSizeChars);
   }
 
@@ -300,32 +307,43 @@ function buildSummary(data: unknown, rawSizeChars: number): DataSummary {
 
 function buildArraySummary(arr: unknown[], rawSizeChars: number): DataSummary {
   const summary: DataSummary = {
-    type: 'array',
+    type: "array",
     mainArrayLength: arr.length,
     rawSizeChars,
   };
 
   summary.sampleRecords = arr.slice(0, 2);
 
-  if (arr.length > 0 && typeof arr[0] === 'object' && arr[0] !== null) {
+  if (arr.length > 0 && typeof arr[0] === "object" && arr[0] !== null) {
     summary.recordFields = Object.keys(arr[0] as Record<string, unknown>);
   }
 
   return summary;
 }
 
-function buildObjectSummary(obj: Record<string, unknown>, rawSizeChars: number): DataSummary {
+function buildObjectSummary(
+  obj: Record<string, unknown>,
+  rawSizeChars: number,
+): DataSummary {
   const topKeys = Object.keys(obj);
   const summary: DataSummary = {
-    type: 'object',
+    type: "object",
     topKeys,
     rawSizeChars,
   };
 
   // 寻找主数据数组
   const arrayKeyPriority = [
-    'data', 'items', 'list', 'results', 'records',
-    'rows', 'entries', 'content', 'hits', 'documents',
+    "data",
+    "items",
+    "list",
+    "results",
+    "records",
+    "rows",
+    "entries",
+    "content",
+    "hits",
+    "documents",
   ];
   let mainArr: unknown[] | null = null;
   let mainKey: string | null = null;
@@ -353,24 +371,28 @@ function buildObjectSummary(obj: Record<string, unknown>, rawSizeChars: number):
     summary.mainArrayLength = mainArr.length;
     summary.sampleRecords = mainArr.slice(0, 2);
 
-    if (mainArr.length > 0 && typeof mainArr[0] === 'object' && mainArr[0] !== null) {
+    if (
+      mainArr.length > 0 &&
+      typeof mainArr[0] === "object" &&
+      mainArr[0] !== null
+    ) {
       summary.recordFields = Object.keys(mainArr[0] as Record<string, unknown>);
     }
   }
 
   // 提取分页信息
-  const pagination: NonNullable<DataSummary['pagination']> = {};
+  const pagination: NonNullable<DataSummary["pagination"]> = {};
   let hasPagination = false;
 
   const numField = (keys: string[]): number | undefined => {
     for (const k of keys) {
-      if (k in obj && typeof obj[k] === 'number') return obj[k] as number;
+      if (k in obj && typeof obj[k] === "number") return obj[k] as number;
     }
     return undefined;
   };
   const strField = (keys: string[]): string | undefined => {
     for (const k of keys) {
-      if (k in obj && typeof obj[k] === 'string') return obj[k] as string;
+      if (k in obj && typeof obj[k] === "string") return obj[k] as string;
     }
     return undefined;
   };
@@ -381,20 +403,53 @@ function buildObjectSummary(obj: Record<string, unknown>, rawSizeChars: number):
     return undefined;
   };
 
-  const total = numField(['total', 'totalCount', 'total_count']);
-  if (total !== undefined) { pagination.total = total; hasPagination = true; }
+  const total = numField(["total", "totalCount", "total_count"]);
+  if (total !== undefined) {
+    pagination.total = total;
+    hasPagination = true;
+  }
 
-  const page = numField(['page', 'pageNum', 'page_num', 'current_page', 'currentPage']);
-  if (page !== undefined) { pagination.page = page; hasPagination = true; }
+  const page = numField([
+    "page",
+    "pageNum",
+    "page_num",
+    "current_page",
+    "currentPage",
+  ]);
+  if (page !== undefined) {
+    pagination.page = page;
+    hasPagination = true;
+  }
 
-  const pageSize = numField(['pageSize', 'page_size', 'per_page', 'perPage', 'limit']);
-  if (pageSize !== undefined) { pagination.pageSize = pageSize; hasPagination = true; }
+  const pageSize = numField([
+    "pageSize",
+    "page_size",
+    "per_page",
+    "perPage",
+    "limit",
+  ]);
+  if (pageSize !== undefined) {
+    pagination.pageSize = pageSize;
+    hasPagination = true;
+  }
 
-  const hasMore = boolField(['hasMore', 'has_more', 'hasNext', 'has_next']);
-  if (hasMore !== undefined) { pagination.hasMore = hasMore; hasPagination = true; }
+  const hasMore = boolField(["hasMore", "has_more", "hasNext", "has_next"]);
+  if (hasMore !== undefined) {
+    pagination.hasMore = hasMore;
+    hasPagination = true;
+  }
 
-  const nextCursor = strField(['nextCursor', 'next_cursor', 'next_page_token', 'nextPageToken', 'cursor']);
-  if (nextCursor !== undefined) { pagination.nextCursor = nextCursor; hasPagination = true; }
+  const nextCursor = strField([
+    "nextCursor",
+    "next_cursor",
+    "next_page_token",
+    "nextPageToken",
+    "cursor",
+  ]);
+  if (nextCursor !== undefined) {
+    pagination.nextCursor = nextCursor;
+    hasPagination = true;
+  }
 
   if (hasPagination) {
     summary.pagination = pagination;
@@ -407,20 +462,24 @@ function buildContextMessage(id: string, summary: DataSummary): string {
   const lines: string[] = [];
 
   lines.push(`[STORED DATA — pointer: "${id}"]`);
-  lines.push(`Size: ${formatSize(summary.rawSizeChars)} | Type: ${summary.type}`);
+  lines.push(
+    `Size: ${formatSize(summary.rawSizeChars)} | Type: ${summary.type}`,
+  );
 
   if (summary.topKeys) {
-    lines.push(`Top-level keys: ${summary.topKeys.join(', ')}`);
+    lines.push(`Top-level keys: ${summary.topKeys.join(", ")}`);
   }
 
   if (summary.mainArrayKey) {
-    lines.push(`Main data: "${summary.mainArrayKey}" (${summary.mainArrayLength} records)`);
-  } else if (summary.type === 'array') {
+    lines.push(
+      `Main data: "${summary.mainArrayKey}" (${summary.mainArrayLength} records)`,
+    );
+  } else if (summary.type === "array") {
     lines.push(`Array: ${summary.mainArrayLength} records`);
   }
 
   if (summary.recordFields) {
-    lines.push(`Fields: ${summary.recordFields.join(', ')}`);
+    lines.push(`Fields: ${summary.recordFields.join(", ")}`);
   }
 
   if (summary.pagination) {
@@ -431,20 +490,22 @@ function buildContextMessage(id: string, summary: DataSummary): string {
     if (p.pageSize !== undefined) parts.push(`pageSize=${p.pageSize}`);
     if (p.hasMore !== undefined) parts.push(`hasMore=${p.hasMore}`);
     if (p.nextCursor) parts.push(`nextCursor="${p.nextCursor}"`);
-    lines.push(`Pagination: ${parts.join(', ')}`);
+    lines.push(`Pagination: ${parts.join(", ")}`);
   }
 
   if (summary.sampleRecords && summary.sampleRecords.length > 0) {
     lines.push(`Sample (first ${summary.sampleRecords.length}):`);
     for (const rec of summary.sampleRecords) {
       const str = JSON.stringify(rec);
-      lines.push(`  ${str.length > 500 ? str.slice(0, 500) + '...' : str}`);
+      lines.push(`  ${str.length > 500 ? str.slice(0, 500) + "..." : str}`);
     }
   }
 
-  lines.push(`[Use query_stored_data with pointer="${id}" to retrieve, filter, slice, or project fields from this data]`);
+  lines.push(
+    `[Use query_stored_data with pointer="${id}" to retrieve, filter, slice, or project fields from this data]`,
+  );
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 function formatSize(chars: number): string {
